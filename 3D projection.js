@@ -13,9 +13,8 @@ class perspective{
     this.near = 0;
     this.far = 20;
 
-    this.n = n;
-    this.d;
-
+    this.n = n;//Normal of plane
+    this.d;//d of plane
   }
 
   update(){
@@ -27,17 +26,17 @@ class perspective{
 
 class player{
   constructor(h){
-    this.height = h;
-    this.pos = createVector(0,-this.height,-5);
-    this.rotation = createVector(0,0);
+    this.height = h;//Height of player
+    this.pos = createVector(0,-this.height,-5);//Player's position
+    this.rotation = createVector(0,0);//Orientation of player
   }
 }
 
 
 
 function setup() {
-  createCanvas(400, 400);
-  p = new player(2);
+  createCanvas(800, 800);
+  p = new player(ph);
   per = new perspective(createVector(0,0,1));
   let size = 1;
   //objects.push(new cuboid(createVector(2*size,-ph,2*size),size,size,size,45));
@@ -47,11 +46,8 @@ function setup() {
   
   //objects.push(new cuboid(createVector(0,-ph*3,-5),size,size,size,45));
   
-  cam = createVector(0,-ph,-5);
   //n = createVector(0,0,1);//Setting up starting normal vector
   //Update these to look around
-  rx = radians(0);//Rotation of player left/right
-  ry = radians(0);//Rotation of player up/down
 }
 
 function draw() {
@@ -60,61 +56,58 @@ function draw() {
   stroke(255);
   strokeWeight(5);
 
-
-  per.update();
+  per.update();//Update perspective
   
   for(let i=0;i<objects.length;i++){
-    objects[i].show(); 
+    objects[i].show();//Show all objects
   }
-
-
-  
   //noLoop(); 
   controls();
-     fill(255,255,255,80);
-    textAlign(CENTER);
-    textSize(20);
-    //text(ry,30,30);
 }
 
+
+function mouseClicked(){
+  canvas.requestPointerLock();
+  if(document.pointerLockElement === canvas){
+    document.exitPointerLock();
+  }
+}
+function mouseMoved(){
+  if(document.pointerLockElement === canvas){
+    p.rotation.x += event.movementX*radians(0.1);//Allow looking horizontally
+    p.rotation.y -= event.movementY*radians(0.1);//Allow looking vertically
+    p.rotation.y = constrain(p.rotation.y,radians(-90),radians(90));//Constraint to looking from down to up
+  }
+}
 function controls(){
   let speed = 0.1;
   let dir = per.n.copy();
   dir.y = 0;
   dir.setMag(speed);
   if(keyIsDown(87)){//w
-    cam.add(dir);
     p.pos.add(dir);
   }
   if(keyIsDown(65)){//a
-    cam.sub(Matrix.rotateY(dir,radians(90)));
     p.pos.sub(Matrix.rotateY(dir,radians(90)));
   }
   if(keyIsDown(83)){//s
-    cam.sub(dir);
     p.pos.sub(dir);
   }
   if(keyIsDown(68)){//d
-    cam.add(Matrix.rotateY(dir,radians(90)));
     p.pos.add(Matrix.rotateY(dir,radians(90)));
   }
   if(keyIsDown(37)){//left
-    rx-=radians(1);
     p.rotation.x-=radians(1);
   }
   if(keyIsDown(39)){//right
-    rx+=radians(1);
     p.rotation.x+=radians(1);
   }
   if(keyIsDown(38)){//up
-    ry+=radians(1);
     p.rotation.y+=radians(1);
   }
   if(keyIsDown(40)){//down
-    ry-=radians(1);
     p.rotation.y-=radians(1);
   }
-
 }
 
 class cuboid{
@@ -146,7 +139,7 @@ class cuboid{
     return points.map(x => this.to2D(x));//Project the visible points to 2D
   }
   checkQuads(points){
-    let newPoints = [];
+    let newPoints = [];//Adds all 6 faces
     newPoints.push(this.visible(points,[3,2,1,0]));
     newPoints.push(this.visible(points,[4,5,6,7]));
     for(let i=0;i<4;i++){
@@ -162,7 +155,7 @@ class cuboid{
       centre.add(p5.Vector.div(points[k[i]],4))//Gets the centre of the face by adding quarters of each point
     }
  
-    let a = p5.Vector.sub(centre,this.pos);//Vector from face to objects centre
+    let a = p5.Vector.sub(centre,this.pos);//Vector from face to objects centre (normal of face)
     let b = p5.Vector.sub(centre,p.pos);//Vector from face to camera
     return(Math.acos(p5.Vector.dot(a,b)/(a.mag()*b.mag()))<=PI/2 ? null : face);//Return face if face towards the camera
   }  
@@ -171,27 +164,23 @@ class cuboid{
     if(points == null){    
       return null; 
     }
-    const result = points.map(x => this.get2D(x));
-    return (result.includes(null) ? null : result);
+    const result = points.map(x => this.get2D(x));//Converts to 2D points
+    return (result.includes(null) ? null : result);//If 1 points of null return null
 
   }
   get2D(point){
     let dir = p5.Vector.sub(point,p.pos);
     let lambda = -(per.d+per.n.x*point.x+per.n.y*point.y+per.n.z*point.z)/(per.n.x*(dir.x)+per.n.y*(dir.y)+per.n.z*(dir.z));//Formula for lambda
-    let foundP = this.findP(point,lambda);
-    
-    
-       
+    let foundP = this.findP(point,lambda);   
     foundP.mult(scale);
     if(lambda<0){//If behind plane          
-      //foundP.mult(-1);//Invert coordinate
       foundP.z = null;//Set z to null so the amount of points can be counted
     }
     return foundP;
   }
   
   findP(point,lambda){
-    let foundP = createVector(point.x + lambda*(point.x-p.pos.x),point.y + lambda*(point.y-p.pos.y),point.z + lambda*(point.z-p.pos.z));
+    let foundP = createVector(point.x + lambda*(point.x-p.pos.x),point.y + lambda*(point.y-p.pos.y),point.z + lambda*(point.z-p.pos.z));//Sub lambda into line equation
     foundP.sub(p.pos);//Translate to make camera the origin
     foundP = Matrix.rotateY(foundP,-p.rotation.x);//Inverse the rotation done to the plane's normal vector
     foundP = Matrix.rotateZ(foundP,-p.rotation.y);//Inverse the rotation done to the plane's normal vector    
@@ -199,15 +188,15 @@ class cuboid{
   }
   
   show(){
-    this.points2 = this.project(); 
-    for(let i=0;i<this.points2.length;i++){
-      if(this.points2[i]!=null){
-        let a = this.points2[i];
+    let points2 = this.project();//Project points
+    for(let i=0;i<points2.length;i++){
+      if(points2[i]!=null){
+        let a = points2[i];//Current face
         
         let behind = 0;
         for(let k=0;k<a.length;k++){
           if(a[k].z == null){
-            behind++; 
+            behind++;//Count visible points 
           }
         }
         if(behind < a.length){//If at least one point in view
@@ -220,23 +209,33 @@ class cuboid{
   }
 }
 
-
-
-function mouseClicked(){
-  canvas.requestPointerLock();
-  if(document.pointerLockElement === canvas){
-    document.exitPointerLock();
+class face{
+  constructor(points){
+    this.points = points;
+    this.n = getN(points);
   }
-}
-function mouseMoved(){
-  if(document.pointerLockElement === canvas){
-    rx += event.movementX*radians(0.1);
 
-    ry -= event.movementYp*radians(0.1);
-    ry = constrain(ry,radians(-90),radians(90));
+  getN(points){
+    let a;
+    let b;
+    let n;
+    for(let i=0;i<points.length-1;i++){
+      a = p5.Vector.sub(points[i+1],points[i]);//Direction vector 1
+      for(let k=i+1;k<points.lentgh-1;k++){
+        b = p5.Vector.sub(points[k+1],points[k]);//Direction vector 2
+        if(p5.Vector.angleBetween(a,b) != 0){
+          n = p5.Vector.cross(a,b);
+          k=points.length;
+          i=points.length;
+        }
+      }
+    }
   }
+
   
 }
+
+
 
 
 
