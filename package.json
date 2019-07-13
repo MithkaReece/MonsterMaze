@@ -1,0 +1,14 @@
+{
+  "name": "3d-projection",
+  "version": "1.0.0",
+  "description": "",
+  "main": "3D projection.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "p5": "^0.9.0"
+  }
+}
