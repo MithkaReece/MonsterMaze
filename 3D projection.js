@@ -34,7 +34,7 @@ function draw() {
   per.update();//Update perspective
   
   for(let i=0;i<objects.length;i++){
-    objects[i].show();//Show all objects
+    //objects[i].show();//Show all objects
   }
   f.show();
   noLoop(); 
