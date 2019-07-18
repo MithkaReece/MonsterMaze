@@ -8,42 +8,17 @@ let objects = [];//Objects in world
 let p;//Player
 let per;//Perspective
 
-class perspective{
-  constructor(n){
-    this.near = 0;
-    this.far = 20;
-
-    this.n = n;//Normal of plane
-    this.d;//d of plane
-  }
-
-  update(){
-    this.n = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),p.rotation.y),p.rotation.x);//RotateXY plane round camera
-    this.d = -(this.far * this.n.mag() - Math.abs(this.n.x*p.pos.x+this.n.y*p.pos.y+this.n.z*p.pos.z));//Calc d of the plane equation
-  }
-  
-}
-
-class player{
-  constructor(h){
-    this.height = h;//Height of player
-    this.pos = createVector(0,-this.height,-5);//Player's position
-    this.rotation = createVector(0,0);//Orientation of player
-  }
-}
-
-
-
+let f;
 function setup() {
-  createCanvas(800, 800);
+  createCanvas(400, 400);
   p = new player(ph);
   per = new perspective(createVector(0,0,1));
   let size = 1;
   //objects.push(new cuboid(createVector(2*size,-ph,2*size),size,size,size,45));
   //objects.push(new cuboid(createVector(2*size,-ph,-2*size),size,size,size,45));
- // objects.push(new cuboid(createVector(-2*size,-ph,2*size),size,size,size,45));
-  objects.push(new cuboid(createVector(-2*size,-ph,-2*size),size,size,size,45));
-  
+  objects.push(new cuboid(createVector(-2*size,-ph,2*size),size,size,size,45));
+  //objects.push(new cuboid(createVector(-2*size,-ph,-2*size),size,size,size,45));
+  f = new face([createVector(0,0,0),createVector(ph,0,0),createVector(ph,-ph,0),createVector(0,-ph,0)])
   //objects.push(new cuboid(createVector(0,-ph*3,-5),size,size,size,45));
   
   //n = createVector(0,0,1);//Setting up starting normal vector
@@ -61,7 +36,8 @@ function draw() {
   for(let i=0;i<objects.length;i++){
     objects[i].show();//Show all objects
   }
-  //noLoop(); 
+  f.show();
+  noLoop(); 
   controls();
 }
 
@@ -132,6 +108,24 @@ class cuboid{
     points = points.map(a => Matrix.rotateZ(a,this.rotation.z));//Rotates the point round the z axis
     return points;
   }    
+  generateFaces(points){
+    let faces = [];
+    //faces.push(this.createFace(points,[3,2,1,0]));
+    //faces.push(this.createFace(points,[4,5,6,7]));
+    for(let i=0;i<4;i++){
+      //faces.push(this.createFace(points,[i,(i+1)%4,4+(i+1)%4,i+4])); 
+    }
+    return faces;
+  }
+  createFace(points,k){
+    let array = [];
+    for(let i=0;i<4;i++){
+      array.push(points[k[i]]);
+    }
+    console.log(array)
+    return new face(array);
+  }
+
   project(){
     let points = this.points3.map(x => x.copy());//Copies all the vectors in the array to new instances
     points = points.map(a => p5.Vector.add(a,this.pos));//Translates all the points to the objects location
@@ -159,7 +153,6 @@ class cuboid{
     let b = p5.Vector.sub(centre,p.pos);//Vector from face to camera
     return(Math.acos(p5.Vector.dot(a,b)/(a.mag()*b.mag()))<=PI/2 ? null : face);//Return face if face towards the camera
   }  
-  
   to2D(points){
     if(points == null){    
       return null; 
@@ -178,7 +171,6 @@ class cuboid{
     }
     return foundP;
   }
-  
   findP(point,lambda){
     let foundP = createVector(point.x + lambda*(point.x-p.pos.x),point.y + lambda*(point.y-p.pos.y),point.z + lambda*(point.z-p.pos.z));//Sub lambda into line equation
     foundP.sub(p.pos);//Translate to make camera the origin
@@ -186,9 +178,13 @@ class cuboid{
     foundP = Matrix.rotateZ(foundP,-p.rotation.y);//Inverse the rotation done to the plane's normal vector    
     return foundP.add(p.pos);//Translate back to normal position
   }
-  
   show(){
     let points2 = this.project();//Project points
+    let faces = this.generateFaces(this.points3);
+    console.log(faces)
+    for(let i=0;i<point.length;i++){
+      faces[i].show();
+    }
     for(let i=0;i<points2.length;i++){
       if(points2[i]!=null){
         let a = points2[i];//Current face
@@ -202,37 +198,111 @@ class cuboid{
         if(behind < a.length){//If at least one point in view
           strokeWeight(1);
           fill(110);
-          quad(a[0].x,a[0].y,a[1].x,a[1].y,a[2].x,a[2].y,a[3].x,a[3].y);
+          //quad(a[0].x,a[0].y,a[1].x,a[1].y,a[2].x,a[2].y,a[3].x,a[3].y);
         }
       }
     }  
   }
 }
 
+class shape{
+  constructor(){
+
+  }
+}
+
 class face{
   constructor(points){
     this.points = points;
-    this.n = getN(points);
+    this.n = this.getN(points);
   }
 
   getN(points){
-    let a;
-    let b;
-    let n;
+    let a;//Direction vector 1
+    let b;//Direction vector 2
+    let n;//Normal of the face
     for(let i=0;i<points.length-1;i++){
-      a = p5.Vector.sub(points[i+1],points[i]);//Direction vector 1
-      for(let k=i+1;k<points.lentgh-1;k++){
-        b = p5.Vector.sub(points[k+1],points[k]);//Direction vector 2
-        if(p5.Vector.angleBetween(a,b) != 0){
-          n = p5.Vector.cross(a,b);
-          k=points.length;
-          i=points.length;
+      a = p5.Vector.sub(points[i+1],points[i]);
+      
+      for(let k=i+1;k<points.length-1;k++){
+        b = p5.Vector.sub(points[k+1],points[k]);
+        if(a.angleBetween(b) != 0){
+          n = p5.Vector.cross(a,b);//Created normal      
+          k=points.length;//Exit k loop
+          i=points.length;//Exit i loop
         }
+        
       }
     }
+    if(points.length>3){
+      if(this.isFace(points,n) == false){//If points don't all lie on a plane
+        console.log("invalid face")
+      }
+    }
+    
+    return n;
   }
 
-  
+  isFace(points,n){
+    let k = p5.Vector.dot(points[0],n);
+    let face = true;
+    for(let i=1;i<points.length;i++){
+      if(Math.floor(p5.Vector.dot(points[i],n)) != Math.floor(k)){//If point doesn't lie of the plane
+        face = false;
+      }
+    }
+    return face;
+  }
+
+  project(){
+    this.pos = createVector(0,0,0);
+    let points = this.points.map(x => x.copy());//Copies all the vectors in the array to new instances
+    points = points.map(a => p5.Vector.add(a,this.pos));//Translates all the points to the objects location
+    return(this.visible(points)==null ? null : points.map(x => this.get2D(x)));//Project the visible points to 2D
+  }
+
+  visible(points,k){
+    let centre = createVector();
+    for(let i=0;i<points.length;i++){
+      centre.add(p5.Vector.div(points[i],points.length))//Gets the centre of the face by adding quarters of each point
+    }
+ 
+    let a = this.n//Face normal
+    let b = p5.Vector.sub(centre,p.pos);//Vector from face to camera
+    //console.log(this.n)
+    return(Math.acos(p5.Vector.dot(a,b)/(a.mag()*b.mag()))<=PI/2 ? null : points);//Return face if face towards the camera
+  }
+  get2D(point){
+    let dir = p5.Vector.sub(point,p.pos);//Direction of line vector
+    let lambda = -(per.d+per.n.x*point.x+per.n.y*point.y+per.n.z*point.z)/(per.n.x*(dir.x)+per.n.y*(dir.y)+per.n.z*(dir.z));//Formula for lambda
+    let foundP = this.findP(point,lambda);   
+    foundP.mult(scale);
+    if(lambda<0){//If behind plane          
+      foundP.z = null;//Set z to null so the amount of points can be counted
+    }
+    return foundP;
+  }
+  findP(point,lambda){
+    let foundP = createVector(point.x + lambda*(point.x-p.pos.x),point.y + lambda*(point.y-p.pos.y),point.z + lambda*(point.z-p.pos.z));//Sub lambda into line equation
+    foundP.sub(p.pos);//Translate to make camera the origin
+    foundP = Matrix.rotateY(foundP,-p.rotation.x);//Inverse the rotation done to the plane's normal vector
+    foundP = Matrix.rotateZ(foundP,-p.rotation.y);//Inverse the rotation done to the plane's normal vector    
+    return foundP.add(p.pos);//Translate back to normal position
+  }
+
+  show(){
+    strokeWeight(1);
+    fill(110);
+    let points = this.project();
+    if(points!=null){
+      beginShape();
+      for(let i=0;i<points.length;i++){
+        let p = points[i];
+        vertex(p.x,p.y);
+      }
+      endShape(CLOSE);
+    }
+  }
 }
 
 
@@ -275,7 +345,28 @@ function make2Darray(cols,rows){
   return arr;
 }
 
+class perspective{
+  constructor(n){
+    this.near = 0;
+    this.far = 20;
 
+    this.n = n;//Normal of plane
+    this.d;//d of plane
+  }
 
+  update(){
+    this.n = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),p.rotation.y),p.rotation.x);//RotateXY plane round camera
+    this.d = -(this.far * this.n.mag() - Math.abs(this.n.x*p.pos.x+this.n.y*p.pos.y+this.n.z*p.pos.z));//Calc d of the plane equation
+  }
+  
+}
+
+class player{
+  constructor(h){
+    this.height = h;//Height of player
+    this.pos = createVector(0,-this.height,-5);//Player's position
+    this.rotation = createVector(0,0);//Orientation of player
+  }
+}
 
 
