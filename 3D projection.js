@@ -10,7 +10,7 @@ let per;//Perspective
 
 let f;
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(1200, 800);
   p = new player(ph);
   per = new perspective(createVector(0,0,1));
   let size = 1;
@@ -21,12 +21,10 @@ function setup() {
   f = new face([createVector(0,0,0),createVector(ph,0,0),createVector(ph,-ph,0),createVector(0,-ph,0)])
   //objects.push(new cuboid(createVector(0,-ph*3,-5),size,size,size,45));
   
-  //n = createVector(0,0,1);//Setting up starting normal vector
-  //Update these to look around
 }
 
 function draw() {
-  background(0);
+  background(0,191,255);
   translate(width/2,height/2);
   stroke(255);
   strokeWeight(5);
@@ -36,9 +34,14 @@ function draw() {
   for(let i=0;i<objects.length;i++){
     //objects[i].show();//Show all objects
   }
-  f.show();
-  noLoop(); 
+  f.show(createVector(0,0,0));
+  //noLoop(); 
   controls();
+  strokeWeight(0);
+  fill(0);
+  ellipseMode(CENTER);
+  ellipse(0,0,7);
+
 }
 
 
@@ -91,7 +94,8 @@ class cuboid{
     this.scale = 20;
     this.rotation = createVector(0,radians(r),0);
     this.pos = pos; 
-    this.points3 = this.generatePoints(l,h,w);
+    this.points = this.generatePoints(l,h,w);
+    this.faces = this.generateFaces(this.points);
   }   
   generatePoints(l,h,w){
     let points = [];
@@ -110,10 +114,10 @@ class cuboid{
   }    
   generateFaces(points){
     let faces = [];
-    //faces.push(this.createFace(points,[3,2,1,0]));
-    //faces.push(this.createFace(points,[4,5,6,7]));
+    faces.push(this.createFace(points,[3,2,1,0]));
+    faces.push(this.createFace(points,[4,5,6,7]));
     for(let i=0;i<4;i++){
-      //faces.push(this.createFace(points,[i,(i+1)%4,4+(i+1)%4,i+4])); 
+      faces.push(this.createFace(points,[i,(i+1)%4,4+(i+1)%4,i+4])); 
     }
     return faces;
   }
@@ -122,87 +126,15 @@ class cuboid{
     for(let i=0;i<4;i++){
       array.push(points[k[i]]);
     }
-    console.log(array)
     return new face(array);
   }
-
-  project(){
-    let points = this.points3.map(x => x.copy());//Copies all the vectors in the array to new instances
-    points = points.map(a => p5.Vector.add(a,this.pos));//Translates all the points to the objects location
-    points = this.checkQuads(points);//Null any invisible faces
-    return points.map(x => this.to2D(x));//Project the visible points to 2D
-  }
-  checkQuads(points){
-    let newPoints = [];//Adds all 6 faces
-    newPoints.push(this.visible(points,[3,2,1,0]));
-    newPoints.push(this.visible(points,[4,5,6,7]));
-    for(let i=0;i<4;i++){
-      newPoints.push(this.visible(points,[i,(i+1)%4,4+(i+1)%4,i+4])); 
-    }
-    return newPoints;
-  }
-  visible(points,k){
-    let centre = createVector();
-    let face =[];
-    for(let i=0;i<4;i++){
-      face.push(points[k[i]]);//Adds points of face to a list
-      centre.add(p5.Vector.div(points[k[i]],4))//Gets the centre of the face by adding quarters of each point
-    }
- 
-    let a = p5.Vector.sub(centre,this.pos);//Vector from face to objects centre (normal of face)
-    let b = p5.Vector.sub(centre,p.pos);//Vector from face to camera
-    return(Math.acos(p5.Vector.dot(a,b)/(a.mag()*b.mag()))<=PI/2 ? null : face);//Return face if face towards the camera
-  }  
-  to2D(points){
-    if(points == null){    
-      return null; 
-    }
-    const result = points.map(x => this.get2D(x));//Converts to 2D points
-    return (result.includes(null) ? null : result);//If 1 points of null return null
-
-  }
-  get2D(point){
-    let dir = p5.Vector.sub(point,p.pos);
-    let lambda = -(per.d+per.n.x*point.x+per.n.y*point.y+per.n.z*point.z)/(per.n.x*(dir.x)+per.n.y*(dir.y)+per.n.z*(dir.z));//Formula for lambda
-    let foundP = this.findP(point,lambda);   
-    foundP.mult(scale);
-    if(lambda<0){//If behind plane          
-      foundP.z = null;//Set z to null so the amount of points can be counted
-    }
-    return foundP;
-  }
-  findP(point,lambda){
-    let foundP = createVector(point.x + lambda*(point.x-p.pos.x),point.y + lambda*(point.y-p.pos.y),point.z + lambda*(point.z-p.pos.z));//Sub lambda into line equation
-    foundP.sub(p.pos);//Translate to make camera the origin
-    foundP = Matrix.rotateY(foundP,-p.rotation.x);//Inverse the rotation done to the plane's normal vector
-    foundP = Matrix.rotateZ(foundP,-p.rotation.y);//Inverse the rotation done to the plane's normal vector    
-    return foundP.add(p.pos);//Translate back to normal position
-  }
   show(){
-    let points2 = this.project();//Project points
-    let faces = this.generateFaces(this.points3);
-    console.log(faces)
-    for(let i=0;i<point.length;i++){
-      faces[i].show();
+    for(let i=0;i<this.faces.length;i++){
+      this.faces[i].show(this.pos);
     }
-    for(let i=0;i<points2.length;i++){
-      if(points2[i]!=null){
-        let a = points2[i];//Current face
-        
-        let behind = 0;
-        for(let k=0;k<a.length;k++){
-          if(a[k].z == null){
-            behind++;//Count visible points 
-          }
-        }
-        if(behind < a.length){//If at least one point in view
-          strokeWeight(1);
-          fill(110);
-          //quad(a[0].x,a[0].y,a[1].x,a[1].y,a[2].x,a[2].y,a[3].x,a[3].y);
-        }
-      }
-    }  
   }
+      
+  
 }
 
 class shape{
@@ -254,14 +186,46 @@ class face{
     return face;
   }
 
-  project(){
-    this.pos = createVector(0,0,0);
+  project(pos){
     let points = this.points.map(x => x.copy());//Copies all the vectors in the array to new instances
-    points = points.map(a => p5.Vector.add(a,this.pos));//Translates all the points to the objects location
-    return(this.visible(points)==null ? null : points.map(x => this.get2D(x)));//Project the visible points to 2D
+    points = points.map(a => p5.Vector.add(a,pos));//Translates all the points to the objects location
+    if(this.visible(points) == null){
+      return null
+    }
+    let projected = [];
+    for(let i=0;i<points.length;i++){
+      let point = this.get2D(points[i]);
+      if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2){
+        projected.push(point);
+      }else{
+        //Split point into 2 points on the screen
+        let left = points[(i+6) % points.length];
+        let right = points[(i+1) % points.length];
+        projected.push(this.firstVisiblePoint(points[i],left));
+        projected.push(this.firstVisiblePoint(points[i],right));
+      }
+      
+    }
+    //console.log(projected);
+    return projected;
+  }
+
+  firstVisiblePoint(a,k){
+    //console.log(a,k);
+    let dir = p5.Vector.sub(k,a);
+
+    let point = a;
+    let test = this.get2D(point);
+    while ((Math.abs(test.x) <= width/2 && Math.abs(test.y) <= height/2) == false){
+      point.add(p5.Vector.mult(dir,1/100));
+      test = this.get2D(point);
+    }
+    point.sub(p5.Vector.mult(dir,1/100))
+    return this.get2D(point);//Get point from vector line equation
   }
 
   visible(points,k){
+    //Checks if face is visible
     let centre = createVector();
     for(let i=0;i<points.length;i++){
       centre.add(p5.Vector.div(points[i],points.length))//Gets the centre of the face by adding quarters of each point
@@ -269,36 +233,34 @@ class face{
  
     let a = this.n//Face normal
     let b = p5.Vector.sub(centre,p.pos);//Vector from face to camera
-    //console.log(this.n)
     return(Math.acos(p5.Vector.dot(a,b)/(a.mag()*b.mag()))<=PI/2 ? null : points);//Return face if face towards the camera
   }
   get2D(point){
-    let dir = p5.Vector.sub(point,p.pos);//Direction of line vector
-    let lambda = -(per.d+per.n.x*point.x+per.n.y*point.y+per.n.z*point.z)/(per.n.x*(dir.x)+per.n.y*(dir.y)+per.n.z*(dir.z));//Formula for lambda
-    let foundP = this.findP(point,lambda);   
-    foundP.mult(scale);
-    if(lambda<0){//If behind plane          
-      foundP.z = null;//Set z to null so the amount of points can be counted
-    }
-    return foundP;
-  }
-  findP(point,lambda){
-    let foundP = createVector(point.x + lambda*(point.x-p.pos.x),point.y + lambda*(point.y-p.pos.y),point.z + lambda*(point.z-p.pos.z));//Sub lambda into line equation
-    foundP.sub(p.pos);//Translate to make camera the origin
-    foundP = Matrix.rotateY(foundP,-p.rotation.x);//Inverse the rotation done to the plane's normal vector
-    foundP = Matrix.rotateZ(foundP,-p.rotation.y);//Inverse the rotation done to the plane's normal vector    
-    return foundP.add(p.pos);//Translate back to normal position
+  let dir = p5.Vector.sub(point,p.pos);//Direction of line vector
+  //Forming r = a + λb
+  let λ = -(per.d + p5.Vector.dot(p.pos,per.n)) / p5.Vector.dot(dir,per.n);//finding λ
+  let b = p5.Vector.mult(dir,λ)//finding b 
+  let r = p5.Vector.add(p.pos,b);//finding r
+
+  r.sub(p.pos);//Translate to make camera the origin
+  r = Matrix.rotateY(r,-p.rotation.x);//Inverse the rotation done to the plane's normal vector
+  r = Matrix.rotateZ(r,-p.rotation.y);//Inverse the rotation done to the plane's normal vector  
+  r.mult(scale);
+  return r;
   }
 
-  show(){
+  show(pos){
     strokeWeight(1);
-    fill(110);
-    let points = this.project();
+    stroke(184,65,203)
+    fill(184,65,203);
+    let points = this.project(pos);
     if(points!=null){
       beginShape();
       for(let i=0;i<points.length;i++){
         let p = points[i];
-        vertex(p.x,p.y);
+        if(p != null){
+          vertex(p.x,p.y);
+        }
       }
       endShape(CLOSE);
     }
