@@ -1,5 +1,3 @@
-
-
 const scale = 20; //Scales up projection
 const ph = 2;//Player height
 
@@ -10,7 +8,7 @@ let per;//Perspective
 
 let f;
 function setup() {
-  createCanvas(1200, 800);
+  createCanvas(400, 400);
   p = new player(ph);
   per = new perspective(createVector(0,0,1));
   let size = 1;
@@ -18,7 +16,7 @@ function setup() {
   //objects.push(new cuboid(createVector(2*size,-ph,-2*size),size,size,size,45));
   objects.push(new cuboid(createVector(-2*size,-ph,2*size),size,size,size,45));
   //objects.push(new cuboid(createVector(-2*size,-ph,-2*size),size,size,size,45));
-  f = new face([createVector(0,0,0),createVector(ph,0,0),createVector(ph,-ph,0),createVector(0,-ph,0)])
+  f = new face([createVector(0,0,0),createVector(2*ph,0,0),createVector(ph,-ph,0),createVector(0,-ph,0)])
   //objects.push(new cuboid(createVector(0,-ph*3,-5),size,size,size,45));
   
 }
@@ -41,7 +39,6 @@ function draw() {
   fill(0);
   ellipseMode(CENTER);
   ellipse(0,0,7);
-
 }
 
 
@@ -199,28 +196,41 @@ class face{
         projected.push(point);
       }else{
         //Split point into 2 points on the screen
-        let left = points[(i+6) % points.length];
+        let left = points[(i-1+points.length) % points.length];
+        left = this.firstVisiblePoint(points[i],left)
         let right = points[(i+1) % points.length];
-        projected.push(this.firstVisiblePoint(points[i],left));
-        projected.push(this.firstVisiblePoint(points[i],right));
+        right = this.firstVisiblePoint(points[i],right)
+        projected.push(left);
+        //If between a corner
+        if((Math.floor(left.x) == Math.floor(right.x) || Math.floor(left.y) == Math.floor(right.y)) == false){
+          let x = -width/2;
+          let y = -width/2;
+          if(Math.floor(left.x) == width/2 || Math.floor(right.x) == width/2){
+            x = width/2;
+          }
+          if(Math.floor(left.y) == height/2 || Math.floor(right.y) == height/2){
+            y = height/2;
+          }
+          projected.push(createVector(x,y));//Add corner point
+        }
+        
+        
+        projected.push(right);
       }
       
     }
-    //console.log(projected);
     return projected;
   }
 
-  firstVisiblePoint(a,k){
-    //console.log(a,k);
-    let dir = p5.Vector.sub(k,a);
-
-    let point = a;
+  firstVisiblePoint(cpoint,k){
+    let dir = p5.Vector.sub(k,cpoint);
+    let point = cpoint.copy();
     let test = this.get2D(point);
-    while ((Math.abs(test.x) <= width/2 && Math.abs(test.y) <= height/2) == false){
-      point.add(p5.Vector.mult(dir,1/100));
+    while ((Math.abs(test.x) <= width/2 && Math.abs(test.y) <= height/2) == false && p5.Vector.dist(k,point)> 0.01){
+      point.add(p5.Vector.mult(dir,0.001));
       test = this.get2D(point);
     }
-    point.sub(p5.Vector.mult(dir,1/100))
+    point.sub(p5.Vector.mult(dir,0.001))
     return this.get2D(point);//Get point from vector line equation
   }
 
