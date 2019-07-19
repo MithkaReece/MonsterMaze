@@ -8,7 +8,7 @@ let per;//Perspective
 
 let f;
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(1200, 800);
   p = new player(ph);
   per = new perspective(createVector(0,0,1));
   let size = 1;
@@ -192,32 +192,73 @@ class face{
     let projected = [];
     for(let i=0;i<points.length;i++){
       let point = this.get2D(points[i]);
-      if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2){
+      if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2){//If point is on screen
         projected.push(point);
-      }else{
+      }else{//If point not on screen
+
         //Split point into 2 points on the screen
-        let left = points[(i-1+points.length) % points.length];
-        left = this.firstVisiblePoint(points[i],left)
-        let right = points[(i+1) % points.length];
-        right = this.firstVisiblePoint(points[i],right)
-        projected.push(left);
-        //If between a corner
-        if((Math.floor(left.x) == Math.floor(right.x) || Math.floor(left.y) == Math.floor(right.y)) == false){
-          let x = -width/2;
-          let y = -width/2;
-          if(Math.floor(left.x) == width/2 || Math.floor(right.x) == width/2){
-            x = width/2;
-          }
-          if(Math.floor(left.y) == height/2 || Math.floor(right.y) == height/2){
-            y = height/2;
-          }
-          projected.push(createVector(x,y));//Add corner point
+        let left = this.firstVisiblePoint(points[i],points[(i-1+points.length) % points.length])//Get left 3D point
+        let right = this.firstVisiblePoint(points[i],points[(i+1) % points.length])//Get right 3D point
+
+        //Add left connection
+        if(left!=null){
+          projected.push(this.get2D(left));//Push left 2D point
         }
         
-        
-        projected.push(right);
+        if(left == null ^ right == null){
+          if(right != null){
+            let a = right;
+            let b = this.firstVisiblePoint(points[i-1],points[(i-2+points.length) % points.length])
+            let result = this.firstVisiblePoint(a,b)
+            if(result != null){
+              result = this.get2D(result);
+              let x = (result.x*width)/Math.abs(result.x);
+              let y = (result.y*height)/Math.abs(result.y);
+              projected.push(createVector(x,y));
+              console.log(x,y)
+            }
+          }else if(left != null){
+            let a = left;
+            let b = this.firstVisiblePoint(points[i+1],points[(i+2) % points.length])
+            let result = this.firstVisiblePoint(a,b);
+            if(result != null){
+              result = this.get2D(result);
+              let x = (result.x*width)/Math.abs(result.x);
+              let y = (result.y*height)/Math.abs(result.y);
+              projected.push(createVector(x,y));
+              console.log(x,y)
+            }
+          }
+  
+        }
+        if(left == null && right == null){//If no connection therefore corner needed
+          let x = points[i].x;
+          let y = points[i].y;
+          x = (x*width/2)/Math.abs(x);
+          y = (y*height/2)/Math.abs(y);
+          projected.push(createVector(x,y));
+        }else if(left != null && right != null){//If 2 connections and may need corner
+          //If between a corner
+          let left2 = this.get2D(left);
+          let right2 = this.get2D(right);
+          if((Math.floor(left2.x) == Math.floor(right2.x) || Math.floor(left2.y) == Math.floor(right2.y)) == false){
+            let x = -width/2;
+            let y = -width/2;
+            if(Math.floor(left2.x/10)*10 == width/2 || Math.floor(right2.x/10)*10 == width/2){
+              x = width/2;
+            }
+            if(Math.floor(left2.y/10)*10 == height/2 || Math.floor(right2.y/10)*10 == height/2){
+              y = height/2;
+            }
+          projected.push(createVector(x,y));//Add corner point
+          }
+        }
+
+        //Add right connection
+        if(right!=null){
+          projected.push(this.get2D(right));//Push right 2D point
+        }
       }
-      
     }
     return projected;
   }
@@ -225,13 +266,19 @@ class face{
   firstVisiblePoint(cpoint,k){
     let dir = p5.Vector.sub(k,cpoint);
     let point = cpoint.copy();
+    let counter = 1000;
     let test = this.get2D(point);
-    while ((Math.abs(test.x) <= width/2 && Math.abs(test.y) <= height/2) == false && p5.Vector.dist(k,point)> 0.01){
-      point.add(p5.Vector.mult(dir,0.001));
+    while ((Math.abs(test.x) <= width/2 && Math.abs(test.y) <= height/2) == false && counter > 0){
+      point.add(p5.Vector.mult(dir,1/1000));
       test = this.get2D(point);
+      counter--;
     }
-    point.sub(p5.Vector.mult(dir,0.001))
-    return this.get2D(point);//Get point from vector line equation
+    //If connection failed
+    if (counter == 0){
+      return null;
+    }
+    point.sub(p5.Vector.mult(dir,1/1000))
+    return point;//Get point from vector line equation
   }
 
   visible(points,k){
