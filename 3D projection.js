@@ -39,25 +39,7 @@ function setup() {
   generateMaze(w,h,c)
   generateWalls(w,h);
 
-  {/*Old system may need reference to when debugging
-  for(let x=0;x<w;x++){
-    for(let y=0;y<h;y++){
-      let ccell = grid[x][y];
-        //Vertical walls
-        if(ccell.walls[1]==1 && x!=w-1){
-          if(vwalls==0){//First wall found
-            vPos = createVector(x,y);
-          }
-          vwalls++;
-          let east = new wall((x+1)*scale,y*scale,depth,vscale);
-          //walls.push(east);
-        }else if(vwalls != 0){
-          //walls.push(new wall((vPos.x+1)*scale,vPos.y*scale,depth,vscale*vwalls,[0,0,255]));
-          vwalls = 0;//gfp
-        }
-    }
-  } */
-  }
+
 //DOING THIS RN
   //Outer limit
   //walls.push(new wall(depth,0,mazewidth/4,depth,90))//North
@@ -79,14 +61,15 @@ function draw() {
     //objects[i].show();//Show all objects
   }
 
+  f.show(createVector(0,0,0));
 
-  //f.show(createVector(0,0,0));
-  //noLoop(); 
-  walls.forEach(wall=>wall.show3D());
+  noLoop(); 
+  //walls.forEach(wall=>wall.show3D());
   //walls[0].show3D();
   pop();
+
   //Draw walls  
-  walls.forEach(wall=>wall.show());
+  //walls.forEach(wall=>wall.show());
   
 
   controls();
@@ -108,34 +91,30 @@ class face{
     let n;//Normal of the face
     for(let i=0;i<points.length-1;i++){
       a = p5.Vector.sub(points[i+1],points[i]);
-      
       for(let k=i+1;k<points.length-1;k++){
         b = p5.Vector.sub(points[k+1],points[k]);
-        if(a.angleBetween(b) != 0){
+        if(a.angleBetween(b) != 0){//If direction vectors are not parallel
           n = p5.Vector.cross(a,b);//Created normal      
           k=points.length;//Exit k loop
           i=points.length;//Exit i loop
         }
-        
       }
     }
-    if(points.length>3){
+    if(points.length>3){//If more than 3 points
       if(this.isFace(points,n) == false){//If points don't all lie on a plane
         console.log("invalid face")
       }
     }
-    
-    return n;
+    return n;//Return a valid n
   }
   isFace(points,n){
-    let k = p5.Vector.dot(points[0],n);
-    let face = true;
+    let k = p5.Vector.dot(points[0],n);//k = a.n
     for(let i=1;i<points.length;i++){
       if(Math.floor(p5.Vector.dot(points[i],n)) != Math.floor(k)){//If point doesn't lie of the plane
-        face = false;
+        return false;//If at least one point is invalid, face is invalid
       }
     }
-    return face;
+    return true;//If no invalid points then face is valid
   }
 
   project(pos){
@@ -224,6 +203,7 @@ class face{
     if(onscreen == 0){//If no points on screen
       return null;
     }
+    console.log(projected);
     return projected;
   }
 
@@ -231,7 +211,7 @@ class face{
     //Find a more efficient way to find this point
     let dir = p5.Vector.sub(k,cpoint);
     let point = cpoint.copy();
-    let counter = 1000;
+    let counter = 10;
     let test = this.get2D(point);
     while ((Math.abs(test.x) <= width/2 && Math.abs(test.y) <= height/2) == false && counter > 0){
       point.add(p5.Vector.mult(dir,1/10));
@@ -442,8 +422,8 @@ class perspective{
 class player{
   constructor(h){
     this.height = h;//Height of player
-    this.pos = createVector(0,-this.height*3,-5);//Player's position
-    this.rotation = createVector(radians(0),radians(0));//Orientation of player
+    this.pos = createVector(0,-this.height,-1);//Player's position
+    this.rotation = createVector(radians(-50),radians(0));//Orientation of player
   }
 }
 
