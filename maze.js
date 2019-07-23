@@ -5,7 +5,12 @@ let separation = 20;//This is the real distance between walls
 let walls = [];
 
 let c = 1;//Complexity of the maze - lower the more complex
-let depth = 1;//Width of a wall
+let depth = 0.1;//Width of a wall
+
+
+let mazelength = 10;
+let mazewidth = 10;
+let mazegrid = [4,4]
 
 
 function generateWalls(w,h){
@@ -38,11 +43,11 @@ function generateWalls(w,h){
         }
         vwalls++;//Counts walls in a row
         if(x == grid[0].length-1){
-          walls.push(new wall((vPos.x+1),vPos.y,vwalls,depth,PI/2));//Add wall
+          walls.push(new wall((vPos.x+1),vPos.y,vwalls,depth,90));//Add wall
           vwalls = 0;//End wall
         }
       }else if(vwalls != 0){
-        walls.push(new wall((vPos.x+1),vPos.y,vwalls,depth,PI/2));//Add wall
+        walls.push(new wall((vPos.x+1),vPos.y,vwalls,depth,90));//Add wall
         vwalls = 0;//End wall
       }
     
@@ -133,7 +138,7 @@ class cell{
     
   }
 }
-let wallh = 1;
+let wallh = 2;
 class wall{
   constructor(x,y,l,w,r,colour = [255,0,0]){
     this.pos = createVector(x,y);
@@ -141,17 +146,11 @@ class wall{
     this.w = w;
     this.colour = colour;
     this.r = r;//Rotation
-
     let pos = this.pos.copy();
-    push();
-    rotate(this.r);
-    pos.x += this.l/2;
-    pos.z = pos.y += this.w/2;
-    pop();
-    pos.y = wallh/2;
-    console.log(pos.x,pos.y,pos.z);
-    pos.mult(hscale/screenScale)
-    this.obj = new cuboid(pos,hscale*this.l/screenScale,wallh,this.w/screenScale,degrees(this.r));
+    pos.z = pos.y;
+    pos.y = -wallh/2;
+    pos.mult(mazewidth/mazegrid[0]);
+    this.obj = new wall3D(pos,this.l*mazewidth/mazegrid[0],wallh,this.w,this.r);
   }
 
   show3D(){
@@ -169,9 +168,9 @@ class wall{
     fill(this.colour);
     rectMode(CORNER);
     push();
-    translate(this.pos.x*hscale,this.pos.y*vscale)
-    rotate(this.r);
-    rect(0,0,hscale*this.l,this.w);
+    translate(this.pos.x*vscale,this.pos.y*vscale)
+    rotate(radians(this.r));
+    rect(0,0,vscale*this.l,vscale*this.w);
     pop();
   }
 }

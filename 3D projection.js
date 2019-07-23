@@ -9,9 +9,8 @@ let per;//Perspective
 let f;//testing face
 
 
-
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(1200, 800);
   
   p = new player(ph);
   per = new perspective(createVector(0,0,1));
@@ -27,8 +26,8 @@ function setup() {
 
 
  
-  let w = 4;//How many horizontal cells
-  let h = 4;//How many vertcal cells
+  let w = mazegrid[0];//How many horizontal cells
+  let h = mazegrid[1];//How many vertcal cells
   hscale = width/w;//scale to fit the screen
   vscale = height/h;//scale to fit the screen
   grid = make2Darray(w,h);//Creates the grid
@@ -59,9 +58,9 @@ function setup() {
     }
   } */
   }
-
+//DOING THIS RN
   //Outer limit
-  //walls.push(new wall(0,-depth*separation/vscale,width,depth))//North
+  //walls.push(new wall(depth,0,mazewidth/4,depth,90))//North
   //walls.push(new wall(h*separation,0,depth,height))//East
   //walls.push(new wall(0,w*separation,width,depth))//South
   //walls.push(new wall(-depth*separation/hscale,0,depth,height))//West
@@ -84,6 +83,7 @@ function draw() {
   //f.show(createVector(0,0,0));
   //noLoop(); 
   walls.forEach(wall=>wall.show3D());
+  //walls[0].show3D();
   pop();
   //Draw walls  
   walls.forEach(wall=>wall.show());
@@ -292,12 +292,40 @@ class face{
   }
 }
 
+class wall3D{
+  constructor(pos,l,h,w,r){
+    this.pos = pos;
+    this.faces = this.generateFaces(l/2,h/2,w/2,r);
+  }
+
+  generateFaces(l,h,w,r){
+    let faces = [];
+    faces.push(this.generateFace([createVector(0,-h,-w),createVector(0,-h,w),createVector(0,h,w),createVector(0,h,-w)],r));//Ends of wall
+    faces.push(this.generateFace([createVector(2*l,-h,-w),createVector(2*l,h,-w),createVector(2*l,h,w),createVector(2*l,-h,w)],r));
+
+    faces.push(this.generateFace([createVector(0,-h,-w),createVector(2*l,-h,-w),createVector(2*l,-h,w),createVector(0,-h,w)],r));//Bottom of wall
+    faces.push(this.generateFace([createVector(0,h,-w),createVector(0,h,w),createVector(2*l,h,w),createVector(2*l,h,-w)],r));//Top of wall
+
+    faces.push(this.generateFace([createVector(2*l,-h,w),createVector(2*l,h,w),createVector(0,h,w),createVector(0,-h,w)],r));
+    faces.push(this.generateFace([createVector(2*l,-h,-w),createVector(0,-h,-w),createVector(0,h,-w),createVector(2*l,h,-w)] ,r));//Sides of wall
+  
+    return faces;
+  }
+  generateFace(points,r){
+    return new face(points.map(a => Matrix.rotateY(a,radians(-r))));
+  }
+  show(){
+    for(let i=0;i<this.faces.length;i++){
+      this.faces[i].show(this.pos);
+    }
+  }
+}
+
 class cuboid{
   constructor(pos,l,h,w,r){
-    this.scale = 20;
     this.rotation = createVector(0,radians(r),0);
     this.pos = pos; 
-    this.points = this.generatePoints(l,h,w);
+    this.points = this.generatePoints(l/2,h/2,w/2);
     this.faces = this.generateFaces(this.points);
   }   
   generatePoints(l,h,w){
@@ -414,8 +442,8 @@ class perspective{
 class player{
   constructor(h){
     this.height = h;//Height of player
-    this.pos = createVector(0,-this.height*3,-50);//Player's position
-    this.rotation = createVector(0,0);//Orientation of player
+    this.pos = createVector(0,-this.height*3,-5);//Player's position
+    this.rotation = createVector(radians(0),radians(0));//Orientation of player
   }
 }
 
