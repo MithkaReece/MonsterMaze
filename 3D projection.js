@@ -1,4 +1,4 @@
-const scale = 20; //Scales up projection
+const screenScale = 20; //Scales up projection
 const ph = 2;//Player height
 
 let objects = [];//Objects in world
@@ -6,22 +6,70 @@ let objects = [];//Objects in world
 let p;//Player
 let per;//Perspective
 
-let f;
+let f;//testing face
+
+
+
 function setup() {
   createCanvas(400, 400);
+  
   p = new player(ph);
   per = new perspective(createVector(0,0,1));
   let size = 1;
   //objects.push(new cuboid(createVector(2*size,-ph,2*size),size,size,size,45));
-  //objects.push(new cuboid(createVector(2*size,-ph,-2*size),size,size,size,45));
-  objects.push(new cuboid(createVector(-2*size,-ph,2*size),size,size,size,45));
+ // objects.push(new cuboid(createVector(2*size,-ph,-2*size),size,size,size,45));
+  //objects.push(new cuboid(createVector(-2*size,-ph,2*size),size,size,size,45));
   //objects.push(new cuboid(createVector(-2*size,-ph,-2*size),size,size,size,45));
+  objects.push(new cuboid(createVector(0,0,0),size,size,size,0));
   f = new face([createVector(0,0,0),createVector(2*ph,0,0),createVector(ph,-ph,0),createVector(0,-ph,0)])
   //objects.push(new cuboid(createVector(0,-ph*3,-5),size,size,size,45));
+  
+
+
+ 
+  let w = 4;//How many horizontal cells
+  let h = 4;//How many vertcal cells
+  hscale = width/w;//scale to fit the screen
+  vscale = height/h;//scale to fit the screen
+  grid = make2Darray(w,h);//Creates the grid
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      grid[x][y] = (new cell(x,y,w,h));
+    }
+  }
+  generateMaze(w,h,c)
+  generateWalls(w,h);
+
+  {/*Old system may need reference to when debugging
+  for(let x=0;x<w;x++){
+    for(let y=0;y<h;y++){
+      let ccell = grid[x][y];
+        //Vertical walls
+        if(ccell.walls[1]==1 && x!=w-1){
+          if(vwalls==0){//First wall found
+            vPos = createVector(x,y);
+          }
+          vwalls++;
+          let east = new wall((x+1)*scale,y*scale,depth,vscale);
+          //walls.push(east);
+        }else if(vwalls != 0){
+          //walls.push(new wall((vPos.x+1)*scale,vPos.y*scale,depth,vscale*vwalls,[0,0,255]));
+          vwalls = 0;//gfp
+        }
+    }
+  } */
+  }
+
+  //Outer limit
+  //walls.push(new wall(0,-depth*separation/vscale,width,depth))//North
+  //walls.push(new wall(h*separation,0,depth,height))//East
+  //walls.push(new wall(0,w*separation,width,depth))//South
+  //walls.push(new wall(-depth*separation/hscale,0,depth,height))//West
   
 }
 function draw() {
   background(0,191,255);
+  push();
   translate(width/2,height/2);
   stroke(255);
   strokeWeight(5);
@@ -31,17 +79,22 @@ function draw() {
   for(let i=0;i<objects.length;i++){
     //objects[i].show();//Show all objects
   }
-  f.show(createVector(0,0,0));
+
+
+  //f.show(createVector(0,0,0));
   //noLoop(); 
+  walls.forEach(wall=>wall.show3D());
+  pop();
+  //Draw walls  
+  walls.forEach(wall=>wall.show());
+  
+
   controls();
   strokeWeight(0);
   fill(0);
   ellipseMode(CENTER);
-  ellipse(0,0,7);
+  ellipse(width/2,height/2,7);
 }
-
-
-
 
 
 class face{
@@ -95,7 +148,7 @@ class face{
     let projected = [];
     for(let i=0;i<points.length;i++){
       let point = this.get2D(points[i]);
-      if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2 && point.z == null){//If point is on screen
+      if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2 && point.z != null){//If point is on screen
         onscreen++;
         projected.push(point);
       }else{//If point not on screen
@@ -163,7 +216,7 @@ class face{
         //----------------------------------------------------
         //Add right connection
         if(right!=null){
-          projected.push(this.get2D(right));//Push right 2D point
+          projected.push(this.get2D(right));//Push right 2D point   
         }
       }
     }
@@ -175,6 +228,7 @@ class face{
   }
 
   firstVisiblePoint(cpoint,k){
+    //Find a more efficient way to find this point
     let dir = p5.Vector.sub(k,cpoint);
     let point = cpoint.copy();
     let counter = 1000;
@@ -192,7 +246,7 @@ class face{
     return point;//Get point from vector line equation
   }
 
-  visible(points,k){
+  visible(points){
     //Checks if face is visible
     let centre = createVector();
     for(let i=0;i<points.length;i++){
@@ -213,13 +267,11 @@ class face{
   r.sub(p.pos);//Translate to make camera the origin
   r = Matrix.rotateY(r,-p.rotation.x);//Inverse the rotation done to the plane's normal vector
   r = Matrix.rotateZ(r,-p.rotation.y);//Inverse the rotation done to the plane's normal vector  
-  r.mult(scale);
-  if(λ<=0){
-    r.z = 0;
-  }else{
+  r.mult(screenScale);
+  if(λ<=0){//If behind camera
     r.z = null;
   }
-  return r;
+  return r;//Return on screen position
   }
 
   show(pos){
@@ -228,12 +280,11 @@ class face{
     fill(184,65,203);
     let points = this.project(pos);
     if(points!=null){
-      console.log("yes")
       beginShape();
       for(let i=0;i<points.length;i++){
-        let p = points[i];
-        if(p != null){
-          vertex(p.x,p.y);
+        let point = points[i];
+        if(point != null){
+          vertex(point.x,point.y);
         }
       }
       endShape(CLOSE);
@@ -342,41 +393,7 @@ function controls(){
 }
 
 
-function VtoArray(vector){
-  let arr;
-  if(vector.z != undefined){
-    arr = make2Darray(3,1);
-  }else{
-    arr = make2Darray(2,1); 
-  }
-  arr[0][0] = vector.x;
-  arr[1][0] = vector.y;
-  if(vector.z != undefined){
-    arr[2][0] = vector.z; 
-  }
-  return arr;
-}
 
-function toVector(matrix){
-  let vector = createVector();
-  vector.x = matrix[0];
-  vector.y = matrix[1];
-  if(matrix.length > 2){
-    vector.z = matrix[2]; 
-  }
-  return vector;
-}
-
-
-
-
-function make2Darray(cols,rows){
-  let arr = new Array(cols);
-  for(let i=0;i<arr.length;i++){
-    arr[i] = new Array(rows); 
-  }
-  return arr;
-}
 
 class perspective{
   constructor(n){
@@ -397,7 +414,7 @@ class perspective{
 class player{
   constructor(h){
     this.height = h;//Height of player
-    this.pos = createVector(0,-this.height,-5);//Player's position
+    this.pos = createVector(0,-this.height*3,-50);//Player's position
     this.rotation = createVector(0,0);//Orientation of player
   }
 }
