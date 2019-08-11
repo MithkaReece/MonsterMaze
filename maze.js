@@ -2,7 +2,7 @@ let grid;
 let hscale;
 let vscale;
 let separation = 20;//This is the real distance between walls
-let walls = [];
+let walls = [];//Walls of the scene
 
 let c = 1;//Complexity of the maze - lower the more complex
 let depth = 0.1;//Width of a wall

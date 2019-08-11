@@ -1,3 +1,11 @@
+/*Layers meanings
+0:Main menu
+1:Playing the game
+2:LeaderBoard
+3:Pause menu
+4:Win screen
+5:Lose screen
+*/
 const screenScale = 20; //Scales up projection
 const ph = 2;//Player height
 
@@ -6,23 +14,31 @@ let per;//Perspective
 
 let f;//testing face
 
+let layer = 0;
+let buttons = new Array(6).fill().map(item =>(new Array()));
 
 function setup() {
   createCanvas(400, 400);
-  background(0)
+  background(255)
+
+  //Setup main menu:0
+  buttons[0].push(new button(createVector(width/2,height/2),300,100,"PLAY",[0,0,255],true,function(){
+    canvas.requestPointerLock();
+    layer = 1;//Game
+  })) 
+  buttons[0].push(new button(createVector(width/2,height/4),380,50,"LEADERBOARD",[0,0,255],true,function(){
+    layer = 2;//Leaderboard
+  }))
+  buttons[0].push(new button(createVector(width/2,3*height/4),300,100,"EXIT",[0,0,255],true,function(){
+    console.log("exit")
+  }))
 
 
 
-
-  
+  //Setup gameplay:1
   p = new player(ph);
   per = new perspective(createVector(0,0,1));
- //f = new face([createVector(0,0,0),createVector(2*ph,0,0),createVector(ph,-ph,0),createVector(0,-ph,0)])
   f = new face([createVector(-ph,0,0),createVector(ph,0,0),createVector(ph,-ph,0),createVector(-ph,-ph,0)])
- 
-
-
- 
   let w = mazegrid[0];//How many horizontal cells
   let h = mazegrid[1];//How many vertcal cells
   hscale = width/w;//scale to fit the screen
@@ -35,8 +51,6 @@ function setup() {
   }
   generateMaze(w,h,c)
   generateWalls(w,h);
-
-
 //Outer walls need adding
   //Outer limit
   //walls.push(new wall(depth,0,mazewidth/4,depth,90))//North
@@ -44,34 +58,109 @@ function setup() {
   //walls.push(new wall(0,w*separation,width,depth))//South
   //walls.push(new wall(-depth*separation/hscale,0,depth,height))//West
   
+
+  //Setup leaderboard:2
+
+  //Setup pause menu:3
+  buttons[3].push(new button(createVector(width/2,height/2),300,70,"RESUME",[0,255,255],true,function(){
+    layer = 1;//Game
+  })) 
+  buttons[3].push(new button(createVector(width/2,3*height/4),300,100,"EXIT",[0,0,255],true,function(){
+    layer = 0;//Main menu
+  }))
 }
 function draw() {
-  //background(0,191,255);
+  switch(layer){
+    case 0:
+      drawMainMenu();
+      break;
+    case 1:
+      updateGameplay();
+      drawGameplay();
+      break;
+    case 2:
+      drawLeaderboard();
+      break;
+    case 3:
+      drawGameplay();
+      drawPauseMenu();
+      break;
+  }
+}
+
+function drawMainMenu(){
+  background(255);
+  drawButtons();
+}
+function drawGameplay(){
+  background(0,191,255);
   push();
   translate(width/2,height/2);
   stroke(255);
   strokeWeight(5);
 
-  per.update();//Update perspective
-  
-
-
   //f.show(createVector(0,0,0));
-
-  //noLoop(); 
-  //walls.forEach(wall=>wall.show3D());
-  pop();
-
-  //Draw walls  
+  walls.forEach(wall=>wall.show3D());
+  pop();  
   //walls.forEach(wall=>wall.show());
-
-  controls();
+  
   strokeWeight(2);
   fill(0);
   ellipseMode(CENTER);
-  //ellipse(width/2,height/2,7);
+  ellipse(width/2,height/2,7);
+}
+function updateGameplay(){
+  per.update();//Update perspective
+  controls();
+}
+function drawLeaderboard(){
+  
+}
+function drawPauseMenu(){
+  document.exitPointerLock();
+  drawButtons();
 }
 
+function drawButtons(){
+  for(let i=0;i<buttons[layer].length;i++){
+    let button = buttons[layer][i];
+    if(button.visible){
+      button.show();
+    }
+  }
+}
+
+class button{
+  constructor(pos,w,h,text,colour,state,click){
+    this.visible = state;
+    this.click = click;
+    this.text = text;
+    this.colour = colour;
+    this.pos = pos;
+    this.w = w;
+    this.h = h;
+  }
+  region(){
+    return mouseX >= this.pos.x-this.w/2 &&
+      mouseX <= this.pos.x+this.w/2 &&
+      mouseY >= this.pos.y-this.h/2 &&
+      mouseY <= this.pos.y+this.h/2;
+  }
+  hide(){
+    this.visible = false;
+  }
+  show(){
+    this.visible = true;
+    rectMode(CENTER);
+    fill(this.colour);
+    rect(this.pos.x,this.pos.y,this.w,this.h);
+    fill(0);
+    textAlign(CENTER,CENTER)
+    textSize(this.h)
+    text(this.text,this.pos.x,this.pos.y+this.h/10);
+
+  }
+}
 
 class player{
   constructor(h){
@@ -84,9 +173,19 @@ class player{
 }
 
 function mouseClicked(){
-  canvas.requestPointerLock();
-  if(document.pointerLockElement === canvas){
-    document.exitPointerLock();
+  if(layer == 1){//If in first person gameplay
+    canvas.requestPointerLock();
+    if(document.pointerLockElement === canvas){
+      document.exitPointerLock();
+    }
+  }else{
+    for(let i=0;i<buttons[layer].length;i++){
+      let button = buttons[layer][i];
+      if(button.region() && button.visible){
+        button.click();
+        i=buttons.length+1;
+      }
+    }
   }
 }
 function mouseMoved(){
@@ -113,22 +212,16 @@ function controls(){
   if(keyIsDown(68)){//d
     p.pos.add(Matrix.rotateY(dir,radians(90)));
   }
-  if(keyIsDown(37)){//left
-    p.rotation.x-=radians(1);
-  }
-  if(keyIsDown(39)){//right
-    p.rotation.x+=radians(1);
-  }
-  if(keyIsDown(38)){//up
-    p.rotation.y+=radians(1);
-  }
-  if(keyIsDown(40)){//down
-    p.rotation.y-=radians(1);
-  }
+
 }
 
 
-
+window.addEventListener('keydown', (event) => {
+  if (event.keyCode === 9 && layer == 1) {
+    event.preventDefault();
+    layer = 3;
+  }
+})
 
 class perspective{
   constructor(n){
