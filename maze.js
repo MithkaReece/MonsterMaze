@@ -148,7 +148,7 @@ class wall{
     this.r = r;//Rotation
     let pos = this.pos.copy();
     pos.z = pos.y;
-    pos.y = -wallh/2;
+    pos.y = -0.8;
     pos.mult(mazewidth/mazegrid[0]);
     this.obj = new wall3D(pos,this.l*mazewidth/mazegrid[0],wallh,this.w,this.r);
   }
@@ -172,11 +172,5 @@ class wall{
     rotate(radians(this.r));
     rect(0,0,vscale*this.l,vscale*this.w);
     pop();
-  }
-}
-class particle{
-  constructor(){
-
-
   }
 }
