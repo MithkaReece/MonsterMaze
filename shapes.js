@@ -6,14 +6,14 @@ class wall3D{
     //Setup
     generateFaces(l,h,w,r){
       let faces = [];
-      faces.push(this.generateFace([createVector(0,-h,-w),createVector(0,-h,w),createVector(0,h,w),createVector(0,h,-w)],r));//Ends of wall
-      faces.push(this.generateFace([createVector(2*l,-h,-w),createVector(2*l,h,-w),createVector(2*l,h,w),createVector(2*l,-h,w)],r));
+      faces.push(this.generateFace([createVector(0,-h,0),createVector(0,-h,2*w),createVector(0,h,2*w),createVector(0,h,0)],r));//Ends of wall
+      faces.push(this.generateFace([createVector(2*l,-h,0),createVector(2*l,h,0),createVector(2*l,h,2*w),createVector(2*l,-h,2*w)],r));
   
-      faces.push(this.generateFace([createVector(0,-h,-w),createVector(2*l,-h,-w),createVector(2*l,-h,w),createVector(0,-h,w)],r));//Bottom of wall
-      faces.push(this.generateFace([createVector(0,h,-w),createVector(0,h,w),createVector(2*l,h,w),createVector(2*l,h,-w)],r));//Top of wall
+      faces.push(this.generateFace([createVector(0,-h,0),createVector(2*l,-h,0),createVector(2*l,-h,2*w),createVector(0,-h,2*w)],r));//Bottom of wall
+      faces.push(this.generateFace([createVector(0,h,0),createVector(0,h,2*w),createVector(2*l,h,2*w),createVector(2*l,h,0)],r));//Top of wall
   
-      faces.push(this.generateFace([createVector(2*l,-h,w),createVector(2*l,h,w),createVector(0,h,w),createVector(0,-h,w)],r));
-      faces.push(this.generateFace([createVector(2*l,-h,-w),createVector(0,-h,-w),createVector(0,h,-w),createVector(2*l,h,-w)] ,r));//Sides of wall
+      faces.push(this.generateFace([createVector(2*l,-h,2*w),createVector(2*l,h,2*w),createVector(0,h,2*w),createVector(0,-h,2*w)],r));
+      faces.push(this.generateFace([createVector(2*l,-h,0),createVector(0,-h,0),createVector(0,h,0),createVector(2*l,h,0)] ,r));//Sides of wall
     
       return faces;
     }

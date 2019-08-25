@@ -18,7 +18,7 @@ let layer = 1;
 let buttons = new Array(6).fill().map(item =>(new Array()));//Makes an array 6 long of arrays
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(800, 800);
   background(255)
 
   //Setup main menu:0
@@ -102,12 +102,22 @@ function drawGameplay(){
   //f.show(createVector(0,0,0));
   walls.forEach(wall=>wall.show3D());
   pop();  
-  //walls.forEach(wall=>wall.show());
+  walls.forEach(wall=>wall.show());
   
   strokeWeight(2);
   fill(0);
-  ellipseMode(CENTER);
-  ellipse(width/2,height/2,7);
+  //ellipseMode(CENTER);
+
+  push();
+  let n = 5;
+  translate(hscale*p.pos.x,vscale*p.pos.z);
+  rotate(-p.rotation.x)
+  triangle(-n,0,n,0,0,3*n);
+  
+
+  pop();
+
+  //ellipse(hscale*p.pos.x,vscale*p.pos.z,7);
 }
 function updateGameplay(){
   per.update();//Update perspective
@@ -165,7 +175,7 @@ class button{
 class player{
   constructor(h){
     this.height = h;//Height of player
-    this.pos = createVector(10,-this.height,10);//Player's position
+    this.pos = createVector(0,-this.height,0);//Player's position
     this.rotation = createVector(radians(45),radians(0));//Orientation of player
   }
 }
@@ -194,7 +204,7 @@ function mouseMoved(){
   }
 }
 function controls(){
-  let speed = 0.1;
+  let speed = 0.01;
   let dir = per.n.copy();
   dir.y = 0;
   dir.setMag(speed);

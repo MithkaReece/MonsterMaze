@@ -182,7 +182,7 @@ class face{
     r = Matrix.rotateZ(r,-p.rotation.y);//Inverse the rotation done to the plane's normal vector  
     r.mult(screenScale);
     if(λ<=0){//If behind camera
-      console.log("Null")
+      //console.log("Null")
       r.z = null;
     }else{
       //console.log(λ)

@@ -1,21 +1,20 @@
 let grid;
 let hscale;
 let vscale;
-let separation = 20;//This is the real distance between walls
 let walls = [];//Walls of the scene
 
 let c = 1;//Complexity of the maze - lower the more complex
-let depth = 0.1;//Width of a wall
 
 
 let mazelength = 10;
 let mazewidth = 10;
-let mazegrid = [4,4]
+let mazegrid = [10,10]
 
 
 function generateWalls(w,h){
   let hwalls = 0;
   let hPos;
+
   let vwalls = 0;
   let vPos;
 
@@ -28,11 +27,11 @@ function generateWalls(w,h){
         }
         hwalls++;//Counts walls in a row
         if(x == grid.length-1){
-          walls.push(new wall(hPos.x,(hPos.y+1),hwalls,depth,0))//Add wall
+          walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
           hwalls = 0;//End wall
         }
       }else if(hwalls != 0){    
-        walls.push(new wall(hPos.x,(hPos.y+1),hwalls,depth,0))//Add wall
+        walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
         hwalls = 0;//End wall
       }
      
@@ -43,11 +42,11 @@ function generateWalls(w,h){
         }
         vwalls++;//Counts walls in a row
         if(x == grid[0].length-1){
-          walls.push(new wall((vPos.x+1),vPos.y,vwalls,depth,90));//Add wall
+          walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
           vwalls = 0;//End wall
         }
       }else if(vwalls != 0){
-        walls.push(new wall((vPos.x+1),vPos.y,vwalls,depth,90));//Add wall
+        walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
         vwalls = 0;//End wall
       }
     
@@ -138,19 +137,22 @@ class cell{
     
   }
 }
-let wallh = 2;
+let wallh = 1;
 class wall{
-  constructor(x,y,l,w,r,colour = [255,0,0]){
+  constructor(x,y,l,r,colour = [255,0,0]){
     this.pos = createVector(x,y);
     this.l = l;
-    this.w = w;
+    this.w = 0.05;
     this.colour = colour;
     this.r = r;//Rotation
+    if(this.r != 0){
+      this.l+=this.w;
+    }
     let pos = this.pos.copy();
     pos.z = pos.y;
-    pos.y = -0.8;
-    pos.mult(mazewidth/mazegrid[0]);
-    this.obj = new wall3D(pos,this.l*mazewidth/mazegrid[0],wallh,this.w,this.r);
+    pos.y = -2;
+    //pos.mult(mazewidth/mazegrid[0]);
+    this.obj = new wall3D(pos,this.l,wallh,this.w,this.r);
   }
 
   show3D(){
@@ -162,15 +164,18 @@ class wall{
   }
 
   show(){
+    let sc = width/mazegrid[0];
+    let w = width/mazegrid[0];
+    let h = height/mazegrid[1]
     strokeWeight(0)
     stroke(this.colour);
     this.colour.push();
     fill(this.colour);
     rectMode(CORNER);
     push();
-    translate(this.pos.x*vscale,this.pos.y*vscale)
+    translate(sc*this.pos.x,sc*this.pos.y)
     rotate(radians(this.r));
-    rect(0,0,vscale*this.l,vscale*this.w);
+    rect(0,0,sc*this.l,sc*this.w);
     pop();
   }
 }
