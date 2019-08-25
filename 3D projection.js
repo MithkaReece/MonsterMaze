@@ -14,8 +14,8 @@ let per;//Perspective
 
 let f;//testing face
 
-let layer = 0;
-let buttons = new Array(6).fill().map(item =>(new Array()));
+let layer = 1;
+let buttons = new Array(6).fill().map(item =>(new Array()));//Makes an array 6 long of arrays
 
 function setup() {
   createCanvas(400, 400);
@@ -37,7 +37,7 @@ function setup() {
 
   //Setup gameplay:1
   p = new player(ph);
-  per = new perspective(createVector(0,0,1));
+  per = new perspective();
   f = new face([createVector(-ph,0,0),createVector(ph,0,0),createVector(ph,-ph,0),createVector(-ph,-ph,0)])
   let w = mazegrid[0];//How many horizontal cells
   let h = mazegrid[1];//How many vertcal cells
@@ -165,11 +165,9 @@ class button{
 class player{
   constructor(h){
     this.height = h;//Height of player
-    this.pos = createVector(0,-this.height,-5);//Player's position
-    this.rotation = createVector(radians(0),radians(0));//Orientation of player
+    this.pos = createVector(10,-this.height,10);//Player's position
+    this.rotation = createVector(radians(45),radians(0));//Orientation of player
   }
-
-  
 }
 
 function mouseClicked(){
@@ -214,8 +212,6 @@ function controls(){
   }
 
 }
-
-
 window.addEventListener('keydown', (event) => {
   if (event.keyCode === 9 && layer == 1) {
     event.preventDefault();
@@ -224,17 +220,17 @@ window.addEventListener('keydown', (event) => {
 })
 
 class perspective{
-  constructor(n){
+  constructor(){
     this.near = 0;
-    this.far = 20;
+    this.dist = 20;
 
-    this.n = n;//Normal of plane
+    this.n;//Normal of plane
     this.d;//d of plane
   }
 
   update(){
     this.n = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),p.rotation.y),p.rotation.x);//RotateXY plane round camera
-    this.d = -(this.far * this.n.mag() - Math.abs(this.n.x*p.pos.x+this.n.y*p.pos.y+this.n.z*p.pos.z));//Calc d of the plane equation
+    this.d = Math.abs(p5.Vector.dot(this.n,p.pos)) -(this.dist * this.n.mag());//Calc d of the plane equation
   }
   
 }

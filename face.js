@@ -47,7 +47,13 @@ class face{
         return null
       }//Checks if any points are actually on screen
       //console.log(points.map(point => this.get2D(point)).z);
-      if(!points.map(point => this.get2D(point)).some(point => Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2 && point.z != null)){
+      let temp = points.map(point => this.get2D(point));//Map all 3D points to 2D
+      if(!temp.some(point => (point.z != null))){
+        //console.log("behind")
+      }
+      
+  
+      if(!points.map(point => this.get2D(point)).some(point => (Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2) || point.z != null)){
         //console.log("Test")
         return null;//If no points on the screen
       }
@@ -149,9 +155,26 @@ class face{
     }
     get2D(point){
     let dir = p5.Vector.sub(point,p.pos);//Direction of line vector
-    //Forming r = a + λb
-    let λ = -(per.d + p5.Vector.dot(p.pos,per.n)) / p5.Vector.dot(dir,per.n);//finding λ
-    let b = p5.Vector.mult(dir,λ)//finding b 
+   
+    let num = Math.abs(p5.Vector.dot(dir,per.n));
+    let den = dir.mag() * per.n.mag();
+    let angle = Math.acos(num/den);
+    if(angle > PI/2){
+      return null;
+    }
+    //console.log(degrees(angle))
+    //Forming r = a + λb using line and plane equation(r.n = -d)
+    //a.n + (λb).n = -d
+    //(λb).n = -d - a.n
+    //λ = (-d-a.n)/b.n
+
+
+    let λ = ((-per.d - p5.Vector.dot(p.pos,per.n)) / (p5.Vector.dot(dir,per.n)));//finding λ
+    if(λ==null){
+      return null;
+    }
+    
+    let b = p5.Vector.mult(dir,λ)//finding b  
     let r = p5.Vector.add(p.pos,b);//finding r
   
     r.sub(p.pos);//Translate to make camera the origin
@@ -159,7 +182,10 @@ class face{
     r = Matrix.rotateZ(r,-p.rotation.y);//Inverse the rotation done to the plane's normal vector  
     r.mult(screenScale);
     if(λ<=0){//If behind camera
+      console.log("Null")
       r.z = null;
+    }else{
+      //console.log(λ)
     }
     return r;//Return on screen position
     }
