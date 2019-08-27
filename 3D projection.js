@@ -98,11 +98,12 @@ function drawGameplay(){
   translate(width/2,height/2);
   stroke(255);
   strokeWeight(5);
+  
 
   //f.show(createVector(0,0,0));
   walls.forEach(wall=>wall.show3D());
   pop();  
-  walls.forEach(wall=>wall.show());
+  //walls.forEach(wall=>wall.show());
   
   strokeWeight(2);
   fill(0);
@@ -116,6 +117,7 @@ function drawGameplay(){
   
 
   pop();
+
 
   //ellipse(hscale*p.pos.x,vscale*p.pos.z,7);
 }
@@ -204,7 +206,7 @@ function mouseMoved(){
   }
 }
 function controls(){
-  let speed = 0.01;
+  let speed = 0.1;
   let dir = per.n.copy();
   dir.y = 0;
   dir.setMag(speed);
@@ -240,7 +242,13 @@ class perspective{
 
   update(){
     this.n = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),p.rotation.y),p.rotation.x);//RotateXY plane round camera
-    this.d = Math.abs(p5.Vector.dot(this.n,p.pos)) -(this.dist * this.n.mag());//Calc d of the plane equation
+    //Manual way without formula
+    //let n = this.n.copy();
+    //n.mult(this.dist/n.mag());
+    //n.add(p.pos);
+    //let d = p5.Vector.dot(n,this.n);
+    //this.d = -d;
+    this.d = -(p5.Vector.dot(this.n,p.pos) +(this.dist));//Calc d of the plane equation
   }
   
 }
