@@ -8,8 +8,46 @@ let c = 1;//Complexity of the maze - lower the more complex
 
 let mazelength = 10;
 let mazewidth = 10;
-let mazegrid = [10,10]
+let mazegrid = [3,3]
 
+class square{
+  constructor(x,y,w,h){
+    this.x;
+    this.y;
+    this.w;
+    this.h;
+  }
+}
+
+class QuadTree{
+  constructor(boundary, capacity){
+    this.boundary = boundary;
+    this.capacity = capacity;
+    this.objects = [];
+    this.quads = [];
+    this.divided = false;
+  }
+
+  insert(){
+    if(!this.divided){
+      this.subdivide();
+      this.divided = true;
+    }
+  }
+
+  subdivide(){
+    let x = this.boundary.x;
+    let y = this.boundary.y;
+    let w = this.boundary.w;
+    let h = this.boundary.h;
+    this.quads.push(new QuadTree(new Rectangle(x + w/2, y - h/2, w/2, h/2)));
+    this.quads.push(new QuadTree(new Rectangle(x - w/2, y - h/2, w/2, h/2)));
+    this.quads.push(new QuadTree(new Rectangle(x + w/2, y + h/2, w/2, h/2)));
+    this.quads.push(new QuadTree(new Rectangle(x - w/2, y + h/2, w/2, h/2)));
+  }
+  
+
+}
 
 function generateWalls(w,h){
   let hwalls = 0;
@@ -52,6 +90,10 @@ function generateWalls(w,h){
     
     }
   }
+
+
+
+
 }
 function generateMaze(w,h,c){
   for(let y=0;y<c;y++){//For all ys

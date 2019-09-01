@@ -59,7 +59,6 @@ class face{
       for(let i=0;i<points.length;i++){
         let point = this.get2D(points[i]);
         if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2 && point.z != null){//If point is on screen
-     
           projected.push(point);
         }else{//If point not on screen
   
@@ -68,22 +67,18 @@ class face{
           let right = this.firstVisiblePoint(points[i],points[(i+1) % points.length])//Get right 3D point
           //Add left connection
           if(left!=null){
-
-            left.z = projected.length;
+            left.z = Infinity;
             projected.push(left);//Push left 2D point
           }
           //Add right connection
           if(right!=null){
-
-            right.z = projected.length;
+            right.z = Infinity;
             projected.push(right);//Push right 2D point   
           }
         }
       }
 
-      if(projected.length==0){
-        return projected;
-      }
+    
 
       //Forms the 2D polygon
       let points3D = points.map(x => x.copy());
@@ -115,66 +110,24 @@ class face{
       }
       corners = corners.filter(x => x != null);
 
-      let start = 0;
-      if(projected[0].z!=null){
-        for(let i=projected.length-1;i>0;i--){
-          if(projected[i].z==null){
-            start = i;
-            i=-2;
-          }
+      if(projected.length==0){
+        if(corners.length==4){
+          return corners;
+        }
+        return projected;
+      }
+
+      if(corners.length>0){
+      for(let i=0;i<projected.length;i++){
+        let point = projected[i];
+        if(point.z == Infinity && projected[(i-1+projected.length)%projected.length].z == Infinity){
+          projected.splice(i,0,...corners);
+          i = Infinity;
         }
       }
-      
-      let correctCorners = [];
-      let counter = 0;
-      for(let i=start+1;i!=start;i=(i+1)%projected.length){
-        if(projected[i].z!=null){
-          counter++;
-        }else if(counter>0){//If passed more than 0 estimated points
-          console.log("test")
-          for(let k=0;k<counter/2;k++){//For all estimated pairs
-            let one = projected[i-k-1].copy();//First of pair
-            let two = projected[i-k-2].copy();//Second of pair
-            console.log("test")
-            while(!(Math.round(one.x)==Math.round(two.x) || Math.round(one.y)==Math.round(two.y))){//If the pair are not on the same line segment
-              console.log("test")
-              let sameSegment = [];//Corners on the same segment as one (index list)
-              for(let g=0;g<corners.length;g++){//Every corner
-                let corner = corners[g];//Current corner
-                if(one.x == corner.x){//If x's match
-                  sameSegment.push(g);//Push the index of corner
-                }
-                if(one.y == corner.y){//If y's match
-                  sameSegment.push(g);//Push the index of corner
-                }
-              }
-
-              let closest = infinity;//Closest distance
-              let closestI = 0;//Index of closest distant corner
-              for(let g=0;g<sameSegment.length;g++){//Every corner (max 2)
-                let corner = corners[sameSegment[g]];//Current corner
-                dist = Math.sqrt(Math.pow(one.x-corner.x,2)+Math.pow(one.y-corner.y,2));//Distance from point to corner
-                if(dist<closest){//If current corner is closer
-                  closest = dist;//Set closest corner to current corner
-                  closestI = sameSegment[g];//Set closest corner index
-                }
-              }  
-              let newCorner = corners[closestI];//New corner being added
-              newCorner.z = closestI;//Z set to index for when it is added
-              correctCorners.push(newCorner);//Add corner to new corners array
-              corners.splice(closestI,1);//Remove the corner used
-              one = newCorner;
-            } 
-          }
-          counter = 0;
-        }
-      }
-
-      if(corners.length!=0){
-        console.log("Corner bug :<")
-      }
-
-      return projected;
+    }
+     
+    return projected;
     }
 
     checkCorner(corner,points){
@@ -214,7 +167,7 @@ class face{
       //Checks when the point to its connecting point intersects a screen edge to estimate its point
       let connectingPoint = this.get2D(cPoint);
       //If the connecting point is within the screen and infront of the camerae
-      if(!(Math.abs(connectingPoint.x) <= width/2 && Math.abs(connectingPoint.y) <= height/2 && connectingPoint.z != null)){
+      if(connectingPoint.z == null){
         return null;
       }
 
