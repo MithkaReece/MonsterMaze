@@ -103,7 +103,7 @@ function drawGameplay(){
   //f.show(createVector(0,0,0));
   walls.forEach(wall=>wall.show3D());
   pop();  
-  //walls.forEach(wall=>wall.show());
+  walls.forEach(wall=>wall.show());
   
   strokeWeight(2);
   fill(0);
@@ -136,7 +136,7 @@ function drawPauseMenu(){
 function drawButtons(){
   for(let i=0;i<buttons[layer].length;i++){
     let button = buttons[layer][i];
-    if(button.visible){
+    if(button.getVisible){
       button.show();
     }
   }
@@ -151,6 +151,9 @@ class button{
     this.pos = pos;
     this.w = w;
     this.h = h;
+  }
+  getVisible(){
+    return this.visible;
   }
   region(){
     return mouseX >= this.pos.x-this.w/2 &&
@@ -177,8 +180,27 @@ class button{
 class player{
   constructor(h){
     this.height = h;//Height of player
-    this.pos = createVector(0,-this.height,0);//Player's position
+    this.pos = createVector(0,-3*this.height,0);//Player's position
     this.rotation = createVector(radians(45),radians(0));//Orientation of player
+  }
+  addRX(value){
+    this.rotation.x+=value;
+  }
+  getRX(){
+    return this.rotation.x;
+  }
+  addRY(value){
+    this.rotation.y+=value;
+    this.rotation.y = constrain(this.rotation.y,radians(-90),radians(90));//Constraint to looking from down to up
+  }
+  getRY(){
+    return this.rotation.y;
+  }
+  addPos(value){
+    this.pos.add(value);
+  }
+  getPos(){
+    return this.pos;
   }
 }
 
@@ -191,7 +213,7 @@ function mouseClicked(){
   }else{
     for(let i=0;i<buttons[layer].length;i++){
       let button = buttons[layer][i];
-      if(button.region() && button.visible){
+      if(button.region() && button.getVisible){
         button.click();
         i=buttons.length+1;
       }
@@ -200,27 +222,26 @@ function mouseClicked(){
 }
 function mouseMoved(){
   if(document.pointerLockElement === canvas){
-    p.rotation.x += event.movementX*radians(0.1);//Allow looking horizontally
-    p.rotation.y -= event.movementY*radians(0.1);//Allow looking vertically
-    p.rotation.y = constrain(p.rotation.y,radians(-90),radians(90));//Constraint to looking from down to up
+    p.addRX(event.movementX*radians(0.1));//Allow looking horizontally
+    p.addRY(-event.movementY*radians(0.1))//Allow looking vertically
   }
 }
 function controls(){
   let speed = 0.1;
-  let dir = per.n.copy();
+  let dir = per.getN();
   dir.y = 0;
   dir.setMag(speed);
   if(keyIsDown(87)){//w
-    p.pos.add(dir);
+    p.addPos(dir);
   }
   if(keyIsDown(65)){//a
-    p.pos.sub(Matrix.rotateY(dir,radians(90)));
+    p.addPos(Matrix.rotateY(dir,radians(270)));
   }
   if(keyIsDown(83)){//s
-    p.pos.sub(dir);
+    p.addPos(Matrix.rotateY(dir,radians(180)));
   }
   if(keyIsDown(68)){//d
-    p.pos.add(Matrix.rotateY(dir,radians(90)));
+    p.addPos(Matrix.rotateY(dir,radians(90)));
   }
 
 }
@@ -233,22 +254,29 @@ window.addEventListener('keydown', (event) => {
 
 class perspective{
   constructor(){
-    this.near = 0;
     this.dist = 20;
 
     this.n;//Normal of plane
     this.d;//d of plane
   }
 
+  getN(){
+    return this.n.copy();
+  }
+
+  getD(){
+    return this.d;
+  }
+
   update(){
-    this.n = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),p.rotation.y),p.rotation.x);//RotateXY plane round camera
+    this.n = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),p.getRY()),p.getRX());//RotateXY plane round camera
     //Manual way without formula
     //let n = this.n.copy();
     //n.mult(this.dist/n.mag());
     //n.add(p.pos);
     //let d = p5.Vector.dot(n,this.n);
     //this.d = -d;
-    this.d = -(p5.Vector.dot(this.n,p.pos) +(this.dist));//Calc d of the plane equation
+    this.d = -(p5.Vector.dot(this.n,p.getPos()) +(this.dist));//Calc d of the plane equation
   }
   
 }

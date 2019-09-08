@@ -8,7 +8,7 @@ let c = 1;//Complexity of the maze - lower the more complex
 
 let mazelength = 10;
 let mazewidth = 10;
-let mazegrid = [3,3]
+let mazegrid = [4,4]
 
 class square{
   constructor(x,y,w,h){
@@ -56,44 +56,75 @@ function generateWalls(w,h){
   let vwalls = 0;
   let vPos;
 
-  for(let y=0;y<h;y++){
+  for(let y=-1;y<h;y++){
     for(let x=0;x<w;x++){
-      let ccell = grid[x][y];//Horizontal walls
-      if(ccell.walls[2]==1 && y!=h-1){//If there is south wall and is not on the map edge
-        if(hwalls==0){//Start new wall
-          hPos = createVector(x,y);//First wall in row position
-        }
-        hwalls++;//Counts walls in a row
-        if(x == grid.length-1){
+      
+      
+      if(y==-1){
+        let currentCell = grid[x][y+1]
+        if(currentCell.getWalls()[0]==1){//If there is south wall and is not on the map edge
+          if(hwalls==0){//Start new wall
+            hPos = createVector(x,y);//First wall in row position
+          }
+          hwalls++;//Counts walls in a row
+          if(x == grid.length-1){//If at edge of maze
+            walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
+            hwalls = 0;//End wall
+          }
+        }else if(hwalls != 0){//If wall have been incremented    
           walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
           hwalls = 0;//End wall
         }
-      }else if(hwalls != 0){    
-        walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
-        hwalls = 0;//End wall
-      }
-     
-      ccell = grid[y][x] //Vertical walls
-      if(ccell.walls[1]==1 && y!=w-1){
-        if(vwalls==0){//Start new wall
-          vPos = createVector(y,x);//First wall in row position
-        }
-        vwalls++;//Counts walls in a row
-        if(x == grid[0].length-1){
+
+        currentCell = grid[y+1][x] //Vertical walls
+        if(currentCell.getWalls()[3]==1){//If there is east wall and is not on the map edge
+          if(vwalls==0){//Start new wall
+            vPos = createVector(y,x);//First wall in row position
+          }
+          vwalls++;//Counts walls in a row
+          if(x == grid[0].length-1){//If at edge of maze
+            walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
+            vwalls = 0;//End wall
+          }
+        }else if(vwalls != 0){//If wall have been incremented
           walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
           vwalls = 0;//End wall
         }
-      }else if(vwalls != 0){
-        walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
-        vwalls = 0;//End wall
+
+
+      }else{
+        let currentCell = grid[x][y];//Horizontal walls
+        if (currentCell.getWalls()[2]==1){//If there is south wall and is not on the map edge
+          if(hwalls==0){//Start new wall
+            hPos = createVector(x,y);//First wall in row position
+          }
+          hwalls++;//Counts walls in a row
+          if(x == grid.length-1){//If at edge of maze
+            walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
+            hwalls = 0;//End wall
+          }
+        }else if(hwalls != 0){//If wall have been incremented    
+          walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
+          hwalls = 0;//End wall
+        }
+      
+        currentCell = grid[y][x] //Vertical walls
+        if(currentCell.getWalls()[1]==1){//If there is east wall and is not on the map edge
+          if(vwalls==0){//Start new wall
+            vPos = createVector(y,x);//First wall in row position
+          }
+          vwalls++;//Counts walls in a row
+          if(x == grid[0].length-1){//If at edge of maze
+            walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
+            vwalls = 0;//End wall
+          }
+        }else if(vwalls != 0){//If wall have been incremented
+          walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
+          vwalls = 0;//End wall
+        }
       }
-    
     }
   }
-
-
-
-
 }
 function generateMaze(w,h,c){
   for(let y=0;y<c;y++){//For all ys
@@ -107,14 +138,14 @@ function generateMaze(w,h,c){
           if(x!=c-1){//loop 1 less the segments for inner walls
             let nx = (x+1)*w/c;//Go through each vertical segment walls
             let ny = Math.floor(random(y*h/c,(y+1)*h/c))//Calc random y within the segment
-            grid[nx-1][ny].walls[1] = 0;//Open east wall
-            grid[nx][ny].walls[3] = 0;//Open west counter part wall
+            grid[nx-1][ny].getWalls()[1] = 0;//Open east wall
+            grid[nx][ny].getWalls()[3] = 0;//Open west counter part wall
           }
           if(y!=c-1){//loop 1 less the segments for inner walls
             let nx = Math.floor(random(x*w/c,(x+1)*w/c));//Calc random x within the segment
             let ny = (y+1)*h/c;//Go through each horizontal segment walls
-            grid[nx][ny].walls[0] = 0;//Open north wall
-            grid[nx][ny-1].walls[2] = 0;//Open south counter part wall
+            grid[nx][ny].getWalls()[0] = 0;//Open north wall
+            grid[nx][ny-1].getWalls()[2] = 0;//Open south counter part wall
           }
         }
     }
@@ -130,8 +161,8 @@ function generate(cell,minh,minv,maxh,maxv){
     } 
 }
 function checkCell(dir,cell,minh,minv,maxh,maxv){
-    let x = cell.pos.x;
-    let y = cell.pos.y;
+    let x = cell.getX();
+    let y = cell.getY();
     let neighbour;
     if(dir == 0){
         neighbour = (y==minv?null:grid[x][y-1]);//If North cell on map  
@@ -142,10 +173,10 @@ function checkCell(dir,cell,minh,minv,maxh,maxv){
     }else if(dir == 3){
         neighbour = (x==minh?null:grid[x-1][y]);//If West cell on map
     }
-  if(neighbour != null && neighbour.visited == false){//If valid neighbour
-    cell.walls[dir]=0;//Break wall of current cell
-    neighbour.walls[(dir+2)%4]=0;//Break opposite wall of visiting cell
-    neighbour.visited = true;//Make visiting cell next cell
+  if(neighbour != null && neighbour.getVisited() == false){//If valid neighbour
+    cell.getWalls()[dir]=0;//Break wall of current cell
+    neighbour.getWalls()[(dir+2)%4]=0;//Break opposite wall of visiting cell
+    neighbour.setVisited(true);//Make visiting cell next cell
     return neighbour;
   }
   return null;//No valid neighbour found
@@ -158,6 +189,21 @@ class cell{
     this.l = w;
     this.w = h;
     this.walls = [1,1,1,1];//NESW
+  }
+  getVisited(){
+    return this.visited;
+  }
+  setVisited(value){
+    this.visited = value;
+  }
+  getX(){
+    return this.pos.x;
+  }
+  getY(){
+    return this.pos.y;
+  }
+  getWalls(){
+    return this.walls;
   }
   //Won't be used in game but for showing it works
   showWalls(){
