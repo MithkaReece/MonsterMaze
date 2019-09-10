@@ -16,11 +16,13 @@ let f;//testing face
 
 let layer = 1;
 let buttons = new Array(6).fill().map(item =>(new Array()));//Makes an array 6 long of arrays
+let quad;
 
 function setup() {
   createCanvas(800, 800);
   background(255)
 
+  quad = new QuadTree(new Rectangle(0,0,mazegrid[0],mazegrid[1]),4);
   //Setup main menu:0
   buttons[0].push(new button(createVector(width/2,height/2),300,100,"PLAY",[0,0,255],true,function(){
     canvas.requestPointerLock();
@@ -51,14 +53,8 @@ function setup() {
   }
   generateMaze(w,h,c)
   generateWalls(w,h);
-//Outer walls need adding
-  //Outer limit
-  //walls.push(new wall(depth,0,mazewidth/4,depth,90))//North
-  //walls.push(new wall(h*separation,0,depth,height))//East
-  //walls.push(new wall(0,w*separation,width,depth))//South
-  //walls.push(new wall(-depth*separation/hscale,0,depth,height))//West
-  
-
+  console.log(quad.retrieve());
+  //console.log(walls.length)
   //Setup leaderboard:2
 
   //Setup pause menu:3
@@ -86,6 +82,7 @@ function draw() {
       drawPauseMenu();
       break;
   }
+  
 }
 
 function drawMainMenu(){
@@ -103,7 +100,7 @@ function drawGameplay(){
   //f.show(createVector(0,0,0));
   walls.forEach(wall=>wall.show3D());
   pop();  
-  walls.forEach(wall=>wall.show());
+  //walls.forEach(wall=>wall.show());
   
   strokeWeight(2);
   fill(0);
@@ -177,10 +174,18 @@ class button{
   }
 }
 
-class player{
+class entity{
+  constructor(pos){
+    this.pos = pos;
+    this.rotation = createVector(radians(0),radians(0));//Orientation
+  }
+}
+
+class player extends entity{
   constructor(h){
+    super(0,-h,0);
     this.height = h;//Height of player
-    this.pos = createVector(0,-3*this.height,0);//Player's position
+    this.pos = createVector(0,-this.height,0);//Player's position
     this.rotation = createVector(radians(45),radians(0));//Orientation of player
   }
   addRX(value){

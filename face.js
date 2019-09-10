@@ -204,7 +204,7 @@ class face{
         return createVector(potX,y);//Return new point
       }
       
-      console.log("BUG");//If something went wrong
+     //z console.log("BUG");//If something went wrong
       return null;
     }
 
