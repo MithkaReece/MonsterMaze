@@ -22,14 +22,15 @@ class Maze{
     this.grid = make2Darray(this.width,this.height);//Creates the grid
     for(let y=0;y<this.height;y++){
       for(let x=0;x<this.width;x++){
-        grid[x][y] = (new cell(x,y,this.width,this.height));
+        this.grid[x][y] = (new cell(x,y,this.width,this.height));
       }
     }
-    this.generateMaze(this.width,this.height,this.complexity)
+    this.grid = this.generateMaze(this.width,this.height,this.complexity,this.grid)
     this.generateWalls(this.width,this.height);
   }
 
-  generateMaze(w,h,c){
+  generateMaze(w,h,c,ingrid){
+    let grid = ingrid;
     for(let y=0;y<c;y++){//For all ys
       for(let x=0;x<c;x++){//For all xs
         let ranx = Math.floor(random(x*w/c,(x+1)*w/c));//random x within segment
@@ -53,6 +54,7 @@ class Maze{
           }
       }
     }
+    return grid;
   }
   generate(cell,minh,minv,maxh,maxv){
       let dir = shuffle([0,1,2,3]);//shuffle directions nesw
