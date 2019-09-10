@@ -2,6 +2,7 @@ class cuboid{
     constructor(pos,l,h,w,r){
       this.pos3D = pos;
       this.faces = this.generateFaces(l/2,h/2,w/2,r);
+      //Should have colour array for faces I guess
     }
     //Setup
     generateFaces(l,h,w,r){
@@ -22,9 +23,9 @@ class cuboid{
     }
   
   
-    show3D(){
+    show3D(player,perspective){
       for(let i=0;i<this.faces.length;i++){
-        this.faces[i].show(this.pos3D);
+        this.faces[i].show(this.pos3D,player,perspective);
       }
     }
   }

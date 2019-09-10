@@ -35,7 +35,7 @@ class face{
       return true;//If no invalid points then face is valid
     }
   
-    project(pos){
+    project(pos,player,perspective){
       //Need to take into account if no point is on the screen but the face crosses the corner of the screen
       //This wouldn't happen for a rectangle face though but would need implementing for more general system
   
@@ -43,28 +43,28 @@ class face{
       let points = this.points.map(x => x.copy());//Copies all the vectors in the array to new instances
       points = points.map(a => p5.Vector.add(a,pos));//Translates all the points to the objects location
       //Checks if face is visible in direction the player is
-      if(this.visible(points) == null){
+      if(this.visible(points,player.getPos()) == null){
         return null
       }//Checks if all points are behind the player
-      let temp = points.map(point => this.get2D(point));//Map all 3D points to 2D
+      let temp = points.map(point => this.get2D(point,player,perspective));//Map all 3D points to 2D
       if(!temp.some(point => (point.z != null))){
         return null;
       }
       
-      if(!points.map(point => this.get2D(point)).some(point => (Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2) || point.z != null)){
+      if(!points.map(point => this.get2D(point,player,perspective)).some(point => (Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2) || point.z != null)){
         return null;
       }
 
       let projected = [];
       for(let i=0;i<points.length;i++){
-        let point = this.get2D(points[i]);
+        let point = this.get2D(points[i],player,perspective);
         if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2 && point.z != null){//If point is on screen
           projected.push(point);
         }else{//If point not on screen
   
           //Split point into 2 points on the screen
-          let left = this.firstVisiblePoint(points[i],points[(i-1+points.length) % points.length])//Get left 3D point
-          let right = this.firstVisiblePoint(points[i],points[(i+1) % points.length])//Get right 3D point
+          let left = this.firstVisiblePoint(points[i],points[(i-1+points.length) % points.length],player,perspective)//Get left 3D point
+          let right = this.firstVisiblePoint(points[i],points[(i+1) % points.length],player,perspective)//Get right 3D point
           //Add left connection
           if(left!=null){
             left.z = Infinity;
@@ -77,7 +77,7 @@ class face{
           }
         }
       }
-
+   
     
 
       //Forms the 2D polygon
@@ -85,20 +85,20 @@ class face{
       let newPoints = [];
       for(let i=0;i<points3D.length;i++){
         let point = points3D[i].copy();   
-        if(this.get2D(point).z == null){//If point is behind player
+        if(this.get2D(point,player,perspective).z == null){//If point is behind player
           let leftP = points3D[(i-1+points.length) % points.length];
-          if(this.get2D(leftP).z != null){
-            let newP = this.behindPlayerEstimation(point,leftP);
-            newPoints.push(this.get2D(newP));
+          if(this.get2D(leftP,player,perspective).z != null){
+            let newP = this.behindPlayerEstimation(point,leftP,player,perspective);
+            newPoints.push(this.get2D(newP,player,perspective));
           }
 
           let rightP = points3D[(i+1) % points.length];
-          if(this.get2D(rightP).z != null){
-            let newP = this.behindPlayerEstimation(point,rightP);
-            newPoints.push(this.get2D(newP));
+          if(this.get2D(rightP,player,perspective).z != null){
+            let newP = this.behindPlayerEstimation(point,rightP,player,perspective);
+            newPoints.push(this.get2D(newP,player,perspective));
           }
         }else{
-          newPoints.push(this.get2D(points3D[i]));
+          newPoints.push(this.get2D(points3D[i],player,perspective));
         }
       }
       
@@ -163,17 +163,18 @@ class face{
       return false;
     }
   
-    firstVisiblePoint(currentPoint,cPoint){
+    firstVisiblePoint(currentPoint,cPoint,player,perspective){
+   
       //Checks when the point to its connecting point intersects a screen edge to estimate its point
-      let connectingPoint = this.get2D(cPoint);
+      let connectingPoint = this.get2D(cPoint,player,perspective);
       //If the connecting point is within the screen and infront of the camerae
       if(connectingPoint.z == null){
         return null;
       }
 
       //Get 2 points of a 2D lines
-      let a = this.get2D(this.behindPlayerEstimation(currentPoint,cPoint));
-      let l = this.get2D(cPoint);
+      let a = this.get2D(this.behindPlayerEstimation(currentPoint,cPoint,player,perspective),player,perspective);
+      let l = this.get2D(cPoint,player,perspective);
       let b = p5.Vector.sub(l,a);//From r = a+lambda*b
       //Find when that lines intersects the screen
       let x;//Left/Right
@@ -208,13 +209,13 @@ class face{
       return null;
     }
 
-    behindPlayerEstimation(currentPoint,connectingPoint){
+    behindPlayerEstimation(currentPoint,connectingPoint,player,perspective){
       const accuracy = 100;//Accuaracy of estimate points behind the camera
   
       let dir = p5.Vector.sub(connectingPoint,currentPoint);//Direction vector
       let point = currentPoint.copy();//Copy of the point
   
-      while(this.get2D(point).z == null){//While it can't be projected
+      while(this.get2D(point,player,perspective).z == null){//While it can't be projected
         point.add(p5.Vector.mult(dir,1/accuracy));//Add a little in 3D
       }
       return point;
@@ -224,7 +225,7 @@ class face{
       return a/Math.abs(a)!=b/Math.abs(b);
     } 
   
-    visible(points){
+    visible(points,playerPos){
       //Checks if face is visible
       let centre = createVector();
       for(let i=0;i<points.length;i++){
@@ -232,14 +233,14 @@ class face{
       }
    
       let a = this.n//Face normal
-      let b = p5.Vector.sub(centre,player.getPos());//Vector from face to camera
+      let b = p5.Vector.sub(centre,playerPos);//Vector from face to camera
       return(Math.acos(p5.Vector.dot(a,b)/(a.mag()*b.mag()))<=PI/2 ? null : points);//Return face if face towards the camera
     }
-    get2D(point){
+    get2D(point,player,perspective){
     let dir = p5.Vector.sub(point,player.getPos());//Direction of line vector
     //Forming r = a + λb using line and plane equation(r.n = -d)
     
-    let λ = ((-perspect.getD() - p5.Vector.dot(player.getPos(),perspect.getN())) / (p5.Vector.dot(dir,perspect.getN())));//finding λ    
+    let λ = ((-perspective.getD() - p5.Vector.dot(player.getPos(),perspective.getN())) / (p5.Vector.dot(dir,perspective.getN())));//finding λ    
     let b = p5.Vector.mult(dir,λ)//finding b  
     let r = p5.Vector.add(player.getPos(),b);//finding r
   
@@ -253,11 +254,11 @@ class face{
     return r;//Return on screen position
     }
   
-    show(pos){
+    show(pos,player,perspective){
       strokeWeight(1);
       stroke(184,65,203)
       fill(184,65,203);
-      let points = this.project(pos);
+      let points = this.project(pos,player,perspective);
       if(points!=null){
         beginShape();
         for(let i=0;i<points.length;i++){
