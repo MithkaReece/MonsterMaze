@@ -232,20 +232,20 @@ class face{
       }
    
       let a = this.n//Face normal
-      let b = p5.Vector.sub(centre,p.getPos());//Vector from face to camera
+      let b = p5.Vector.sub(centre,player.getPos());//Vector from face to camera
       return(Math.acos(p5.Vector.dot(a,b)/(a.mag()*b.mag()))<=PI/2 ? null : points);//Return face if face towards the camera
     }
     get2D(point){
-    let dir = p5.Vector.sub(point,p.getPos());//Direction of line vector
+    let dir = p5.Vector.sub(point,player.getPos());//Direction of line vector
     //Forming r = a + λb using line and plane equation(r.n = -d)
     
-    let λ = ((-per.getD() - p5.Vector.dot(p.getPos(),per.getN())) / (p5.Vector.dot(dir,per.getN())));//finding λ    
+    let λ = ((-perspect.getD() - p5.Vector.dot(player.getPos(),perspect.getN())) / (p5.Vector.dot(dir,perspect.getN())));//finding λ    
     let b = p5.Vector.mult(dir,λ)//finding b  
-    let r = p5.Vector.add(p.getPos(),b);//finding r
+    let r = p5.Vector.add(player.getPos(),b);//finding r
   
-    r.sub(p.getPos());//Translate to make camera the origin
-    r = Matrix.rotateY(r,-p.getRX());//Inverse the rotation done to the plane's normal vector
-    r = Matrix.rotateZ(r,-p.getRY());//Inverse the rotation done to the plane's normal vector  
+    r.sub(player.getPos());//Translate to make camera the origin
+    r = Matrix.rotateY(r,-player.getRX());//Inverse the rotation done to the plane's normal vector
+    r = Matrix.rotateZ(r,-player.getRY());//Inverse the rotation done to the plane's normal vector  
     r.mult(screenScale);
     if(λ<=0){//If behind camera
       r.z = null;
