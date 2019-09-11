@@ -18,13 +18,15 @@ class Maze{
     }
     this.grid = this.generateMaze(this.width,this.height,this.complexity,this.grid)
     this.walls = this.generateWalls(this.width,this.height,this.grid);
-    this.wallToTree()
+    this.wallToTree();
   }
   getWalls(){
     return this.walls;
   }
-  getQuadTree(){
-    return this.wallTree.retrieve();
+  getQuadTree(hitbox){
+    console.log(this.wallTree.retrieveold());
+    //console.log(this.wallTree.retrieve(hitbox));
+    return //this.wallTree.retrieve();
   }
 
   generateMaze(w,h,c,ingrid){
@@ -267,13 +269,25 @@ class Rectangle{
   constructor(x,y,width,height){
     this.x = x;
     this.y = y;
-    this.w = width;
-    this.h = height;
+    this.width = width;
+    this.height = height;
+  }
+  getX(){
+    return this.x;
+  }
+  getY(){
+    return this.y;
+  }
+  getWidth(){
+    return this.width;
+  }
+  getHeight(){
+    return this.height;
   }
 }
 class QuadTree{
-  constructor(boundary){
-    this.boundary = boundary;
+  constructor(bound){
+    this.bound = bound;
     this.objects = [];
     this.quads = [];//Stores 4 quads tree in quad tree
     this.divided = false;
@@ -295,10 +309,10 @@ class QuadTree{
   }
 
   subdivide(){
-    let x = this.boundary.x;
-    let y = this.boundary.y;
-    let w = this.boundary.w;
-    let h = this.boundary.h;
+    let x = this.bound.getX();
+    let y = this.bound.getY();
+    let w = this.bound.getWidth();
+    let h = this.bound.getHeight();
     this.quads.push(new QuadTree(new Rectangle(x, y, w/2, h/2)));
     this.quads.push(new QuadTree(new Rectangle(x + w/2, y , w/2, h/2)));
     this.quads.push(new QuadTree(new Rectangle(x + w/2, y + h/2, w/2, h/2)));
@@ -313,21 +327,41 @@ class QuadTree{
      this.pBounds(x,y+h);
   }
   pBounds(x,y){
-    let answer =  x >= this.boundary.x &&
-    x < this.boundary.x + this.boundary.w &&
-    y >= this.boundary.y &&
-    y < this.boundary.y + this.boundary.h;
+    let answer =  x >= this.bound.getX() &&
+    x < this.bound.getX() + this.bound.getWidth() &&
+    y >= this.bound.getY() &&
+    y < this.bound.getY() + this.bound.getHeight();
     return answer
   }
 
-  retrieve(){
+  retrieveold(){
     let array = this.objects.slice(0);
     for(let i=0;i<this.quads.length;i++){
-      let result = this.quads[i].retrieve()
+      /*
+      let result = this.quads[i].retrieveold()
       if(result.length>0){
-        array.push(result);
+        //array.concat(result);
+      }*/
+    }
+    return array;
+  }
+
+  retrieve(hitbox){
+    let array = this.objects.slice(0);
+    return array
+    for(let i=0;i<this.quads.length;i++){
+      let x = hitbox.getX();
+      let y = hitbox.getY();
+      let w = hitbox.getWidth();
+      let h = hitbox.getHeight();
+      let quad = this.quads[i];
+      console.log("woo")
+      if(quad.withinBounds(x,y) || quad.withinBounds(x+w,y) || quad.withinBounds(x+w,y+h) || quad.withinBounds(x,y+h)){
+        console.log("woo")
+        //array.concat(quad.retrieve(hitbox));
       }
     }
+
     return array;
   }
 

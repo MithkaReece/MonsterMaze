@@ -5,8 +5,11 @@
 3:Pause menu
 4:Win screen
 5:Lose screen*/
+let mazeSize = 100;
 class manager{
     constructor(){
+      //this.mazeSize = 100
+
         this.layer = 0;
         this.buttons = new Array(6).fill().map(item =>(new Array()));//Makes an array 6 long of arrays
     
@@ -39,10 +42,15 @@ class manager{
 
             //console.log(this.layer)
         },0))
+        this.maze.getQuadTree(this.player.getHitBox());
     }
 
-    callback(layer){
-        this.layer = layer;
+    callback(layer){//This function is passed into buttons for when they click
+        this.layer = layer;//Changed the layer of the game
+    }
+
+    getPlayer(){
+      return this.player;
     }
 
     mouseClick(){
@@ -62,32 +70,27 @@ class manager{
               }
           }
     }
-
     mouseMoved(){
         if(document.pointerLockElement === canvas){
             this.player.addRX(event.movementX*radians(0.1));//Allow looking horizontally
             this.player.addRY(-event.movementY*radians(0.1))//Allow looking vertically
         }
     }
-
     keyDown(event){
         if (event.keyCode === 9 && this.layer == 1) {
             event.preventDefault();
             this.layer = 3;
           }
     }
-
     drawMainMenu(){
      
     }
-
     updateGameplay(){
         this.perspect.update(this.player);//Update perspective
         this.player.controls(this.perspect.getN());
     }
-
     drawGameplay(){
-        background(0,191,255);
+        background(72,0,135);
         push();
         translate(width/2,height/2);
         stroke(255);
@@ -123,7 +126,6 @@ class manager{
 
     show(){
         background(255); 
-        console.log(this.layer)
         switch(this.layer){
             case 0:
               this.drawMainMenu();

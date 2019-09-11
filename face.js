@@ -256,8 +256,8 @@ class face{
   
     show(pos,player,perspective){
       strokeWeight(1);
-      stroke(184,65,203)
-      fill(184,65,203);
+      stroke(0)
+      fill(0);
       let points = this.project(pos,player,perspective);
       if(points!=null){
         beginShape();

@@ -1,10 +1,5 @@
-const mazeSize = 10;
 const screenScale = 20; //Scales up projection
 const faceheight = 2;//Used for testing face
-
-let player;//Player
-let perspect;//Perspective
-
 let f;//testing face
 
 let gameMan;
@@ -15,17 +10,10 @@ function setup() {
 
   hscale = width/mazeSize;//scale to fit the screen
   vscale = height/mazeSize;//scale to fit the screen
-  //console.log(currentMaze.getQuadTree());
-
-  
- 
 }
 function draw() {
   gameMan.show();
 }
-
-
-
 function mouseClicked(){
   gameMan.mouseClick();
 }
@@ -38,24 +26,24 @@ window.addEventListener('keydown', (event) => {
 })
 
 class button{
-  constructor(pos,w,h,text,colour,state,click,layerChange){
+  constructor(pos,width,height,text,colour,state,click,layerChange){
     this.visible = state;
     this.click = click;
     this.layerChange = layerChange;
     this.text = text;
     this.colour = colour;
     this.pos = pos;
-    this.w = w;
-    this.h = h;
+    this.width = width;
+    this.height = height;
   }
   getVisible(){
     return this.visible;
   }
   region(){
-    return mouseX >= this.pos.x-this.w/2 &&
-      mouseX <= this.pos.x+this.w/2 &&
-      mouseY >= this.pos.y-this.h/2 &&
-      mouseY <= this.pos.y+this.h/2;
+    return mouseX >= this.pos.x-this.width/2 &&
+      mouseX <= this.pos.x+this.width/2 &&
+      mouseY >= this.pos.y-this.height/2 &&
+      mouseY <= this.pos.y+this.height/2;
   }
   hide(){
     this.visible = false;
@@ -64,18 +52,18 @@ class button{
     this.visible = true;
     rectMode(CENTER);
     fill(this.colour);
-    rect(this.pos.x,this.pos.y,this.w,this.h);
+    rect(this.pos.x,this.pos.y,this.width,this.height);
     fill(0);
     textAlign(CENTER,CENTER)
-    textSize(this.h)
-    text(this.text,this.pos.x,this.pos.y+this.h/10);
+    textSize(this.height)
+    text(this.text,this.pos.x,this.pos.y+this.height/10);
 
   }
 }
 
 class perspective{
   constructor(){
-    this.dist = 20;
+    this.distance = 20;
 
     this.n;//Normal of plane
     this.d;//d of plane
@@ -97,7 +85,7 @@ class perspective{
     //n.add(p.pos);
     //let d = p5.Vector.dot(n,this.n);
     //this.d = -d;
-    this.d = -(p5.Vector.dot(this.n,player.getPos()) +(this.dist));//Calc d of the plane equation
+    this.d = -(p5.Vector.dot(this.n,player.getPos()) +(this.distance));//Calc d of the plane equation
   }
   
 }
