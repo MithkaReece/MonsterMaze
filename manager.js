@@ -5,12 +5,11 @@
 3:Pause menu
 4:Win screen
 5:Lose screen*/
-let mazeSize = 100;
 class manager{
     constructor(){
       //this.mazeSize = 100
 
-        this.layer = 0;
+        this.layer = 1;
         this.buttons = new Array(6).fill().map(item =>(new Array()));//Makes an array 6 long of arrays
     
         //Setup main menu:0
@@ -42,7 +41,7 @@ class manager{
 
             //console.log(this.layer)
         },0))
-        this.maze.getQuadTree(this.player.getHitBox());
+        //this.maze.getQuadTree(this.player.getHitBox());
     }
 
     callback(layer){//This function is passed into buttons for when they click
@@ -77,17 +76,19 @@ class manager{
         }
     }
     keyDown(event){
-        if (event.keyCode === 9 && this.layer == 1) {
-            event.preventDefault();
-            this.layer = 3;
-          }
+        if (event.keyCode === 9 && this.layer == 1) {//If key = tab and in gameplay
+            event.preventDefault();//Show mouse
+            this.layer = 3;//Open pause menu
+        }
+          //this.player.controls(this.perspect.getN());
+        
     }
     drawMainMenu(){
      
     }
     updateGameplay(){
         this.perspect.update(this.player);//Update perspective
-        this.player.controls(this.perspect.getN());
+ 
     }
     drawGameplay(){
         background(72,0,135);

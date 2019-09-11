@@ -3,7 +3,7 @@ class entity{
       this.pos = pos;//Position of entity
       this.rotation = createVector(radians(45),radians(0));//Orientation of entity
       let size = 0.1;//How big the hit box is
-      this.hitBox = new Rectangle(pos.x-size/2,pos.y-size/2,size,size);//For collision detection
+      this.hitBox = new Rectangle(pos.x-size/2,pos.z-size/2,size,size);//For collision detection
     }
     getRX(){
       return this.rotation.x;
@@ -21,11 +21,11 @@ class entity{
   
   class character extends entity{
     constructor(){
-      super(createVector(0,-2,0));
+      super(createVector(0.1,-2,0.1));
     }
 
     controls(normalVector){
-      console.log(Math.floor(this.pos.x),Math.floor(this.pos.z))
+      //console.log(Math.floor(this.pos.x),Math.floor(this.pos.z))
         let speed = 0.1;
         let dir = normalVector;
         dir.y = 0;

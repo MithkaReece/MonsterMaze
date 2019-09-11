@@ -1,3 +1,4 @@
+const mazeSize = 10;
 const screenScale = 20; //Scales up projection
 const faceheight = 2;//Used for testing face
 let f;//testing face

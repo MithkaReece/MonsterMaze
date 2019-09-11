@@ -24,9 +24,7 @@ class Maze{
     return this.walls;
   }
   getQuadTree(hitbox){
-    console.log(this.wallTree.retrieveold());
-    //console.log(this.wallTree.retrieve(hitbox));
-    return //this.wallTree.retrieve();
+    return this.wallTree.retrieve(hitbox);
   }
 
   generateMaze(w,h,c,ingrid){
@@ -215,7 +213,6 @@ class cell{
     
   }
 }
-
 class wall extends cuboid{
   constructor(x,y,l,r,colour = [255,0,0]){
     let newL = l;
@@ -327,7 +324,7 @@ class QuadTree{
      this.pBounds(x,y+h);
   }
   pBounds(x,y){
-    let answer =  x >= this.bound.getX() &&
+    let answer = x >= this.bound.getX() &&
     x < this.bound.getX() + this.bound.getWidth() &&
     y >= this.bound.getY() &&
     y < this.bound.getY() + this.bound.getHeight();
@@ -337,28 +334,24 @@ class QuadTree{
   retrieveold(){
     let array = this.objects.slice(0);
     for(let i=0;i<this.quads.length;i++){
-      /*
       let result = this.quads[i].retrieveold()
       if(result.length>0){
-        //array.concat(result);
-      }*/
+        array = array.concat(result);
+      }
     }
     return array;
   }
 
   retrieve(hitbox){
     let array = this.objects.slice(0);
-    return array
     for(let i=0;i<this.quads.length;i++){
       let x = hitbox.getX();
       let y = hitbox.getY();
       let w = hitbox.getWidth();
       let h = hitbox.getHeight();
-      let quad = this.quads[i];
-      console.log("woo")
-      if(quad.withinBounds(x,y) || quad.withinBounds(x+w,y) || quad.withinBounds(x+w,y+h) || quad.withinBounds(x,y+h)){
-        console.log("woo")
-        //array.concat(quad.retrieve(hitbox));
+      let current = this.quads[i];
+      if(current.withinBounds(x,y,w,h)){
+        array = array.concat(current.retrieve(hitbox));
       }
     }
 
