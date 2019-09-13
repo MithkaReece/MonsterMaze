@@ -47,11 +47,9 @@ class manager{
     callback(layer){//This function is passed into buttons for when they click
         this.layer = layer;//Changed the layer of the game
     }
-
     getPlayer(){
       return this.player;
     }
-
     mouseClick(){
         if(this.layer == 1){//If in first person gameplay
             canvas.requestPointerLock();
@@ -80,7 +78,7 @@ class manager{
             event.preventDefault();//Show mouse
             this.layer = 3;//Open pause menu
         }
-          //this.player.controls(this.perspect.getN());
+          
         
     }
     drawMainMenu(){
@@ -88,7 +86,7 @@ class manager{
     }
     updateGameplay(){
         this.perspect.update(this.player);//Update perspective
- 
+        this.player.controls(this.perspect.getN(),this.maze.getQuadTree(this.player.getHitBox()));
     }
     drawGameplay(){
         background(72,0,135);
@@ -100,7 +98,7 @@ class manager{
         //f.show(createVector(0,0,0));
         this.maze.getWalls().forEach(wall=>wall.show3D(this.player,this.perspect));
         pop();  
-        //walls.forEach(wall=>wall.show());
+        this.maze.getWalls().forEach(wall=>wall.show2D());
         
         
       
@@ -108,10 +106,11 @@ class manager{
         push();
         strokeWeight(2);
         fill(0);
-        let n = 5;
+        let n = 2;
         translate(hscale*this.player.pos.x,vscale*this.player.pos.z);
-        rotate(-this.player.rotation.x)
-        triangle(-n,0,n,0,0,3*n);
+        //rotate(-this.player.rotation.x)
+        rect(-n,-n,2*n,2*n)
+        //triangle(-n,0,n,0,0,3*n);
         pop();
       
       
