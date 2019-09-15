@@ -41,7 +41,6 @@ class face{
   
 
       let points = this.points.map(a => p5.Vector.add(a.copy(),pos));//Translates all the points to the objects location from a copy of all the points
-  
       if(this.visible(points,player.getPos()) == null || points.map(point => this.get2D(point,player,perspective)).every(point => (point.z == null))){
         return null //Checks if face is visible in direction the player is and if all points are behind the player
       }
@@ -49,7 +48,7 @@ class face{
 
       let projected = [];
       for(let i=0;i<points.length;i++){
-        let point = this.get2D(points[i],player,perspective);
+        let point = this.get2D(points[i],player,perspective);//Projects the current point into 2D
         if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2 && point.z != null){//If point is on screen
           projected.push(point);
         }else{//If point not on screen
@@ -59,19 +58,17 @@ class face{
           let right = this.firstVisiblePoint(points[i],points[(i+1) % points.length],player,perspective)//Get right 3D point
           //Add left connection
           if(left!=null){
-            left.z = Infinity;
             projected.push(left);//Push left 2D point
           }
           //Add right connection
           if(right!=null){
-            right.z = Infinity;
             projected.push(right);//Push right 2D point   
           }
         }
       }
    
     
-
+/*
       //Forms the 2D polygon
       let points3D = points.map(x => x.copy());
       let newPoints = [];
@@ -118,51 +115,85 @@ class face{
         }
       }
     }
-     
+    */
+    console.log(projected);
     return projected;
     }
 
     checkCorner(corner,points){
       let counter = 0;
       for(let i=0;i<points.length;i++){
-        if(this.lineIntersect(corner,createVector(1,0),points[i],points[(i+1) % points.length])){
+        let result = this.doLinesIntersect(corner,p5.Vector.add(corner,createVector(1,0)),points[i],points[(i+1) % points.length]);
+        if(result[0] > 0 && result[0] < 1 && result[1] > 0){
           counter++;
         }
       }
       return counter % 2 == 1;
     }
-    lineIntersect(point,dir,p1,p2){
-      const x1 = p1.x;
-      const y1 = p1.y;
-      const x2 = p2.x;
-      const y2 = p2.y;
+    doLinesIntersect(pointA1,pointA2,pointB1,pointB2){
+      const x1 = pointB1.x;
+      const y1 = pointB1.y;
+      const x2 = pointB2.x;
+      const y2 = pointB2.y;
 
-      const x3 = point.x;
-      const y3 = point.y;
-      const x4 = point.x + dir.x;
-      const y4 = point.y + dir.y;
+      const x3 = pointA1.x;
+      const y3 = pointA1.y;
+      const x4 = pointA2.x;
+      const y4 = pointA2.y;
 
       let den = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
       if(den == 0){
-        return false;
+        return [0,0];
       }
-
       const t = ((x1 - x3)*(y3 - y4) - (y1 - y3)*(x3 - x4))/den;
       const u = -((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3))/den;
-      if(t > 0 && t < 1 && u > 0){
-        return true;
+      return [t,u];
+    }
+
+    screenIntersection(pointA1,pointA2){//Gets points of intersection between screen boundaries and two points
+      let points = [];
+      let screen = [createVector(-width/2,-height/2),createVector(width/2,-height/2),createVector(width/2,height/2),createVector(-width/2,height/2)];
+      for(let i=0;i<screen.length;i++){
+        let result = this.lineIntersection(pointA1,pointA2,screen[i],screen[(i+1)%4]);
+        if(result!=null){
+          points.push(result);
+        }
       }
-      return false;
+      return points;
+    }
+
+    lineIntersection(pointA1,pointA2,pointB1,pointB2){//Returns points of intersection between two sets of two points
+      let result = this.doLinesIntersect(pointA1,pointA2,pointB1,pointB2);//Return t and u results from any intersection
+      if(result[0] > 0 && result[0] < 1 && result[1] > 0 && result[0] < 1){//If the lines intersect
+        return createVector(pointB1.x + result[0]*(pointB2.x - pointB1.x) , pointB1.y + result[0]*(pointB2.y - pointB1.y));//Return the point of intersection
+      } 
+      return null//Return null if no intersection
     }
   
     firstVisiblePoint(currentPoint,cPoint,player,perspective){
    
-      //Checks when the point to its connecting point intersects a screen edge to estimate its point
+      //Checks when the point to it's connecting point intersects a screen edge to estimate its point
       let connectingPoint = this.get2D(cPoint,player,perspective);
-      //If the connecting point is within the screen and infront of the camerae
+
       if(connectingPoint.z == null){
         return null;
       }
+      //Fix this shit
+      let points = this.screenIntersection(this.get2D(this.behindPlayerEstimation(currentPoint,cPoint,player,perspective),player,perspective),connectingPoint);//Get list of points of intersection with screen between these two points
+      if(points.length > 0){//If points were found
+        let newPoint = points[0];//Set new point default to the first point in points
+        if(points.length>1){
+          if(Math.sqrt(Math.pow(currentPoint.x-points[1].x,2) + Math.pow(currentPoint.y-points[1].y,2)) < Math.sqrt(Math.pow(currentPoint.x-newPoint.x,2) + Math.pow(currentPoint.y-newPoint.y,2))){
+            newPoint = points[1];//If the other point is closer set it as new point
+          }
+        }
+        console.log(points.length);
+        return newPoint;
+      }
+      return null;
+      //WRONG
+   
+      
 
       //Get 2 points of a 2D lines
       let a = this.get2D(this.behindPlayerEstimation(currentPoint,cPoint,player,perspective),player,perspective);
@@ -206,7 +237,6 @@ class face{
   
       let dir = p5.Vector.sub(connectingPoint,currentPoint);//Direction vector
       let point = currentPoint.copy();//Copy of the point
-  
       while(this.get2D(point,player,perspective).z == null){//While it can't be projected
         point.add(p5.Vector.mult(dir,1/accuracy));//Add a little in 3D
       }

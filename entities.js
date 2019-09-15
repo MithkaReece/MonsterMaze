@@ -17,7 +17,7 @@ class entity{
   
   class character extends entity{
     constructor(){
-      super(createVector(0.5,-2,0.5));
+      super(createVector(3,-2,3));
       this.size = 0.2;
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
     }

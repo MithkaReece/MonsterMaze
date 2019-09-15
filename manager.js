@@ -94,12 +94,11 @@ class manager{
         translate(width/2,height/2);
         stroke(255);
         strokeWeight(5);
-        
-        //f.show(createVector(0,0,0));
+     
         this.maze.getWalls().forEach(wall=>wall.show3D(this.player,this.perspect));
         pop();  
-        this.maze.getWalls().forEach(wall=>wall.show2D());
-        
+        //this.maze.getWalls().forEach(wall=>wall.show2D());
+       
         
       
         //For testing
