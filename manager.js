@@ -106,10 +106,10 @@ class manager{
         push();
         strokeWeight(2);
         fill(0);
-        let n = 2;
+        let n = 0.2;
         translate(hscale*this.player.pos.x,vscale*this.player.pos.z);
         //rotate(-this.player.rotation.x)
-        rect(-n,-n,2*n,2*n)
+        rect(-0.2*hscale,-0.2*vscale,0.2*hscale,0.2*vscale)
         //triangle(-n,0,n,0,0,3*n);
         pop();
       

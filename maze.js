@@ -214,20 +214,20 @@ class cell{
   }
 }
 class wall extends cuboid{
-  constructor(x,y,l,r,colour = [255,0,0]){
-    let newL = l;
-    if(r !=0){
+  constructor(x,y,length,rotation,colour = [255,0,0]){
+    let newL = length;
+    if(rotation !=0){
       newL += 0.05;
     }
     let pos = createVector(x,-2,y);
-    super(pos,newL,wallHeight,0.05,r);
+    super(pos,newL,wallHeight,0.05,rotation);
 
     //For displaying 2D version
     this.pos2D = createVector(x,y);
-    this.l = newL;
-    this.w = 0.05;
+    this.width = newL;
+    this.height = 0.05;
     this.colour = colour;
-    this.r = r;//Rotation
+    this.r = rotation;//Rotation
   }
 
   getX(){
@@ -236,17 +236,17 @@ class wall extends cuboid{
   getY(){
     return this.pos2D.y;
   }
-  getLength(){
-    if(this.r != 0){
-      return this.w;
-    }
-    return this.l;
-  }
   getWidth(){
     if(this.r != 0){
-      return this.l;
+      return this.height;
     }
-    return this.w;
+    return this.width;
+  }
+  getHeight(){
+    if(this.r != 0){
+      return this.width;
+    }
+    return this.height;
   }
 
   show2D(){
@@ -258,7 +258,7 @@ class wall extends cuboid{
     let sc = width/mazeSize;
     translate(sc*this.pos2D.x,sc*this.pos2D.y)
     rotate(radians(this.r));
-    rect(0,0,sc*this.l,sc*this.w);
+    rect(0,0,sc*this.width,sc*this.height);
     pop();
   }
 }
@@ -296,7 +296,7 @@ class QuadTree{
     }
     for(let i=0;i<this.quads.length;i++){
       let current = this.quads[i];
-      if(current.withinBounds(wall.getX(),wall.getY(),wall.getLength(),wall.getWidth())){
+      if(current.withinBounds(wall.getX(),wall.getY(),wall.getWidth(),wall.getHeight())){
         current.insert(wall);
         return;
       }

@@ -1,9 +1,9 @@
 class face{
     constructor(points){
       this.points = points;
-      this.n = this.getN(points);
+      this.normal = this.getNormal(points);
     }
-    getN(points){
+    getNormal(points){//Gets the face's normal(plane)
       let a;//Direction vector 1
       let b;//Direction vector 2
       let n;//Normal of the face
@@ -25,7 +25,7 @@ class face{
       }
       return n;//Return a valid n
     }
-    isFace(points,n){
+    isFace(points,n){//Checks if all points lies on the same plane to form a face
       let k = p5.Vector.dot(points[0],n);//k = a.n
       for(let i=1;i<points.length;i++){
         if(Math.floor(p5.Vector.dot(points[i],n)) != Math.floor(k)){//If point doesn't lie of the plane
@@ -39,21 +39,13 @@ class face{
       //Need to take into account if no point is on the screen but the face crosses the corner of the screen
       //This wouldn't happen for a rectangle face though but would need implementing for more general system
   
-      //Check if screen first
-      let points = this.points.map(x => x.copy());//Copies all the vectors in the array to new instances
-      points = points.map(a => p5.Vector.add(a,pos));//Translates all the points to the objects location
-      //Checks if face is visible in direction the player is
-      if(this.visible(points,player.getPos()) == null){
-        return null
-      }//Checks if all points are behind the player
-      let temp = points.map(point => this.get2D(point,player,perspective));//Map all 3D points to 2D
-      if(!temp.some(point => (point.z != null))){
-        return null;
+
+      let points = this.points.map(a => p5.Vector.add(a.copy(),pos));//Translates all the points to the objects location from a copy of all the points
+  
+      if(this.visible(points,player.getPos()) == null || points.map(point => this.get2D(point,player,perspective)).every(point => (point.z == null))){
+        return null //Checks if face is visible in direction the player is and if all points are behind the player
       }
       
-      if(!points.map(point => this.get2D(point,player,perspective)).some(point => (Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2) || point.z != null)){
-        return null;
-      }
 
       let projected = [];
       for(let i=0;i<points.length;i++){
@@ -225,21 +217,18 @@ class face{
       return a/Math.abs(a)!=b/Math.abs(b);
     } 
   
-    visible(points,playerPos){
-      //Checks if face is visible
+    visible(points,playerPos){//Checks if face is visible
       let centre = createVector();
       for(let i=0;i<points.length;i++){
         centre.add(p5.Vector.div(points[i],points.length))//Gets the centre of the face by adding fractions of each point
       }
-   
-      let a = this.n//Face normal
-      let b = p5.Vector.sub(centre,playerPos);//Vector from face to camera
-      return(Math.acos(p5.Vector.dot(a,b)/(a.mag()*b.mag()))<=PI/2 ? null : points);//Return face if face towards the camera
+      let faceNormal = p5.Vector.sub(centre,playerPos);//Vector from face to camera
+      return(Math.acos(p5.Vector.dot(this.normal,faceNormal)/(this.normal.mag()*faceNormal.mag()))<=PI/2 ? null : points);//Return face if face towards the camera
     }
+    
     get2D(point,player,perspective){
     let dir = p5.Vector.sub(point,player.getPos());//Direction of line vector
     //Forming r = a + λb using line and plane equation(r.n = -d)
-    
     let λ = ((-perspective.getD() - p5.Vector.dot(player.getPos(),perspective.getN())) / (p5.Vector.dot(dir,perspective.getN())));//finding λ    
     let b = p5.Vector.mult(dir,λ)//finding b  
     let r = p5.Vector.add(player.getPos(),b);//finding r
