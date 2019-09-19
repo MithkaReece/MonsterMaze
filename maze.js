@@ -8,7 +8,7 @@ class Maze{
     this.height = height;//Height of maze
     this.complexity = complexity;//Complexity of maze
 
-    this.wallTree = new QuadTree(new Rectangle(0,0,this.width,this.height));
+    this.wallTree = new QuadTree(new Rectangle(0,0,this.width,this.height));//Walls stored as a quad tree
 
     this.grid = make2Darray(this.width,this.height);//Creates the grid
     for(let y=0;y<this.height;y++){
@@ -17,11 +17,11 @@ class Maze{
       }
     }
     this.grid = this.generateMaze(this.width,this.height,this.complexity,this.grid)
-    this.walls = this.generateWalls(this.width,this.height,this.grid);
+    this.walls = this.generateWalls(this.width,this.height,this.grid);//List of all the walls
     this.wallToTree();
   }
   getWalls(){
-    return this.walls;
+    return this.walls.slice();
   }
   getQuadTree(hitbox){
     return this.wallTree.retrieve(hitbox);

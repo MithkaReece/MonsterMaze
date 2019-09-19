@@ -17,10 +17,55 @@ class entity{
   
   class character extends entity{
     constructor(){
-      super(createVector(3,-2,3));
-      this.size = 0.2;
+      super(createVector(0.5,-2,0.5));
+      this.size = 0.3;
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
+      this.rays = [];
+      for(let a=0;a<360;a+=5){
+        this.rays.push(new ray(createVector(this.pos.x,this.pos.z),radians(a)));
+      }
     }
+
+    rayCast(walls){
+      let newWalls = [];
+      for(let ray of this.rays){
+        //console.log("----")
+        //console.log(ray.dir.x)
+        let smallestDistance = Infinity;
+        let firstWall = null;
+        for(let i=0;i<walls.length;i++){
+          
+          let wall = walls[i];
+          let a = createVector(wall.getX(),wall.getY()+0.5*wall.getHeight());
+          let b = createVector(wall.getX()+wall.getWidth(),wall.getY()+0.5*wall.getHeight());
+          let result = ray.cast(createVector(this.pos.x,this.pos.z),a,b);
+          
+          if(result!=null){
+            // console.log(result);
+            let distance = p5.Vector.dist(this.pos,result);
+            //console.log(distance);
+            if(distance<smallestDistance){//If wall is closer than previous closest wall
+              smallestDistance = distance;
+              firstWall = wall;
+               
+              //console.log(firstWall)
+            }
+          }
+        }
+        if (firstWall) {
+         // console.log(firstWall);
+          //console.log(newWalls[0] === firstWall); // true
+        }
+        if(newWalls.includes(firstWall)==false && firstWall!=null){//If wall is no duplicate and exists
+          //console.log("test")
+          newWalls.push(firstWall);//Add wall hit from ray into new walls
+        }
+        //console.log(i*ray.dir.x);
+        
+      }
+      return newWalls;
+    }
+
     getHitBox(){
       return this.hitBox;
     }

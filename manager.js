@@ -7,7 +7,7 @@
 5:Lose screen*/
 class manager{
     constructor(){
-      //this.mazeSize = 100
+      //this.mazeSize = 10
 
         this.layer = 1;
         this.buttons = new Array(6).fill().map(item =>(new Array()));//Makes an array 6 long of arrays
@@ -28,7 +28,7 @@ class manager{
         this.perspect = new perspective();
         this.f = new face([createVector(-faceheight,0,0),createVector(faceheight,0,0),createVector(faceheight,-faceheight,0),createVector(-faceheight,-faceheight,0)])
 
-        this.maze = new Maze(mazeSize,mazeSize,1);
+        this.maze = new Maze(mazeSize,mazeSize,2);
 
         //Setup leaderboard:2
 
@@ -94,10 +94,12 @@ class manager{
         translate(width/2,height/2);
         stroke(255);
         strokeWeight(5);
-     
-        this.maze.getWalls().forEach(wall=>wall.show3D(this.player,this.perspect));
+      let walls = this.player.rayCast(this.maze.getWalls());
+      console.log(walls.length);
+      walls.forEach(wall=>wall.show3D(this.player,this.perspect));
+        //this.maze.getWalls().forEach(wall=>wall.show3D(this.player,this.perspect));
         pop();  
-        //this.maze.getWalls().forEach(wall=>wall.show2D());
+        this.maze.getWalls().forEach(wall=>wall.show2D());
        
         
       
