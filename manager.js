@@ -95,11 +95,12 @@ class manager{
         stroke(255);
         strokeWeight(5);
       let walls = this.player.rayCast(this.maze.getWalls());
-      console.log(walls.length);
+      //console.log(walls.length);
       walls.forEach(wall=>wall.show3D(this.player,this.perspect));
         //this.maze.getWalls().forEach(wall=>wall.show3D(this.player,this.perspect));
         pop();  
-        this.maze.getWalls().forEach(wall=>wall.show2D());
+        //this.player.displayRays();
+        //this.maze.getWalls().forEach(wall=>wall.show2D());
        
         
       

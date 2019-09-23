@@ -27,13 +27,14 @@ function VtoArray(vector){
   }
 
   class ray{
-    constructor(pos,angle){
-      this.pos = pos;
+    constructor(angle){
+      this.angle = angle;
       this.dir = p5.Vector.fromAngle(angle);
     }
 
     cast(pos,pointB1,pointB2){
-      let result = this.doLinesIntersect(pos,p5.Vector.add(pos,this.dir),pointB1,pointB2);//Do intersection
+      let dir = p5.Vector.fromAngle(this.angle);
+      let result = this.doLinesIntersect(pos,p5.Vector.add(pos,dir),pointB1,pointB2);//Do intersection
       //console.log(pointB1.x + result[0]*(pointB2.x-pointB1.x), pointB1.y + result[0]*(pointB2.y-pointB1.y))
       if(result[0] > 0 && result[0] < 1 && result[1] > 0){//If ray intersects wall
         return createVector(pointB1.x + result[0]*(pointB2.x-pointB1.x), pointB1.y + result[0]*(pointB2.y-pointB1.y));//Returns point of intersection
@@ -59,6 +60,20 @@ function VtoArray(vector){
       const t = ((x1 - x3)*(y3 - y4) - (y1 - y3)*(x3 - x4))/den;
       const u = -((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3))/den;
       return [t,u];
+    }
+
+    addAngle(value){
+      this.angle+=value;
+    }
+
+    show(point){
+      push();
+      translate(point.x,point.y)
+      strokeWeight(1)
+      stroke(0,0,255)
+      let sc = vscale
+      line(point.x,point.y,point.x+sc*this.dir.x,point.y+sc*this.dir.y);
+      pop();
     }
   }
 

@@ -21,49 +21,50 @@ class entity{
       this.size = 0.3;
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
       this.rays = [];
-      for(let a=0;a<360;a+=5){
-        this.rays.push(new ray(createVector(this.pos.x,this.pos.z),radians(a)));
+      for(let a=-0;a<360;a+=1){
+        this.rays.push(new ray(radians(a)));
       }
     }
 
     rayCast(walls){
       let newWalls = [];
-      for(let ray of this.rays){
-        //console.log("----")
-        //console.log(ray.dir.x)
-        let smallestDistance = Infinity;
+      for(let ray of this.rays){//For every ray
+        let smallestDistance = Infinity;//Set smallest distance to always greater than any wall
         let firstWall = null;
-        for(let i=0;i<walls.length;i++){
+        for(let i=0;i<walls.length;i++){//For every wall
+          let wall = walls[i];//Current wall
+          //console.log(wall.getHeight());
+          let a;
+          let b;
+          if(wall.getRotation()!=0){//If vertical wall
+            a = createVector(wall.getX()+0.05,wall.getY());//Front end of wall
+            b = createVector(wall.getX()+0.05,wall.getY()+wall.getLength());//Back end of wall
+          }else{
+            a = createVector(wall.getX(),wall.getY()+0.05);//Front end of wall
+            b = createVector(wall.getX()+wall.getLength(),wall.getY()+0.05);//Back end of wall
+          }
+
           
-          let wall = walls[i];
-          let a = createVector(wall.getX(),wall.getY()+0.5*wall.getHeight());
-          let b = createVector(wall.getX()+wall.getWidth(),wall.getY()+0.5*wall.getHeight());
-          let result = ray.cast(createVector(this.pos.x,this.pos.z),a,b);
-          
-          if(result!=null){
-            // console.log(result);
-            let distance = p5.Vector.dist(this.pos,result);
-            //console.log(distance);
+          let result = ray.cast(createVector(this.pos.x,this.pos.z),a,b);//Cast current ray through line of wall
+          if(result!=null){//If a point of intersection was found
+            let distance = p5.Vector.dist(this.pos,result);//Calculate distance from entity
             if(distance<smallestDistance){//If wall is closer than previous closest wall
-              smallestDistance = distance;
-              firstWall = wall;
-               
-              //console.log(firstWall)
+              smallestDistance = distance;//Update smallest distnace
+              firstWall = wall;//Update the first wall the ray hits
             }
           }
         }
-        if (firstWall) {
-         // console.log(firstWall);
-          //console.log(newWalls[0] === firstWall); // true
-        }
         if(newWalls.includes(firstWall)==false && firstWall!=null){//If wall is no duplicate and exists
-          //console.log("test")
           newWalls.push(firstWall);//Add wall hit from ray into new walls
         }
-        //console.log(i*ray.dir.x);
-        
       }
-      return newWalls;
+      return newWalls;//Return all ways that need rendering
+    }
+
+    displayRays(){
+      for(let ray of this.rays){
+        ray.show(createVector(this.pos.x*hscale,this.pos.z*vscale));
+      }
     }
 
     getHitBox(){
@@ -104,7 +105,6 @@ class entity{
       let walls = retrievedWalls;
       for(let i=0;i<walls.length;i++){
         let result = this.collide(walls[i],createVector(dir.x,dir.z));//Check if player collides with current walls
-        //console.log(result)
         if(result){//if result is true
           if(this.collide(walls[i],createVector(dir.x,0))){
             dir.x = 0;
@@ -123,6 +123,9 @@ class entity{
 
     addRX(value){
       this.rotation.x+=value;
+      for(ray of this.rays){
+        //ray.addAngle(value);
+      }
     }
     addRY(value){
       this.rotation.y+=value;

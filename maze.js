@@ -230,22 +230,28 @@ class wall extends cuboid{
     this.r = rotation;//Rotation
   }
 
+  getLength(){//Returns always the longer side
+    return this.width;
+  }
+  getRotation(){
+    return this.r;
+  }
   getX(){
     return this.pos2D.x;
   }
   getY(){
     return this.pos2D.y;
   }
-  getWidth(){
-    if(this.r != 0){
+  getWidth(){//Returns the width relative to the x axis
+    if(this.r != 0){//If vertical wall
       return this.height;
-    }
+    }//If horizontal wall
     return this.width;
   }
-  getHeight(){
-    if(this.r != 0){
+  getHeight(){//Returns the height relative to the y axis
+    if(this.r != 0){//If vertical wall
       return this.width;
-    }
+    }//If horizontal wall
     return this.height;
   }
 
