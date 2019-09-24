@@ -99,7 +99,7 @@ class manager{
       walls.forEach(wall=>wall.show3D(this.player,this.perspect));
         //this.maze.getWalls().forEach(wall=>wall.show3D(this.player,this.perspect));
         pop();  
-        //this.player.displayRays();
+        this.player.displayRays();
         //this.maze.getWalls().forEach(wall=>wall.show2D());
        
         

@@ -279,15 +279,15 @@ class face{
     get2D(point,player,perspective){
     let dir = p5.Vector.sub(point,player.getPos());//Direction of line vector
     //Forming r = a + λb using line and plane equation(r.n = -d)
-    let λ = ((-perspective.getD() - p5.Vector.dot(player.getPos(),perspective.getN())) / (p5.Vector.dot(dir,perspective.getN())));//finding λ    
-    let b = p5.Vector.mult(dir,λ)//finding b  
+    let lambda = ((-perspective.getD() - p5.Vector.dot(player.getPos(),perspective.getN())) / (p5.Vector.dot(dir,perspective.getN())));//finding λ    
+    let b = p5.Vector.mult(dir,lambda)//finding b  
     let r = p5.Vector.add(player.getPos(),b);//finding r
   
     r.sub(player.getPos());//Translate to make camera the origin
     r = Matrix.rotateY(r,-player.getRX());//Inverse the rotation done to the plane's normal vector
     r = Matrix.rotateZ(r,-player.getRY());//Inverse the rotation done to the plane's normal vector  
     r.mult(screenScale);
-    if(λ<=0){//If behind camera
+    if(lambda<=0){//If behind camera
       r.z = null;
     }
     return r;//Return on screen position
@@ -296,7 +296,7 @@ class face{
     show(pos,player,perspective){
       strokeWeight(1);
       stroke(0,150,250)
-      fill(0,150,250);
+      fill(0,150,250,255);
       let points = this.project(pos,player,perspective);
       if(points!=null){
         beginShape();

@@ -21,7 +21,7 @@ class entity{
       this.size = 0.3;
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
       this.rays = [];
-      for(let a=-0;a<360;a+=1){
+      for(let a=0;a<=90;a+=1){
         this.rays.push(new ray(radians(a)));
       }
     }
@@ -30,10 +30,10 @@ class entity{
       let newWalls = [];
       for(let ray of this.rays){//For every ray
         let smallestDistance = Infinity;//Set smallest distance to always greater than any wall
-        let firstWall = null;
+        let closestWall = null;
+        let closestPoint = null;
         for(let i=0;i<walls.length;i++){//For every wall
-          let wall = walls[i];//Current wall
-          //console.log(wall.getHeight());
+          let wall = walls[walls.length-i-1];//Current wall
           let a;
           let b;
           if(wall.getRotation()!=0){//If vertical wall
@@ -43,19 +43,29 @@ class entity{
             a = createVector(wall.getX(),wall.getY()+0.05);//Front end of wall
             b = createVector(wall.getX()+wall.getLength(),wall.getY()+0.05);//Back end of wall
           }
-
-          
+    
           let result = ray.cast(createVector(this.pos.x,this.pos.z),a,b);//Cast current ray through line of wall
           if(result!=null){//If a point of intersection was found
             let distance = p5.Vector.dist(this.pos,result);//Calculate distance from entity
-            if(distance<smallestDistance){//If wall is closer than previous closest wall
+            if(distance<smallestDistance){//If wall is closer than previous closest wall       
               smallestDistance = distance;//Update smallest distnace
-              firstWall = wall;//Update the first wall the ray hits
+              closestWall = wall;//Update the closest wall the ray hits
+              closestPoint = result;
             }
           }
         }
-        if(newWalls.includes(firstWall)==false && firstWall!=null){//If wall is no duplicate and exists
-          newWalls.push(firstWall);//Add wall hit from ray into new walls
+        if(closestWall==null){
+          console.log("null");
+        }
+        if(newWalls.includes(closestWall)==false && closestWall!=null){//If wall is no duplicate and exists
+          push();
+          translate(-width/2,-height/2)
+          closestWall.show2D();
+          stroke(0,255,0);
+          strokeWeight(1)
+          line(hscale*this.pos.x,vscale*this.pos.z,hscale*closestPoint.x,vscale*closestPoint.y);
+          pop();
+          newWalls.push(closestWall);//Add wall hit from ray into new walls
         }
       }
       return newWalls;//Return all ways that need rendering
@@ -124,7 +134,7 @@ class entity{
     addRX(value){
       this.rotation.x+=value;
       for(ray of this.rays){
-        //ray.addAngle(value);
+        ray.addAngle(-value);
       }
     }
     addRY(value){

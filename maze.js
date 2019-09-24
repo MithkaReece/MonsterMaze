@@ -1,3 +1,5 @@
+
+
 const wallHeight = 1;
 let hscale;
 let vscale;
@@ -52,6 +54,36 @@ class Maze{
           }
       }
     }
+    //Make exit
+    let exitNum = Math.floor(random(2*(w+h)));
+    console.log(exitNum)
+    let direction = Math.floor(exitNum/(0.5*(w+h)));
+    console.log(direction);
+    let x;
+    let y;
+    if(direction == 0){
+      x = exitNum; 
+      y = 0;
+    }else if(direction == 1){
+      x = w-1;
+      y = exitNum - w;
+    }else if(direction == 2){
+      x = exitNum - w - h;
+      y = h-1;
+    }else{
+      x = 0;
+      y = exitNum - 2*w - h;
+    }
+    console.log(w,h);
+    console.log(x,y);
+    grid[x][y].getWalls()[direction] = 0;
+
+    let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
+    while (p5.Vector.dist(pos, createVector(x,y)) > 0.85*h){
+      pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
+    }
+    console.log(pos.x,pos.y);
+
     return grid;
   }
   generate(cell,minh,minv,maxh,maxv,grid){
@@ -159,6 +191,8 @@ class Maze{
         }
       }
     } 
+
+    
     return walls;
   }
   wallToTree(){
