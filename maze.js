@@ -249,17 +249,18 @@ class cell{
 }
 class wall extends cuboid{
   constructor(x,y,length,rotation,colour = [255,0,0]){
+    const thicknessOfWall = 0.1
     let newL = length;
     if(rotation !=0){
-      newL += 0.05;
+      newL += thicknessOfWall;
     }
     let pos = createVector(x,-2,y);
-    super(pos,newL,wallHeight,0.05,rotation);
+    super(pos,newL,wallHeight,thicknessOfWall,rotation);
 
     //For displaying 2D version
     this.pos2D = createVector(x,y);
     this.width = newL;
-    this.height = 0.05;
+    this.height = thicknessOfWall;
     this.colour = colour;
     this.r = rotation;//Rotation
   }

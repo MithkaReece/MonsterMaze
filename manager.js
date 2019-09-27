@@ -89,7 +89,7 @@ class manager{
         this.player.controls(this.perspect.getN(),this.maze.getQuadTree(this.player.getHitBox()));
     }
     drawGameplay(){
-        background(72,0,135);
+        background(0,0,20);
         push();
         translate(width/2,height/2);
         stroke(255);
@@ -99,7 +99,7 @@ class manager{
       walls.forEach(wall=>wall.show3D(this.player,this.perspect));
         //this.maze.getWalls().forEach(wall=>wall.show3D(this.player,this.perspect));
         pop();  
-        this.player.displayRays();
+        //this.player.displayRays();
         //this.maze.getWalls().forEach(wall=>wall.show2D());
        
         
@@ -111,7 +111,7 @@ class manager{
         let n = 0.2;
         translate(hscale*this.player.pos.x,vscale*this.player.pos.z);
         //rotate(-this.player.rotation.x)
-        rect(-0.2*hscale,-0.2*vscale,0.2*hscale,0.2*vscale)
+        //rect(-0.2*hscale,-0.2*vscale,0.2*hscale,0.2*vscale)
         //triangle(-n,0,n,0,0,3*n);
         pop();
       

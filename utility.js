@@ -31,39 +31,37 @@ function VtoArray(vector){
       this.angle = angle;
     }
 
-    cast(pos,pointB1,pointB2){
+    cast(pos,wallA,wallB){
       let dir = p5.Vector.fromAngle(this.angle);
-      let result = this.doLinesIntersect(pos,p5.Vector.add(pos,dir),pointB1,pointB2);//Do intersection
-      let t = result[0];
-      let u = result[1];
-      if(t > 0 && t < 1 && u > 0){//If ray intersects wall
-        return createVector(pointB1.x + t*(pointB2.x-pointB1.x), pointB1.y + t*(pointB2.y-pointB1.y));//Returns point of intersection
-      }
-      return null;//If no intersection return null
-    }
 
-    doLinesIntersect(pointA1,pointA2,pointB1,pointB2){
-      const x1 = pointB1.x;
-      const y1 = pointB1.y;
-      const x2 = pointB2.x;
-      const y2 = pointB2.y;
+      const x1 = wallA.x;
+      const y1 = wallA.y;
+      const x2 = wallB.x;
+      const y2 = wallB.y;
 
-      const x3 = pointA1.x;
-      const y3 = pointA1.y;
-      const x4 = pointA2.x;
-      const y4 = pointA2.y;
+      const x3 = pos.x;
+      const y3 = pos.y;
+      const x4 = pos.x + dir.x;
+      const y4 = pos.y + dir.y;
 
-      let den = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
+      const den = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
       if(den == 0){
-        return [0,0];
+        return null;
       }
       const t = ((x1 - x3)*(y3 - y4) - (y1 - y3)*(x3 - x4))/den;
       const u = -((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3))/den;
-      return [t,u];
+      if(t>0 && t<1 && u>0){//If intersection
+        const pt = createVector();
+        pt.x = x1 + t * (x2-x1);
+        pt.y = y1 + t * (y2-y1);
+        return pt;
+      }else{
+        return null; 
+      }
     }
 
-    addAngle(value){
-      this.angle+=value;
+    addAngle(angle){
+      this.angle+=angle;
     }
 
     show(point){
@@ -72,7 +70,7 @@ function VtoArray(vector){
       strokeWeight(1)
       stroke(0,150,255)
       let dir = p5.Vector.fromAngle(this.angle);
-      dir.setMag(1)
+      dir.setMag(0.5)
       line(0,0,hscale*dir.x,vscale*dir.y);
       pop();
     }

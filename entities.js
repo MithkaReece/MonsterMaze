@@ -1,7 +1,7 @@
 class entity{
     constructor(pos){
       this.pos = pos;//Position of entity
-      this.rotation = createVector(radians(45),radians(0));//Orientation of entity
+      this.rotation = createVector(radians(0),radians(0));//Orientation of entity
     }
     getRX(){
       return this.rotation.x;
@@ -18,10 +18,11 @@ class entity{
   class character extends entity{
     constructor(){
       super(createVector(0.5,-2,0.5));
+      this.fov = 120/2;
       this.size = 0.3;
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
       this.rays = [];
-      for(let a=0;a<=90;a+=1){
+      for(let a=90-this.fov;a<=this.fov+90;a+=0.5){
         this.rays.push(new ray(radians(a)));
       }
     }
@@ -29,11 +30,10 @@ class entity{
     rayCast(walls){
       let newWalls = [];
       for(let ray of this.rays){//For every ray
-        let smallestDistance = Infinity;//Set smallest distance to always greater than any wall
+        let distRecord = Infinity;//Set smallest distance to always greater than any wall
         let closestWall = null;
         let closestPoint = null;
-        for(let i=0;i<walls.length;i++){//For every wall
-          let wall = walls[walls.length-i-1];//Current wall
+        for(let wall of walls){//For every wall
           let a;
           let b;
           if(wall.getRotation()!=0){//If vertical wall
@@ -44,27 +44,25 @@ class entity{
             b = createVector(wall.getX()+wall.getLength(),wall.getY()+0.05);//Back end of wall
           }
     
-          let result = ray.cast(createVector(this.pos.x,this.pos.z),a,b);//Cast current ray through line of wall
-          if(result!=null){//If a point of intersection was found
-            let distance = p5.Vector.dist(this.pos,result);//Calculate distance from entity
-            if(distance<smallestDistance){//If wall is closer than previous closest wall       
-              smallestDistance = distance;//Update smallest distnace
-              closestWall = wall;//Update the closest wall the ray hits
-              closestPoint = result;
+          let point = ray.cast(createVector(this.pos.x,this.pos.z),a,b);//Cast current ray through line of wall
+          if(point!=null){//If a point of intersection was found
+            let dist = p5.Vector.dist(createVector(this.pos.x,this.pos.z),point);//Calculate distance from entity
+            if(dist<distRecord){//If wall is closer than previous closest wall       
+              distRecord = dist;//Update smallest distance
+              closestPoint = point.copy();
+              closestWall = wall;//Update the closest wall the ray hits       
             }
           }
-        }
-        if(closestWall==null){
-          console.log("null");
         }
         if(newWalls.includes(closestWall)==false && closestWall!=null){//If wall is no duplicate and exists
           push();
           translate(-width/2,-height/2)
-          closestWall.show2D();
+          //closestWall.show2D();
           stroke(0,255,0);
           strokeWeight(1)
-          line(hscale*this.pos.x,vscale*this.pos.z,hscale*closestPoint.x,vscale*closestPoint.y);
+          //line(hscale*this.pos.x,vscale*this.pos.z,hscale*closestPoint.x,vscale*closestPoint.y);
           pop();
+          //console.log(distRecord,this.pos.x,this.pos.y,closestPoint.x,closestPoint.y);
           newWalls.push(closestWall);//Add wall hit from ray into new walls
         }
       }
