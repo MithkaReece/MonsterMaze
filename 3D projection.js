@@ -1,3 +1,4 @@
+'use strict';
 const mazeSize = 20;
 const screenScale = 20; //Scales up projection
 const faceheight = 2;//Used for testing face
@@ -25,6 +26,11 @@ function mouseMoved(){
 window.addEventListener('keydown', (event) => {
   gameMan.keyDown(event);
 })
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
 
 class button{
   constructor(pos,width,height,text,colour,state,click,layerChange){
@@ -80,12 +86,6 @@ class perspective{
 
   update(player){
     this.n = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),player.getRY()),player.getRX());//RotateXY plane round camera
-    //Manual way without formula
-    //let n = this.n.copy();
-    //n.mult(this.dist/n.mag());
-    //n.add(p.pos);
-    //let d = p5.Vector.dot(n,this.n);
-    //this.d = -d;
     this.d = -(p5.Vector.dot(this.n,player.getPos()) +(this.distance));//Calc d of the plane equation
   }
   

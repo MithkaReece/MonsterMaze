@@ -1,3 +1,4 @@
+'use strict';
 class face{
     constructor(points){
       this.points = points;

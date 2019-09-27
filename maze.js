@@ -1,4 +1,4 @@
-
+'use strict';
 
 const wallHeight = 1;
 let hscale;
@@ -6,6 +6,8 @@ let vscale;
 
 class Maze{
   constructor(width,height,complexity){
+    this.playerStart = createVector();
+
     this.width = width;//Width of maze
     this.height = height;//Height of maze
     this.complexity = complexity;//Complexity of maze
@@ -27,6 +29,10 @@ class Maze{
   }
   getQuadTree(hitbox){
     return this.wallTree.retrieve(hitbox);
+  }
+
+  getPlayerPos(){
+    return this.playerStart
   }
 
   generateMaze(w,h,c,ingrid){
@@ -55,35 +61,36 @@ class Maze{
       }
     }
     //Make exit
-    let exitNum = Math.floor(random(2*(w+h)));
-    console.log(exitNum)
-    let direction = Math.floor(exitNum/(0.5*(w+h)));
-    console.log(direction);
+    let exitNum = Math.floor(random(2*(w+h)));//Exit locations
+    //console.log(exitNum)
+    let direction = Math.floor(exitNum/(0.5*(w+h)));//Which wall needs breaking
+    //console.log(direction);
     let x;
     let y;
-    if(direction == 0){
+    if(direction == 0){//North
       x = exitNum; 
       y = 0;
-    }else if(direction == 1){
+    }else if(direction == 1){//East
       x = w-1;
       y = exitNum - w;
-    }else if(direction == 2){
+    }else if(direction == 2){//South
       x = exitNum - w - h;
       y = h-1;
-    }else{
+    }else{//West
       x = 0;
       y = exitNum - 2*w - h;
     }
-    console.log(w,h);
-    console.log(x,y);
-    grid[x][y].getWalls()[direction] = 0;
+    //console.log(w,h);
+    //console.log(x,y);
+    grid[x][y].getWalls()[direction] = 0;//Break wall for exit
 
     let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
-    while (p5.Vector.dist(pos, createVector(x,y)) > 0.85*h){
+    while (p5.Vector.dist(pos, createVector(x,y)) > 0.9*h){//Find random start far enough from exit
       pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
     }
+    this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);
     console.log(pos.x,pos.y);
-
+    console.log(x,y)
     return grid;
   }
   generate(cell,minh,minv,maxh,maxv,grid){

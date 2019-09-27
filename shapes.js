@@ -1,5 +1,7 @@
+'use strict';
 class cuboid{
     constructor(pos,l,h,w,r){
+
       this.pos3D = pos;
       this.faces = this.generateFaces(l/2,h/2,w/2,r);
       //Should have colour array for faces I guess

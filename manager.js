@@ -1,3 +1,4 @@
+'use strict';
 /*Layers meanings
 0:Main menu
 1:Playing the game
@@ -13,34 +14,42 @@ class manager{
         this.buttons = new Array(6).fill().map(item =>(new Array()));//Makes an array 6 long of arrays
     
         //Setup main menu:0
-        this.buttons[0].push(new button(createVector(width/2,height/2),300,100,"PLAY",[0,0,255],true,function(){
-            canvas.requestPointerLock();
+        this.buttons[0].push(new button(createVector(width/2,height/2),300,100,"PLAY",[0,0,255],true,() => {
+          this.maze = new Maze(mazeSize,mazeSize,2);
+          this.player = new character(this.maze.getPlayerPos());             
+          canvas.requestPointerLock();
+          console.log(this.player.getPos())
         },1)) 
-        this.buttons[0].push(new button(createVector(width/2,height/4),380,50,"LEADERBOARD",[0,0,255],true,function(){
+        this.buttons[0].push(new button(createVector(width/2,height/4),380,50,"LEADERBOARD",[0,0,255],true,() => {
      
         },2))
-        this.buttons[0].push(new button(createVector(width/2,3*height/4),300,100,"EXIT",[0,0,255],true,function(){
-            console.log("exit")
+        this.buttons[0].push(new button(createVector(width/2,3*height/4),300,100,"EXIT",[0,0,255],true,() =>{
+            window.close();
         },0))
 
         //Setup gameplay:1
-        this.player = new character();
         this.perspect = new perspective();
-        this.f = new face([createVector(-faceheight,0,0),createVector(faceheight,0,0),createVector(faceheight,-faceheight,0),createVector(-faceheight,-faceheight,0)])
 
         this.maze = new Maze(mazeSize,mazeSize,2);
-
+        this.player = new character(this.maze.getPlayerPos());    
+        
         //Setup leaderboard:2
 
 
          //Setup pause menu:3
-        this.buttons[3].push(new button(createVector(width/2,height/2),300,70,"RESUME",[0,255,255],true,function(){
+        this.buttons[3].push(new button(createVector(width/2,height/2),720,160,"RESUME",[20,255,100],true,() =>{
             canvas.requestPointerLock();
         },1)) 
-        this.buttons[3].push(new button(createVector(width/2,3*height/4),300,100,"EXIT",[0,0,255],true,function(){
-
-            //console.log(this.layer)
-        },0))
+        this.buttons[3].push(new button(createVector(width/2,3*height/4),720,120,"MAIN MENU",[60,150,0],true,() =>{},0))
+        this.buttons[3].push(new button(createVector(width/2,height/4),720,100,"FULL SCREEN",[60,150,0],true,() =>{     
+          if(document.fullscreenElement){
+            document.exitFullscreen()
+            canvas.requestPointerLock();
+          }else{
+            canvas.requestPointerLock();
+            document.body.requestFullscreen()
+          }
+        },1))
         //this.maze.getQuadTree(this.player.getHitBox());
     }
 

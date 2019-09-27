@@ -1,3 +1,5 @@
+'use strict';
+
 class entity{
     constructor(pos){
       this.pos = pos;//Position of entity
@@ -16,8 +18,8 @@ class entity{
   }
   
   class character extends entity{
-    constructor(){
-      super(createVector(0.5,-2,0.5));
+    constructor(pos){
+      super(pos);
       this.fov = 140/2;
       this.size = 0.3;
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
@@ -131,7 +133,7 @@ class entity{
 
     addRX(value){
       this.rotation.x+=value;
-      for(ray of this.rays){
+      for(let ray of this.rays){
         ray.addAngle(-value);
       }
     }

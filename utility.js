@@ -1,3 +1,4 @@
+'use strict';
 function VtoArray(vector){
     let arr;
     if(vector.z != undefined){
