@@ -18,11 +18,11 @@ class entity{
   class character extends entity{
     constructor(){
       super(createVector(0.5,-2,0.5));
-      this.fov = 120/2;
+      this.fov = 140/2;
       this.size = 0.3;
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
       this.rays = [];
-      for(let a=90-this.fov;a<=this.fov+90;a+=0.5){
+      for(let a=90-this.fov;a<=this.fov+90;a+=0.8){
         this.rays.push(new ray(radians(a)));
       }
     }

@@ -89,33 +89,29 @@ class manager{
         this.player.controls(this.perspect.getN(),this.maze.getQuadTree(this.player.getHitBox()));
     }
     drawGameplay(){
-        background(0,0,20);
-        push();
-        translate(width/2,height/2);
-        stroke(255);
-        strokeWeight(5);
-      let walls = this.player.rayCast(this.maze.getWalls());
-      //console.log(walls.length);
+      background(0,0,20);
+      push();
+      translate(width/2,height/2);
+      stroke(255);
+      strokeWeight(5);
+      const walls = this.player.rayCast(this.maze.getWalls());
       walls.forEach(wall=>wall.show3D(this.player,this.perspect));
-        //this.maze.getWalls().forEach(wall=>wall.show3D(this.player,this.perspect));
-        pop();  
-        //this.player.displayRays();
-        //this.maze.getWalls().forEach(wall=>wall.show2D());
-       
-        
+      pop();        
       
-        //For testing
-        push();
-        strokeWeight(2);
-        fill(0);
-        let n = 0.2;
-        translate(hscale*this.player.pos.x,vscale*this.player.pos.z);
-        //rotate(-this.player.rotation.x)
-        //rect(-0.2*hscale,-0.2*vscale,0.2*hscale,0.2*vscale)
-        //triangle(-n,0,n,0,0,3*n);
-        pop();
+      //For testing
+      /*this.player.displayRays(); 'Display ray area
+      this.maze.getWalls().forEach(wall=>wall.show2D()); 'Display all wall 2D
+      push();
+      strokeWeight(2);
+      fill(0);
+      let n = 0.2;
+      translate(hscale*this.player.pos.x,vscale*this.player.pos.z);
+      rotate(-this.player.rotation.x)
+      rect(-0.2*hscale,-0.2*vscale,0.2*hscale,0.2*vscale)
+      triangle(-n,0,n,0,0,3*n);
+      pop();
       
-      
+      */
     }
 
     drawLeaderboard(){

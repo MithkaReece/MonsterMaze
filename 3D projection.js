@@ -1,11 +1,11 @@
-const mazeSize = 10;
+const mazeSize = 20;
 const screenScale = 20; //Scales up projection
 const faceheight = 2;//Used for testing face
 
 
 let gameMan;
 function setup() {
-  createCanvas(800, 800);
+  createCanvas(windowWidth, windowHeight);
   background(255)
   gameMan = new manager();
 
