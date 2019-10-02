@@ -1,5 +1,4 @@
 'use strict';
-const mazeSize = 20;
 const screenScale = 20; //Scales up projection
 const faceheight = 2;//Used for testing face
 
@@ -9,7 +8,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   background(255)
   gameMan = new manager();
-
+  let mazeSize = gameMan.getMazeSize();
   hscale = width/mazeSize;//scale to fit the screen
   vscale = height/mazeSize;//scale to fit the screen
 }
@@ -65,6 +64,25 @@ class button{
     textSize(this.height)
     text(this.text,this.pos.x,this.pos.y+this.height/10);
 
+  }
+}
+
+class label{
+  constructor(pos,width,height,text,colour){
+    this.pos = pos;
+    this.width = width;
+    this.height = height;
+    this.text = text;
+    this.colour = colour;
+  }
+  show(){
+    rectMode(CENTER);
+    fill(this.colour);
+    rect(this.pos.x,this.pos.y,this.width,this.height);
+    fill(0);
+    textAlign(CENTER,CENTER)
+    textSize(this.height)
+    text(this.text,this.pos.x,this.pos.y+this.height/10);
   }
 }
 

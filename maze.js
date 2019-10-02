@@ -85,7 +85,7 @@ class Maze{
     grid[x][y].getWalls()[direction] = 0;//Break wall for exit
 
     let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
-    while (p5.Vector.dist(pos, createVector(x,y)) > 0.9*h){//Find random start far enough from exit
+    while (p5.Vector.dist(pos, createVector(x,y)) > 1.1*h){//Find random start far enough from exit
       pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
     }
     this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);

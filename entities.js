@@ -95,7 +95,7 @@ class entity{
       return null;//If no intersection return null
     }
     controls(normalVector,retrievedWalls){
-      let speed = 0.05;
+      let speed = 0.035;
       let dir = createVector(0,0,0);
 
         if(keyIsDown(87)){//w
@@ -109,6 +109,19 @@ class entity{
         }
         if(keyIsDown(68)){//d
           dir.add(Matrix.rotateY(normalVector,radians(90)));
+        }
+        let sens = radians(1);
+        if(keyIsDown(38)){//up arrow
+          this.addRY(1.8*sens)
+        }
+        if(keyIsDown(39)){//right arrow
+          this.addRX(2.5*sens)
+        }
+        if(keyIsDown(40)){//down arrow
+          this.addRY(-1.8*sens)
+        }
+        if(keyIsDown(37)){//left arrow
+          this.addRX(-2.5*sens)
         }
         dir.y = 0;
         dir.setMag(speed);
@@ -124,12 +137,15 @@ class entity{
           }
         }      
       }
-
- 
       this.pos.add(dir);
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
-   
-      }
+    }
+
+    won(size){
+      let x = this.pos.x;
+      let z = this.pos.z;
+      return x<0 || x>size || z<0 || z>size;
+    }
 
     addRX(value){
       this.rotation.x+=value;
@@ -141,5 +157,4 @@ class entity{
       this.rotation.y+=value;
       this.rotation.y = constrain(this.rotation.y,radians(-90),radians(90));//Constraint to looking from down to up
     }
-   
   }
