@@ -11,7 +11,7 @@ class monster extends entity{
 
         this.state; //Monster pos, Player pos
 
-        this.speed;
+        this.speed;//Calculated based on how far it will move compared to how long it makes decisions (distance/time)
         this.nextPos = pos;//Pos that it is current travelling to
 
         this.net.initialiseWeights();
