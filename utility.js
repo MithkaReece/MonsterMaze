@@ -22,6 +22,16 @@ function VtoArray(vector){
     }
     return vector;
   }
+  function matrixToArray(matrix){
+    if(matrix.getData()[0].length == 0){
+      return null;
+    }
+    let data = [];
+    for(let i=0;i<matrix.getData().length;i++){
+      data.push(matrix.getData()[i][0]);
+    }
+    return data
+  }
   function make2Darray(cols,rows){
     //Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array
     return new Array(cols).fill().map(item =>(new Array(rows))) 

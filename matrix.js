@@ -3,12 +3,25 @@ class Matrix{
       if(cols === undefined){
         this.data = rowsOrData;
         this.rows = this.data.length;
-        this.cols = this.data[0].length;
+        if(Array.isArray(this.data[0])){//If cols > 1
+          this.cols = this.data[0].length;
+        }else{
+          for(let i = 0;i<this.rows;i++){
+            let array = []
+            array.push(this.data[i]);
+            this.data[i] = array;
+          }
+          this.cols = 1;
+        }
       }else{
       this.rows = rowsOrData;
       this.cols = cols;
       this.data = Array(this.rows).fill().map(() => Array(this.cols).fill(0)); 
       }   
+    }
+
+    getData(){
+      return this.data;
     }
     
     insert(array){
@@ -59,21 +72,7 @@ class Matrix{
        return newV; //Return new vector
      }
     }
-    static multiply(a,b){
-      if(a.cols !== b.rows){
-        console.log("Not comforable");
-        return;
-      }
-      
-      return new Matrix(a.rows, b.cols).map((e, i, j) => {
-          // Dot product
-          let element = 0;
-          for (let k = 0; k < a.cols; k++) {
-            element += a.data[i][k] * b.data[k][j];
-          }
-          return element;
-        });         
-    }  
+
     map(fn){   
         //apply a function to every element
         for(let i=0;i<this.rows;i++){
@@ -91,15 +90,14 @@ class Matrix{
           console.log("Bad matrices");
           return;
         }
-          
         return new Matrix(a.rows, b.cols).map((e, i, j) => {
-          // Dot product
           let element = 0;
           for (let k = 0; k < a.cols; k++) {
-            element += a.data[i][k] * b.data[k][j];
-          }
+            element += a.getData()[i][k] * b.getData()[k][j];
+          }   
           return element;
-        });      
+        });   
+        
     }
     
     static rotateX(vector,angle){

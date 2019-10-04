@@ -2,9 +2,11 @@
 const screenScale = 20; //Scales up projection
 const faceheight = 2;//Used for testing face
 
-
+let nn = new neuralNetwork([3,2,1]);
 let gameMan;
 function setup() {
+  //console.log(nn.feedForward([2,3,5]));
+
   createCanvas(windowWidth, windowHeight);
   background(255)
   gameMan = new manager();
@@ -29,6 +31,8 @@ window.addEventListener('keydown', (event) => {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
+//setInterval(,5000) This should all the ai to do its move (milliseconds)
 
 
 class button{

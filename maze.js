@@ -89,8 +89,8 @@ class Maze{
       pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
     }
     this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);
-    console.log(pos.x,pos.y);
-    console.log(x,y)
+    //console.log(pos.x,pos.y);
+    //console.log(x,y)
     return grid;
   }
   generate(cell,minh,minv,maxh,maxv,grid){
