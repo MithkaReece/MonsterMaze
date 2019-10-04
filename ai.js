@@ -4,17 +4,42 @@ class monster extends entity{
     constructor(pos){
         super(pos);
         this.relayMemory = [];//QUEUE
-        this.net = new neuralNetwork(3,5,3);
+        this.net = new neuralNetwork(2,5,3);
         this.exploreThreshold = 1;
+        this.minExploration = 0.1;
         this.explorationDecay = 0.001;
 
         this.state; //Monster pos, Player pos
 
+        this.speed;
+        this.nextPos = pos;//Pos that it is current travelling to
+
         this.net.initialiseWeights();
+    }
+
+    move(){
+        let accuracy = 10;
+        if(Math.floor(accuracy*this.nextPos.x) == Math.floor(accuracy*this.pos.x) && Math.floor(accuracy*this.nextPos.y) == Math.floor(accuracy*this.pos.y)){
+            return;//If nextPos is equal to pos
+        } 
+        let dirVector = p5.Vector.sub(this.nextPos,this.pos);//direction vector from current pos to nextpos
+        dirVector.setMag(speed);//Sets the speed of movement
+        this.pos.add(dirVector);//Adds the direction vector to move the monster
     }
 
     run(maze,playerPos){
         //Select action (explore/exploit)
+        if(Math.random(1)>this.exploreThreshold){//If exploitation is needed
+
+        }else{//Exploring has been picked
+            //Pick a random action
+            let actions = ["N","E","S","W"];           
+            let actionPicked = actions[Math.floor(math.random(4))];
+        }
+        //To execute action
+        //Validate movement against maze
+        //Saved the changed position of the monster
+
         //note new state based on action
         //Save reward and new state
         //Store old state, action, reward, new state in replay memory
@@ -23,7 +48,9 @@ class monster extends entity{
         //Get sample from memory
         //Loop train for all of sample
         net.train();
-
+        if(this.exploreThreshold > this.minExploration){//If exploration is above minimium
+            this.exploreThreshold-=this.explorationDecay;//Decay exploration threshold/rate
+        }
     }
     storeReplayMemory(oldState,action,reward,newState){
         //Here I can have a queue length N
@@ -31,7 +58,7 @@ class monster extends entity{
     }
 
     show(){
-        
+
     }
 
 }
