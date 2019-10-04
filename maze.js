@@ -62,9 +62,7 @@ class Maze{
     }
     //Make exit
     let exitNum = Math.floor(random(2*(w+h)));//Exit locations
-    //console.log(exitNum)
     let direction = Math.floor(exitNum/(0.5*(w+h)));//Which wall needs breaking
-    //console.log(direction);
     let x;
     let y;
     if(direction == 0){//North
@@ -80,17 +78,13 @@ class Maze{
       x = 0;
       y = exitNum - 2*w - h;
     }
-    //console.log(w,h);
-    //console.log(x,y);
     grid[x][y].getWalls()[direction] = 0;//Break wall for exit
-
+    //Find place for player to spawn
     let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
     while (p5.Vector.dist(pos, createVector(x,y)) > 1.1*h){//Find random start far enough from exit
       pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
     }
     this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);
-    //console.log(pos.x,pos.y);
-    //console.log(x,y)
     return grid;
   }
   generate(cell,minh,minv,maxh,maxv,grid){
