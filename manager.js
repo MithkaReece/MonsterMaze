@@ -9,14 +9,15 @@
 class manager{
     constructor(){
       this.mazeSize = 10;
-
+      
         this.layer = 0;
         this.buttons = new Array(6).fill().map(item =>(new Array()));//Makes an array 6 long of arrays for buttons
         this.labels = new Array(6).fill().map(item => (new Array()));//Makes an array 6 long of arrays for labels
         //Setup main menu:0
         this.buttons[0].push(new button(createVector(width/2,height/2),300,100,"PLAY",[0,0,255],true,() => {
           this.maze = new Maze(this.mazeSize,this.mazeSize,2);
-          this.player = new character(this.maze.getPlayerPos());             
+          this.player = new character(this.maze.getPlayerPos());        
+          this.monster = new monster(this.maze.getMonsterPos());     
           canvas.requestPointerLock();
         },1)) 
         this.buttons[0].push(new button(createVector(width/2,height/4),380,50,"LEADERBOARD",[0,0,255],true,() => {
@@ -30,15 +31,17 @@ class manager{
         this.perspect = new perspective();
 
         this.maze = new Maze(this.mazeSize,this.mazeSize,1);
-        this.player = new character(this.maze.getPlayerPos());    
+        this.player = new character(this.maze.getPlayerPos());  
+        this.monster = new monster(this.maze.getMonsterPos());
+        
         this.labels[1].push(new label(createVector(10*width/11,height/20),300,50,"TAB = Menu",[255,255,255,60]))
         this.labels[1].push(new label(createVector(width/10,height/20),360,40,"WASD = Movement",[255,255,255,60]))
         this.labels[1].push(new label(createVector(3*width/10,height/20),355,40,"Arrows keys to look",[255,255,255,60]))
         
 
         //Setup leaderboard:2
-
-
+        this.buttons[2].push(new button(createVector(width/2,3*height/4),600,100,"Main menu",[0,0,255],true,() =>{
+        },0))
         //Setup pause menu:3
         this.buttons[3].push(new button(createVector(width/2,height/2),720,160,"RESUME",[20,255,100],true,() =>{
             canvas.requestPointerLock();
@@ -55,10 +58,14 @@ class manager{
         },1))
         this.buttons[3].push(new button(createVector(width/2,width/20),720,120,"RESTART",[60,150,0],true,() =>{
           this.maze = new Maze(this.mazeSize,this.mazeSize,2);
-          this.player = new character(this.maze.getPlayerPos());             
+          this.player = new character(this.maze.getPlayerPos());   
+          this.monster = new monster(this.maze.getMonsterPos());          
           canvas.requestPointerLock();
         },1))
-        //this.maze.getQuadTree(this.player.getHitBox());
+
+        //Win screen:4
+        this.labels[4].push(new label(createVector(10*width/11,height/20),300,50,"SCORE: ",[255,255,255,60]))
+        //Lose screen:5
     }
 
     callback(layer){//This function is passed into buttons for when they click
@@ -95,7 +102,7 @@ class manager{
         }
     }
     keyDown(event){
-        if (event.keyCode === 9 && this.layer == 1) {//If key = tab and in gameplay
+        if(event.keyCode === 9 && this.layer == 1) {//If key = tab and in gameplay
           event.preventDefault();//Show mouse
           this.layer = 3;//Open pause menu
         }
@@ -104,11 +111,12 @@ class manager{
           canvas.requestPointerLock();
           this.layer = 1;//Open pause menu
       }
-
-        //Check if won
-        if(this.player.won(this.mazeSize)){
+        if(this.player.won(this.mazeSize) && this.layer == 1){//Check if won
+          let timeDiff = new Date().getTime() - this.maze.getTicks()
+          this.player.setScore(Math.floor(1/timeDiff)*Math.pow(10,8))//Score = 1/ticks of played times 10^8
+          this.labels[4][0].setText(this.labels[4][0].getText() + this.player.getScore());
           document.exitPointerLock();
-          this.layer = 0;//Will be win screen later
+          this.layer = 4;//Will be win screen later
         }
           
         
@@ -117,9 +125,8 @@ class manager{
      
     }
     updateGameplay(){
-      document.exitPointerLock();
-        this.perspect.update(this.player);//Update perspective
-        this.player.controls(this.perspect.getN(),this.maze.getQuadTree(this.player.getHitBox()));
+      this.perspect.update(this.player);//Update perspective
+      this.player.controls(this.perspect.getN(),this.maze.getQuadTree(this.player.getHitBox()));
     }
     drawGameplay(){
       background(0,0,20);
@@ -148,7 +155,11 @@ class manager{
     }
 
     drawLeaderboard(){
-  
+      if(Storage.length!=0){
+        
+      }else{
+        console.log("empty")
+      }
     }
 
     drawPauseMenu(){

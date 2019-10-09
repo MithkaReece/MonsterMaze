@@ -20,6 +20,7 @@ class entity{
   class character extends entity{
     constructor(pos){
       super(pos);
+      this.score = 0;
       this.fov = 140/2;
       this.size = 0.3;
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
@@ -156,5 +157,12 @@ class entity{
     addRY(value){
       this.rotation.y+=value;
       this.rotation.y = constrain(this.rotation.y,radians(-90),radians(90));//Constraint to looking from down to up
+    }
+
+    getScore(){
+      return this.score;
+    }
+    setScore(value){
+      this.score = value;
     }
   }

@@ -7,6 +7,8 @@ let vscale;
 class Maze{
   constructor(width,height,complexity){
     this.playerStart = createVector();
+    this.monsterStart = createVector();
+    this.startTick = new Date().getTime()
 
     this.width = width;//Width of maze
     this.height = height;//Height of maze
@@ -24,15 +26,25 @@ class Maze{
     this.walls = this.generateWalls(this.width,this.height,this.grid);//List of all the walls
     this.wallToTree();
   }
+  getTicks(){
+    return this.startTick;
+  }
   getWalls(){
     return this.walls.slice();
   }
   getQuadTree(hitbox){
     return this.wallTree.retrieve(hitbox);
   }
+  getGrid(){
+    return this.grid;
+  }
 
   getPlayerPos(){
-    return this.playerStart
+    return this.playerStart;
+  }
+
+  getMonsterPos(){
+    return this.monsterStart;
   }
 
   generateMaze(w,h,c,ingrid){
@@ -60,6 +72,8 @@ class Maze{
           }
       }
     }
+
+
     //Make exit
     let exitNum = Math.floor(random(2*(w+h)));//Exit locations
     let direction = Math.floor(exitNum/(0.5*(w+h)));//Which wall needs breaking
@@ -79,6 +93,7 @@ class Maze{
       y = exitNum - 2*w - h;
     }
     grid[x][y].getWalls()[direction] = 0;//Break wall for exit
+    this.monsterStart = createVector(x+0.49,y+0.49);//+0.49 so that it is between the walls and floors to x and y
     //Find place for player to spawn
     let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
     while (p5.Vector.dist(pos, createVector(x,y)) > 1.1*h){//Find random start far enough from exit
@@ -215,6 +230,7 @@ class cell{
   }
   getVisited(){
     return this.visited;
+    
   }
   setVisited(value){
     this.visited = value;

@@ -2,10 +2,8 @@
 const screenScale = 20; //Scales up projection
 const faceheight = 2;//Used for testing face
 
-let nn = new neuralNetwork([3,2,1]);
 let gameMan;
 function setup() {
-  //console.log(nn.feedForward([2,3,5]));
 
   createCanvas(windowWidth, windowHeight);
   background(255)
@@ -78,6 +76,12 @@ class label{
     this.height = height;
     this.text = text;
     this.colour = colour;
+  }
+  getText(){
+    return this.text;
+  }
+  setText(text){
+    this.text = text;
   }
   show(){
     rectMode(CENTER);
