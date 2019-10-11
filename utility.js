@@ -37,6 +37,46 @@ function VtoArray(vector){
     return new Array(cols).fill().map(item =>(new Array(rows))) 
   }
 
+  let array;
+
+function setup() {
+  array = [createVector(99,1),createVector(20,20),createVector(0,0)];
+  createCanvas(400, 400);
+  let narray = mergeSort(array);
+  for(let i=0;i<narray.length;i++){
+    console.log(narray[i].mag()); 
+  }
+}
+
+
+function mergeSort(a){
+  if(a.length == 1){ //If the array only contains one item
+    return a; //Return this item
+  }
+  let first = mergeSort(a.slice(0,a.length/2)); //Sort first half of list
+  let second = mergeSort(a.slice(a.length/2,a.length)); //Sort second half of list
+  return merge(first,second); //Return the two lists merged together
+}
+
+function merge(F,S){
+  //Account for when one of the list is completely emptied
+  F.push([null,Infinity]);
+  S.push([null,Infinity]);
+  let n = []; //Sorted array
+  let i = 0; //First list index
+  let k = 0; //Second list index
+  for(let l=0;l<F.length+S.length-2;l++){
+    if(F[i][1]<=S[k][1]){ //If current item in first list is greater
+      n.push(F[i]); //Adds current item from first list to final list
+      i++; //Increment first list index
+    }else{ //If current item in second list is greater
+      n.push(S[k]); //Add current item from second list to final list
+      k++; //Increment second list index
+    }   
+  }
+  return n; //Return sorted array
+}
+
   class ray{
     constructor(angle){
       this.angle = angle;

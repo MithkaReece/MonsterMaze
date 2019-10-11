@@ -119,6 +119,8 @@ class neuralNetwork{
         this.setupWeights(layers);
         this.learningRate = 0.1;
         this.discountFactor = 0.7;
+        this.activationFunction = (x) =>{this.sigmoid(x)};
+        this.derivActivationFunction = (x) =>{this.sigmoid(x)*(1-this.sigmoid(x))};
     }
     setupWeights(layers){
         for(let i=0;i<layers.length-1;i++){//Loop through all connections between layers
@@ -174,6 +176,11 @@ class neuralNetwork{
         }
 
         let loss = (reward + this.discountFactor*futureQvalue) - Qvalue;
+        let arrayError = new Array(output.length);
+        arrayError = arrayErrory.fill(0);
+        arrayError[actionIndex] = loss;
+        let matrixError = new Matrix(arrayError);
+        this.gradientDecent(matrixError);
         //To calculate loss feedforward with new state
         //From feeding forward new state save the highest q-value
         //Use highest q-value in loss equation 
@@ -181,10 +188,37 @@ class neuralNetwork{
         //Call gradient decent on the network
     }
 
-    gradientDecent(){
+    gradientDecent(matrixError,finalOutputs){
         //Updates weights based on loss 
         //Account learning rate
 
+        let outputErrors = matrixError;//Matrix with error of network
+        
+        //Calc current layer errors
+        let currentErrors = matrixError;
+
+        let outputs = finalOutputs;
+        let inputs; 
+        for(let i=0;i<this.layers.length;i++){
+            let currentTranspose = Matrix.transpose(this.weights[i]);//Transpose the weights between layers
+            nextErrors = Matrix.multiply(currentTranspose,currentErrors);//Calculate the next layers errors
+            //Change weights based on error
+            //New weights = learningRate * currentErrors * (derivative(outputs of layer)) * Transpose(inputs of layer) 
+            inputs = outputs.map(x=>this.derivActivationFunction(x));//Calc current inputs to this layer
+            let deltaWeights = Matrix.multiply(Matrix.multiply(Matrix.scale(currentErrors,this.learningRate),outputs),Matrix.transpose(inputs));
+            this.weights[i].add(deltaWeights);
+            //For next loop
+            currentErrors = nextErrors;//Use the next errors as current for next iteration
+            outputs = inputs;//Turn last inputs to layer to outputs to the next layer
+        }
+        //Calc next layer errors
+
+        
+        //Repeat
+    }
+
+    sigmoid(x){
+        return 1/(1 + Math.pow(Math.exp(),-x));
     }
 
 }

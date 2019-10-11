@@ -99,6 +99,21 @@ class Matrix{
         });   
         
     }
+    add(n){
+      if(n instanceof Matrix){
+        return this.map((e, i, k) => e + n.data[i][k]);//Adding a matrix to current matrix
+      }else{
+        return this.map(e => e + n);//Adding a constant to every term
+      }
+    } 
+    static transpose(m){
+      return new Matrix(m.cols, m.rows).map((_, i, k) => m.data[k][i]);
+    }
+    static scale(matrix,scalar){
+      let data = matrix.getData();
+      data.map(x=>x*scalar);
+      return new Matrix(data);
+    }
     
     static rotateX(vector,angle){
       let rotationX = [

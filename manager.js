@@ -21,7 +21,7 @@ class manager{
           canvas.requestPointerLock();
         },1)) 
         this.buttons[0].push(new button(createVector(width/2,height/4),380,50,"LEADERBOARD",[0,0,255],true,() => {
-     
+          this.setupLeaderboard();
         },2))
         this.buttons[0].push(new button(createVector(width/2,3*height/4),300,100,"EXIT",[0,0,255],true,() =>{
             window.close();
@@ -64,7 +64,9 @@ class manager{
         },1))
 
         //Win screen:4
-        this.labels[4].push(new label(createVector(10*width/11,height/20),300,50,"SCORE: ",[255,255,255,60]))
+        this.inputBox = createInput('');
+        this.inputBox.hide();
+        this.labels[4].push(new label(createVector(width/2,height/20),300,50,"SCORE: ",[255,255,255,60]))
         //Lose screen:5
     }
 
@@ -112,15 +114,65 @@ class manager{
           this.layer = 1;//Open pause menu
       }
         if(this.player.won(this.mazeSize) && this.layer == 1){//Check if won
-          let timeDiff = new Date().getTime() - this.maze.getTicks()
-          this.player.setScore(Math.floor(1/timeDiff)*Math.pow(10,8))//Score = 1/ticks of played times 10^8
-          this.labels[4][0].setText(this.labels[4][0].getText() + this.player.getScore());
-          document.exitPointerLock();
+          let timeDiff = new Date().getTime() - this.maze.getTicks()//Find how long the player was playing for
+          this.player.setScore(Math.floor((1/timeDiff)*Math.pow(10,8)))//Score = 1/ticks of played times 10^8
+          this.labels[4][0].setText(this.labels[4][0].getText() + this.player.getScore());//Update the score of the player to label
+          document.exitPointerLock();//Bring the mouse back
           this.layer = 4;//Will be win screen later
+          this.inputBox.position(width/2,height/2);
+          this.inputBox.show();
         }
-          
-        
+        if(event.keyCode === 13 && this.layer == 4){//If enter pressed in win game menu
+          //
+          if(this.inputBox.value().length>0){//If anything entered in input box
+            this.saveNameToStorage(this.inputBox.value());
+            this.inputBox = createInput('');
+            this.inputBox.hide();
+
+          }
+        }
     }
+    saveNameToStorage(name){
+      let retrievedNames = localStorage.getItem("names");
+      let names = [];
+      if(retrievedNames != null){
+        names = retrievedNames.split(",");
+      }
+      if(names.includes(name) == false){//If name not stored in names
+        names.push(name);//Add name to list of names
+      }  
+      localStorage.setItem("names",names.join(","));
+
+      let retrievedScores = localStorage.getItem(name);
+      let scores = [];
+      if(retrievedScores != null){//If data recorded under name
+        scores = retrievedScores.split(",");
+      }
+      scores.push(this.player.getScore());
+      localStorage.setItem(name,scores.join(","));
+      this.layer = 2;
+    }
+
+    setupLeaderboard(){
+      //console.log("test");
+      let scores = [];
+      let names = localStorage.getItem("names").split(",");
+      console.log(localStorage.getItem(names[0]).split(",").length)
+      
+      for(let i=0;i<names.length;i++){
+        console.log("i",i)
+        let currentName = names[i];
+        let scoresFromName = localStorage.getItem(currentName).split(",");
+        for(let k=0;k<scoresFromName.length;k++){   
+          console.log("k",k)    
+          scores.push([currentName,scoresFromName[k]]);
+        }
+      }
+      //console.log("MERGE")
+      scores = mergeSort(scores);
+      console.log(scores);
+    }
+
     drawMainMenu(){
      
     }
@@ -155,8 +207,9 @@ class manager{
     }
 
     drawLeaderboard(){
-      if(Storage.length!=0){
-        
+      let storageNames = localStorage.getItem("names");
+      if(storageNames.length!=0){
+        //console.log(storageNames)
       }else{
         console.log("empty")
       }

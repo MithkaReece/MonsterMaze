@@ -4,7 +4,6 @@ const faceheight = 2;//Used for testing face
 
 let gameMan;
 function setup() {
-
   createCanvas(windowWidth, windowHeight);
   background(255)
   gameMan = new manager();
