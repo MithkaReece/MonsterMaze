@@ -60,13 +60,13 @@ function mergeSort(a){
 
 function merge(F,S){
   //Account for when one of the list is completely emptied
-  F.push([null,Infinity]);
-  S.push([null,Infinity]);
+  F.push([null,-Infinity]);
+  S.push([null,-Infinity]);
   let n = []; //Sorted array
   let i = 0; //First list index
   let k = 0; //Second list index
   for(let l=0;l<F.length+S.length-2;l++){
-    if(F[i][1]<=S[k][1]){ //If current item in first list is greater
+    if(F[i][1]>=S[k][1]){ //If current item in first list is greater
       n.push(F[i]); //Adds current item from first list to final list
       i++; //Increment first list index
     }else{ //If current item in second list is greater

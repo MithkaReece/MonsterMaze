@@ -20,7 +20,9 @@ function mouseClicked(){
 function mouseMoved(){
   gameMan.mouseMoved();
 }
-
+function mouseWheel(event){
+  gameMan.mouseWheel(event);
+}
 window.addEventListener('keydown', (event) => {
   gameMan.keyDown(event);
 })
@@ -33,18 +35,13 @@ function windowResized() {
 
 
 class button{
-  constructor(pos,width,height,text,colour,state,click,layerChange){
-    this.visible = state;
+  constructor(pos,width,height,text,colour,click){
     this.click = click;
-    this.layerChange = layerChange;
     this.text = text;
     this.colour = colour;
     this.pos = pos;
     this.width = width;
     this.height = height;
-  }
-  getVisible(){
-    return this.visible;
   }
   region(){
     return mouseX >= this.pos.x-this.width/2 &&
@@ -81,6 +78,12 @@ class label{
   }
   setText(text){
     this.text = text;
+  }
+  getPos(){
+    return this.pos;
+  }
+  addPos(vector){
+    this.pos.add(vector);
   }
   show(){
     rectMode(CENTER);
