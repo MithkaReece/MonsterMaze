@@ -19,6 +19,21 @@ class monster extends entity{
         this.nextPos = pos;//Pos that it is current travelling to
 
         this.policyNetwork.initialiseWeights();
+
+
+
+        this.dist;//Distance from player
+    }
+
+    setDist(value){
+        this.dist = value;
+    }
+    getValue(){//Gets the distance for mergesort use
+        return this.dist;
+    }
+
+    show3D(){
+        
     }
 
     move(){

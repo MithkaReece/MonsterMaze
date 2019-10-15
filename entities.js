@@ -30,8 +30,8 @@ class entity{
       }
     }
 
-    rayCast(walls){
-      let newWalls = [];
+    rayCast(walls,monster){
+      let newObjects = [];
       for(let ray of this.rays){//For every ray
         let distRecord = Infinity;//Set smallest distance to always greater than any wall
         let closestWall = null;
@@ -57,7 +57,7 @@ class entity{
             }
           }
         }
-        if(newWalls.includes(closestWall)==false && closestWall!=null){//If wall is no duplicate and exists
+        if(newObjects.includes(closestWall)==false && closestWall!=null){//If wall is no duplicate and exists
           push();
           translate(-width/2,-height/2)
           //closestWall.show2D();
@@ -66,10 +66,14 @@ class entity{
           //line(hscale*this.pos.x,vscale*this.pos.z,hscale*closestPoint.x,vscale*closestPoint.y);
           pop();
           //console.log(distRecord,this.pos.x,this.pos.y,closestPoint.x,closestPoint.y);
-          newWalls.push(closestWall);//Add wall hit from ray into new walls
+          closestWall.setDist(distRecord);
+          newObjects.push(closestWall);//Add wall hit from ray into new walls
         }
       }
-      return newWalls;//Return all ways that need rendering
+      monster.setDist(p5.Vector.dist(monster.getPos(),this.pos));
+      newObjects.push(monster);
+      newObjects = mergeSort(newObjects,"asc");
+      return newObjects;//Return all ways that need rendering
     }
 
     displayRays(){

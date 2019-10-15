@@ -55,11 +55,15 @@ class manager{
         for(let i=0;i<names.length;i++){//Loops through list of names
           let currentName = names[i];//Sets currentName to the current name in the loop
           let scoresFromName = localStorage.getItem(currentName).split(",");//Retrieves a list of scores from currentName
-          for(let k=0;k<scoresFromName.length;k++){//Loops through list of scores   
-            scores.push([currentName,scoresFromName[k]]);//Adds pairs of name and score to scores list
+          for(let k=0;k<scoresFromName.length;k++){//Loops through list of scores 
+            let nextScore = new score(scoresFromName[k]);
+            nextScore.setName(currentName);  
+            scores.push(nextScore);//Adds pairs of name and score to scores list
           }
         }
-        scores = mergeSort(scores);//Sorts the scores into numerical order
+        //Need to change this instead of a list pair
+        //Make an object with a getValue() property with the score
+        scores = mergeSort(scores,"desc");//Sorts the scores into numerical order
         this.leaderboard = new leaderboard(createVector(width/2,3*height/16),scores);
       }else{
         console.log("no leaderboard data")
@@ -205,7 +209,8 @@ class manager{
       background(0,0,20);
       push();//Encapsulates any transformations
       translate(width/2,height/2);//Make 0,0 the centre of the screen
-      const walls = this.player.rayCast(this.maze.getWalls());//Find all the walls that need showing
+      const walls = this.player.rayCast(this.maze.getWalls(),this.monster);//Find all the walls that need showing
+      //console.log(walls)
       walls.forEach(wall=>wall.show3D(this.player,this.perspect));//Show the walls
       pop();        
     }
@@ -274,8 +279,8 @@ class leaderboard{
   createLabels(data){
     this.labels = [];
     for(let i=0;i<data.length;i++){
-      let name = data[i][0];
-      let score = data[i][1];
+      let name = data[i].getName();
+      let score = data[i].getValue();
       let x = this.pos.x;
       let y = this.pos.y + i*(this.labelHeight+this.labelGap);
       this.labels.push(new label(createVector(x,y),this.labelWidth,this.labelHeight,name + ": " + score ,[255,255,255,60]))

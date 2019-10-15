@@ -281,6 +281,12 @@ class wall extends cuboid{
     this.colour = colour;
     this.r = rotation;//Rotation
   }
+  setDist(value){
+    this.dist = value;
+  }
+  getValue(){
+    return this.dist;
+  }
 
   getLength(){//Returns always the longer side
     return this.width;

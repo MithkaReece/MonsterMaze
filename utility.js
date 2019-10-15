@@ -49,24 +49,34 @@ function setup() {
 }
 
 
-function mergeSort(a){
+function mergeSort(a,type){
   if(a.length == 1){ //If the array only contains one item
     return a; //Return this item
   }
-  let first = mergeSort(a.slice(0,a.length/2)); //Sort first half of list
-  let second = mergeSort(a.slice(a.length/2,a.length)); //Sort second half of list
-  return merge(first,second); //Return the two lists merged together
+  let first = mergeSort(a.slice(0,a.length/2),type); //Sort first half of list
+  let second = mergeSort(a.slice(a.length/2,a.length),type); //Sort second half of list
+  return merge(first,second,type); //Return the two lists merged together
 }
 
-function merge(F,S){
+function merge(F,S,type){
   //Account for when one of the list is completely emptied
-  F.push([null,-Infinity]);
-  S.push([null,-Infinity]);
+  if(type == "desc"){
+    F.push(new score(-Infinity));
+    S.push(new score(-Infinity));
+  }else if(type == "asc"){
+    F.push(new score(Infinity));
+    S.push(new score(Infinity));
+  }
   let n = []; //Sorted array
   let i = 0; //First list index
   let k = 0; //Second list index
   for(let l=0;l<F.length+S.length-2;l++){
-    if(F[i][1]>=S[k][1]){ //If current item in first list is greater
+
+    if(F[i].getValue()>=S[k].getValue() && type == "desc"){ //Change this for a general get function
+      n.push(F[i]); //Adds current item from first list to final list
+      i++; //Increment first list index
+    }
+    else if(F[i].getValue()<=S[k].getValue() && type == "asc"){
       n.push(F[i]); //Adds current item from first list to final list
       i++; //Increment first list index
     }else{ //If current item in second list is greater
@@ -75,6 +85,24 @@ function merge(F,S){
     }   
   }
   return n; //Return sorted array
+}
+
+class score{
+  constructor(value){
+    this.value = value;
+    this.name;
+  }
+  setName(value){
+    this.name = value;
+  }
+  getName(){
+    return this.name;
+  }
+
+
+  getValue(){
+    return this.value;
+  }
 }
 
   class ray{
