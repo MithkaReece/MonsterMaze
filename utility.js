@@ -23,7 +23,7 @@ function VtoArray(vector){
     return vector;
   }
   function matrixToArray(matrix){
-    if(matrix.getData()[0].length == 0){
+    if(matrix.getData()[0].length == 0){   
       return null;
     }
     let data = [];

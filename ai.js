@@ -7,8 +7,8 @@ class monster extends entity{
         this.relayMemorySize = 6;//Number of samples stored in memory 
         this.sampleFraction = 0.7;//Fraction of samples that is tested as a batch
 
-        this.policyNetwork = new neuralNetwork(2,5,3);//Creates the policy network
-        this.targetNetwork = new neuralNetwork(2,5,3);//Create the target network the same size as target network
+        this.policyNetwork = new neuralNetwork([4,5,3]);//Creates the policy network
+        this.targetNetwork = new neuralNetwork([4,5,3]);//Create the target network the same size as target network
         this.updateTargetNetwork();//Updates target network to reflect the policy network
         this.TNInterval = 50;//How many iterations it takes to update the target network
 
@@ -52,11 +52,11 @@ class monster extends entity{
         let actionIndex = this.selectAction(playerPos);//Picks an action   
         let reward = this.calcReward(mazeGrid,playerPos,actionIndex);//Calculates the reward for picked action
         //Store old state, action, reward, new state in replay memory
-        this.storeReplayMemory(this.pos,actionIndex,reward,this.nextPos);
+        this.storeReplayMemory([this.pos.x,this.pos.z,playerPos.x,playerPos.z],actionIndex,reward,this.nextPos);
         let sample = this.getSample();//Gets a sample from relay memory
         for(let i=0;i<sample.length;i++){//Loops through the sample
             let data = sample[i];//Set data to current data in sample
-            this.policyNetwork.train(data,targetNetwork);//Train the policy network using current data and target network
+            this.policyNetwork.train(data,this.targetNetwork);//Train the policy network using current data and target network
             this.iterations++;//Increment iteration counter
             if(this.iterations % this.TNInterval == 0){//Every TNInterval iterations
                 this.updateTargetNetwork();//Update the target network to match current policy network
@@ -70,7 +70,7 @@ class monster extends entity{
     selectAction(playerPos){
         let actionIndex;
         if(Math.random(1)>this.exploreThreshold){//If exploitation is needed
-            let outputs = matrixToArray(this.policyNetwork.feedForward([this.pos,playerPos])[0]);//Find q-values through neural network
+            let outputs = matrixToArray(this.policyNetwork.feedForward([this.pos.x,this.pos.z,playerPos.x,playerPos.z])[0]);//Find q-values through neural network
             let max = outputs[0];//Defaults first q value as max
             let indexOfMax = 0;//Defaults index of max as first index
             for(let i=1;i<outputs.length;i++){//Loop through all q values
@@ -81,7 +81,7 @@ class monster extends entity{
             }
             actionIndex = indexOfMax;//Pick action with highest q-value
         }else{//Exploring has been picked         
-            actionIndex = Math.floor(math.random(4));//Pick a random action 
+            actionIndex = Math.floor(Math.random(4));//Pick a random action 
         }
         return actionIndex;
     }
@@ -95,13 +95,13 @@ class monster extends entity{
         }else{
             this.nextPos = p5.Vector.add(this.pos,actions[actionIndex])//Moves monster based on action   
         }
-        console.log(this.nextPos.x,this.nextPos.y);
+        //console.log(this.nextPos.x,this.nextPos.y);
         let distance = p5.Vector.dist(this.pos,playerPos);//Calculate distance from player
         let k = 5;//reward multiplayer to getting closer to the player
         return reward += k/distance;//Add reward based on how close to the player the monster is
     }
     storeReplayMemory(oldState,actionIndex,reward,newState){
-        if(this.relayMemory.length >= relayMemorySize){
+        if(this.relayMemory.length >= this.relayMemorySize){
             this.relayMemory.shift();//Dequeue if queue is full
         }
         this.relayMemory.push([oldState,actionIndex,reward,newState]);//Enqueue new memory
@@ -149,7 +149,6 @@ class neuralNetwork{
         this.discountFactor = 0.7;
         this.activationFunction = this.sigmoid;
         this.derivActivationFunction = (x) =>{this.sigmoid(x)*(1-this.sigmoid(x))};
-        this.inverseActivationFunction = this.inverseSigmoid;
     }
     setupWeights(layers){
         for(let i=0;i<layers.length-1;i++){//Loop through all connections between layers
@@ -161,9 +160,9 @@ class neuralNetwork{
     initialiseWeights(){
         for(let i=0;i<this.weights.length;i++){
             let current = this.weights[i];//Current connection between two layers
-            for(let cols=0;i<current.cols;i++){
-                for(let rows=0;i<current.rows;i++){
-                    current.data[rows][cols] =  Math.random(-1,1);
+            for(let cols=0;cols<current.cols;cols++){
+                for(let rows=0;rows<current.rows;rows++){
+                    current.data[rows][cols] = Math.random(-1,1);
                 }
             }
         }
@@ -184,11 +183,16 @@ class neuralNetwork{
         outputs.push(iMatrix);
         for(let i=0;i<this.weights.length;i++){//Loops through the layers
             let currentWeights = this.weights[i];
-            iMatrix = Matrix.multiply(currentWeights,iMatrix);//Times by the weights of connections
-            iMatrix.map(this.activationFunction);
+            //console.log(currentWeights.getData(),iMatrix.getData());
+            console.log(Matrix.multiply(currentWeights,iMatrix))
+            iMatrix = Matrix.multiply(currentWeights,iMatrix);//Times by the weights of 
+            console.log(Matrix.map(iMatrix,this.activationFunction))
+            iMatrix = Matrix.map(iMatrix,this.activationFunction)
+           console.log("--------")
             outputs.push(iMatrix);
         }
         //Output list of all outputs from last to first
+        console.log("0000")
         return outputs.reverse();
     }
     train(data,targetNetwork){
@@ -196,10 +200,14 @@ class neuralNetwork{
         let actionIndex = data[1];
         let reward = data[2];
         let newState = data[3];
-
+        //console.log(state)
         let inputs = state;//Add normalization
+        //console.log(data)
         let outputs = this.feedForward(inputs);//Feed forward inputs
-        let finalOutput = matrixToArray(outputs[0]);
+        //console.log(outputs)
+   
+        let finalOutput = outputs.map(x => matrixToArray(x));
+        //console.log(finalOutput)
         let Qvalue = finalOutput[actionIndex]//Using action index to select the q-value we are working with
 
         let futureOutputs = matrixToArray(targetNetwork.feedForward(newState)[0]);//Gets outputs from future decision from targetNetwork
@@ -226,38 +234,24 @@ class neuralNetwork{
     gradientDecent(matrixError,outputs){
         //Updates weights based on loss 
         //Account learning rate
+        let currentErrors = matrixError;//Define the intital output error (q error)
 
-        let outputErrors = matrixError;//Matrix with error of network
-        
-        //Calc current layer errors
-        let currentErrors = matrixError;
-
-        for(let i=0;i<this.layers.length;i++){
+        for(let i=0;i<this.layers.length;i++){//Loop through and update all weights
             let currentOutputs = outputs[i]
             let currentInputs = outputs[i+1]
 
             let currentTranspose = Matrix.transpose(this.weights[this.layers.length-i-1]);//Transpose the weights between layers
-            nextErrors = Matrix.multiply(currentTranspose,currentErrors);//Calculate the next layers errors
-            //Change weights based on error
-            //Calculate inputs that produced current outputs (inverse weights x inverse activation fnc on outputs)
-            
+            let nextError = Matrix.multiply(currentTranspose,currentErrors);//Calculate the next layers errors
             //New weights = learningRate * currentErrors * (derivative(outputs of layer)) * Transpose(inputs of layer) 
             let deltaWeights = Matrix.multiply(Matrix.multiply(Matrix.scale(currentErrors,this.learningRate),Matrix.map(currentOutputs,this.derivActivationFunction)),Matrix.transpose(currentInputs));
-            this.weights[i].add(deltaWeights);
-            //For next loop
-            currentErrors = nextErrors;//Use the next errors as current for next iteration
+            this.weights[i].add(deltaWeights);//Update weights
+            currentErrors = nextError;//Use the next errors as current for next iteration
         }
-        //Calc next layer errors
-
-        
-        //Repeat
     }
 
     sigmoid(x){
         return 1/(1 + Math.pow(Math.exp(),-x));
     }
-    inverseSigmoid(x){
-        return Math.log((1-x)/x);
-    }
+
 
 }

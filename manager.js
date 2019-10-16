@@ -61,8 +61,6 @@ class manager{
             scores.push(nextScore);//Adds pairs of name and score to scores list
           }
         }
-        //Need to change this instead of a list pair
-        //Make an object with a getValue() property with the score
         scores = mergeSort(scores,"desc");//Sorts the scores into numerical order
         this.leaderboard = new leaderboard(createVector(width/2,3*height/16),scores);
       }else{
@@ -199,7 +197,11 @@ class manager{
       localStorage.setItem(name,scores.join(","));//Convert new scores list to string and store it
     }
 
-    
+    runAi(){
+      if(this.layer == 1){
+        this.monster.run(this.maze.getGrid(),this.player.getPos());
+      }
+    }
 
     updateGameplay(){
       this.perspect.update(this.player);//Update perspective

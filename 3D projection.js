@@ -30,8 +30,10 @@ window.addEventListener('keydown', (event) => {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
-
-//setInterval(,5000) This should all the ai to do its move (milliseconds)
+function sommet(){
+  gameMan.runAi();
+}
+setInterval(sommet,500)// This should all the ai to do its move (milliseconds)
 
 
 class button{

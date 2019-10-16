@@ -84,6 +84,17 @@ class Matrix{
       return this;
     }  
     
+    static map(m,fn){
+      let data = m.getData();
+      if(Array.isArray(data[0])){
+        //console.log("TESTTT")
+        data.map(x => x.map(y => fn(y)));
+      }else{
+        data = data.map(x => fn(x));
+      }
+      return new Matrix(data);
+    }
+    
     static multiply(a,b){
         //matrix multiplication
         if(a.cols !== b.rows){
