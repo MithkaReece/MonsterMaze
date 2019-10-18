@@ -36,8 +36,8 @@ function VtoArray(vector){
     //Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array
     return new Array(cols).fill().map(item =>(new Array(rows))) 
   }
+  const clone = (items) => items.map(item => Array.isArray(item) ? clone(item) : item);
 
-  let array;
 
 function setup() {
   array = [createVector(99,1),createVector(20,20),createVector(0,0)];

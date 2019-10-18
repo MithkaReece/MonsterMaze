@@ -21,7 +21,7 @@ class Matrix{
     }
 
     getData(){
-      return this.data;
+      return clone(this.data);
     }
     
     insert(array){
@@ -73,6 +73,28 @@ class Matrix{
      }
     }
 
+
+    static elementWiseMult(a,b){
+      if(a.cols == b.cols && a.rows == b.rows){
+        let aArray = a.getData();
+        let bArray = b.getData();
+        if(aArray[0].length>1){//If 2D array
+          for(let y=0;y<aArray.length;y++){
+            for(let x=0;x<aArray[0].length;x++){
+              aArray[x][y] = aArray[x][y] * bArray[x][y];
+            }
+          }
+        }else{
+          for(let i=0;i<aArray.length;i++){
+            aArray[i] = aArray[i] * bArray[i];
+          }
+        }
+        return new Matrix(aArray);
+      }
+      console.log("can't do element wise mult")
+      return null
+    }
+
     map(fn){   
         //apply a function to every element
         for(let i=0;i<this.rows;i++){
@@ -84,15 +106,14 @@ class Matrix{
       return this;
     }  
     
-    static map(m,fn){
-      let data = m.getData();
-      if(Array.isArray(data[0])){
-        //console.log("TESTTT")
-        data.map(x => x.map(y => fn(y)));
-      }else{
-        data = data.map(x => fn(x));
+    static map(m,fn){//NEEDS WORK
+      let newData = clone(m.getData());//Grabs a copy of the data in the matrix
+      for(let i=0;i<m.rows;i++){//Loops all rows
+        for(let j=0;j<m.cols;j++){//Loops all cols
+          newData[i][j] = fn(m.getData()[i][j]);//Sets copied list at row,col with the function applied to element
+        }
       }
-      return new Matrix(data);
+      return new Matrix(newData);//Return a new matrix with the change data
     }
     
     static multiply(a,b){
@@ -112,7 +133,7 @@ class Matrix{
     }
     add(n){
       if(n instanceof Matrix){
-        return this.map((e, i, k) => e + n.data[i][k]);//Adding a matrix to current matrix
+        return this.map((e, i, k) => e + n.getData()[i][k]);//Adding a matrix to current matrix
       }else{
         return this.map(e => e + n);//Adding a constant to every term
       }

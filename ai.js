@@ -36,15 +36,20 @@ class monster extends entity{
     }
 
     move(){
-        let acc = 10;//Accuracy
-        if(Math.floor(acc*this.nextPos.x) == Math.floor(acc*this.pos.x) && Math.floor(acc*this.nextPos.y) == Math.floor(acc*this.pos.y)){
+        let acc = 10;//
+        
+        if(Math.floor(acc*this.nextPos.x) == Math.floor(acc*this.pos.x) && Math.floor(acc*this.nextPos.z) == Math.floor(acc*this.pos.z)){
             return;//If nextPos is equal to pos
         } 
         let dirVector = p5.Vector.sub(this.nextPos,this.pos);//direction vector from current pos to nextpos
-        if(dirVector.mag()>speed){
-            dirVector.setMag(speed);//Sets the speed of movement
-        }  
+        if(dirVector.mag()>this.speed){
+            dirVector.setMag(this.speed);//Sets the speed of movement
+        } 
+         
         this.pos.add(dirVector);//Adds the direction vector to move the monster
+        console.log(this.pos.x,this.pos.z);
+        console.log(this.nextPos.x,this.nextPos.z);
+        console.log("--------")
     }
 
     run(mazeGrid,playerPos){//Make sure playerPos is in terms of 2D x,z
@@ -52,7 +57,7 @@ class monster extends entity{
         let actionIndex = this.selectAction(playerPos);//Picks an action   
         let reward = this.calcReward(mazeGrid,playerPos,actionIndex);//Calculates the reward for picked action
         //Store old state, action, reward, new state in replay memory
-        this.storeReplayMemory([this.pos.x,this.pos.z,playerPos.x,playerPos.z],actionIndex,reward,this.nextPos);
+        this.storeReplayMemory([this.pos.x,this.pos.z,playerPos.x,playerPos.z],actionIndex,reward,[this.nextPos.x,this.nextPos.z,playerPos.x,playerPos.z]);
         let sample = this.getSample();//Gets a sample from relay memory
         for(let i=0;i<sample.length;i++){//Loops through the sample
             let data = sample[i];//Set data to current data in sample
@@ -65,7 +70,7 @@ class monster extends entity{
         if(this.exploreThreshold > this.minExploration){//If exploration is above minimium
             this.exploreThreshold-=this.explorationDecay;//Decay exploration threshold/rate
         }
-        
+        this.move()
     }
     selectAction(playerPos){
         let actionIndex;
@@ -88,7 +93,8 @@ class monster extends entity{
     calcReward(mazeGrid,playerPos,actionIndex){
         let actions = [createVector(0,1),createVector(1,0),createVector(0,-1),createVector(-1,0)];//NESW  
         let reward = 0;//Set reward to 0 by default
-        let currentCell = mazeGrid[Math.floor(this.pos.x)][Math.floor(this.pos.y)];//find current cell monster is in
+        //console.log(Math.floor(this.pos.x),Math.floor(this.pos.z))
+        let currentCell = mazeGrid[Math.floor(this.pos.x)][Math.floor(this.pos.z)];//find current cell monster is in
         if(currentCell.getWalls()[actionIndex]==1){//If you walk into a wall
             let p = -1//Reward for walking into a wall
             reward += p;//Negative reward for walking into a wall
@@ -143,12 +149,13 @@ class monster extends entity{
 class neuralNetwork{
     constructor(layers){
         this.inputCount = layers[0];
+        this.layers = layers;
         this.weights = [];
         this.setupWeights(layers);
         this.learningRate = 0.1;
         this.discountFactor = 0.7;
         this.activationFunction = this.sigmoid;
-        this.derivActivationFunction = (x) =>{this.sigmoid(x)*(1-this.sigmoid(x))};
+        this.derivActivationFunction = ((x) =>{return this.sigmoid(x)*(1-this.sigmoid(x))});
     }
     setupWeights(layers){
         for(let i=0;i<layers.length-1;i++){//Loop through all connections between layers
@@ -180,20 +187,15 @@ class neuralNetwork{
             return null;
         }
         let iMatrix = new Matrix(inputs);//Turn inputs into a matrix
-        outputs.push(iMatrix);
+        outputs.push(new Matrix(iMatrix.getData()));
         for(let i=0;i<this.weights.length;i++){//Loops through the layers
             let currentWeights = this.weights[i];
-            //console.log(currentWeights.getData(),iMatrix.getData());
-            console.log(Matrix.multiply(currentWeights,iMatrix))
-            iMatrix = Matrix.multiply(currentWeights,iMatrix);//Times by the weights of 
-            console.log(Matrix.map(iMatrix,this.activationFunction))
-            iMatrix = Matrix.map(iMatrix,this.activationFunction)
-           console.log("--------")
-            outputs.push(iMatrix);
+            iMatrix = Matrix.multiply(currentWeights,iMatrix);//Times by the weights of
+            iMatrix = Matrix.map(iMatrix,this.activationFunction) //<= need to fix so activation function acc works
+            outputs.push(new Matrix(iMatrix.getData()));
         }
-        //Output list of all outputs from last to first
-        console.log("0000")
-        return outputs.reverse();
+        //console.log(outputs)
+        return outputs.reverse();//Workss
     }
     train(data,targetNetwork){
         let state = data[0];//Input state
@@ -205,12 +207,11 @@ class neuralNetwork{
         //console.log(data)
         let outputs = this.feedForward(inputs);//Feed forward inputs
         //console.log(outputs)
-   
-        let finalOutput = outputs.map(x => matrixToArray(x));
+        let finalOutput = matrixToArray(outputs[0])
         //console.log(finalOutput)
         let Qvalue = finalOutput[actionIndex]//Using action index to select the q-value we are working with
-
         let futureOutputs = matrixToArray(targetNetwork.feedForward(newState)[0]);//Gets outputs from future decision from targetNetwork
+        
         let futureQvalue = futureOutputs[0];//Max future Q value
         for(let i=1;i<futureOutputs.length;i++){//Find max q-value
             if(futureOutputs[i] > futureQvalue){//If q-value is larger than past max
@@ -218,12 +219,14 @@ class neuralNetwork{
             }
         }
 
-        let loss = (reward + this.discountFactor*futureQvalue) - Qvalue;
-        let arrayError = new Array(output.length);
-        arrayError = arrayErrory.fill(0);
-        arrayError[actionIndex] = loss;
-        let matrixError = new Matrix(arrayError);
-        this.gradientDecent(matrixError,outputs);
+        let loss = (reward + this.discountFactor*futureQvalue) - Qvalue;//Calc loss
+        //console.log(loss)
+        let arrayError = new Array(outputs.length);//Make an array to place loss in
+        arrayError = arrayError.fill(0);//Fill array with 0s
+        arrayError[actionIndex] = loss;//Add in loss
+        let matrixError = new Matrix(arrayError);//Convert to matrix
+        //console.log(matrixError)
+        this.gradientDecent(matrixError,outputs);//Use gradient descent to update weights to reduce
         //To calculate loss feedforward with new state
         //From feeding forward new state save the highest q-value
         //Use highest q-value in loss equation 
@@ -234,23 +237,37 @@ class neuralNetwork{
     gradientDecent(matrixError,outputs){
         //Updates weights based on loss 
         //Account learning rate
+        //this.printNetwork()
         let currentErrors = matrixError;//Define the intital output error (q error)
-
-        for(let i=0;i<this.layers.length;i++){//Loop through and update all weights
+        for(let i=0;i<this.layers.length-1;i++){//Loop through and update all weights
             let currentOutputs = outputs[i]
             let currentInputs = outputs[i+1]
-
-            let currentTranspose = Matrix.transpose(this.weights[this.layers.length-i-1]);//Transpose the weights between layers
+            
+            let currentTranspose = Matrix.transpose(this.weights[this.layers.length-i-2]);//Transpose the weights between layers
             let nextError = Matrix.multiply(currentTranspose,currentErrors);//Calculate the next layers errors
-            //New weights = learningRate * currentErrors * (derivative(outputs of layer)) * Transpose(inputs of layer) 
-            let deltaWeights = Matrix.multiply(Matrix.multiply(Matrix.scale(currentErrors,this.learningRate),Matrix.map(currentOutputs,this.derivActivationFunction)),Matrix.transpose(currentInputs));
-            this.weights[i].add(deltaWeights);//Update weights
+            //New weights = learningRate * currentErrors * (derivative(outputs of layer)) * Transpose(inputs of layer)
+            let lrCurrentErrors = Matrix.scale(currentErrors,this.learningRate);
+            let outputDerivative = Matrix.map(currentOutputs,this.derivActivationFunction);//Map isn't treating it as static
+            let inputTranspose = Matrix.transpose(currentInputs);
+            let deltaWeights = Matrix.multiply(Matrix.elementWiseMult(lrCurrentErrors,outputDerivative),inputTranspose);
+            //console.log(this.weights[i])
+            //console.log(deltaWeights)
+            this.weights[this.layers.length-i-2].add(deltaWeights);//Update weights
             currentErrors = nextError;//Use the next errors as current for next iteration
         }
     }
 
+
+    printNetwork(){
+        let list = [];     
+        for(let i=0;i<this.weights.length;i++){
+            list = list.concat(this.weights[i].getData())
+        }
+        console.log(list)
+    }
+
     sigmoid(x){
-        return 1/(1 + Math.pow(Math.exp(),-x));
+        return 1/(1 + Math.pow(Math.E,-x));
     }
 
 

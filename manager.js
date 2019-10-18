@@ -155,14 +155,16 @@ class manager{
         this.checkNameEntry(event.keyCode);
     }
     checkWin(){
-      if(this.player.won(this.mazeSize) && this.layer == 1){//Check if won
-        document.exitPointerLock();//Bring the mouse back
-        let timeDiff = new Date().getTime() - this.maze.getTicks()//Find how long the player was playing for
-        this.player.setScore(Math.floor((1/timeDiff)*Math.pow(10,8)))//Score = 1/ticks of played times 10^8  
-        this.layer = 4;//Change to win screen
-        this.setupWinScreen();//Setups up win screen
-        this.inputBox.position(width/2,height/2);//Set position of inputbox
-        this.inputBox.show();//Shows input box for win screen
+      if(this.layer == 1){//Check if won
+        if(this.player.won(this.mazeSize)){
+          document.exitPointerLock();//Bring the mouse back
+          let timeDiff = new Date().getTime() - this.maze.getTicks()//Find how long the player was playing for
+          this.player.setScore(Math.floor((1/timeDiff)*Math.pow(10,8)))//Score = 1/ticks of played times 10^8  
+          this.layer = 4;//Change to win screen
+          this.setupWinScreen();//Setups up win screen
+          this.inputBox.position(width/2,height/2);//Set position of inputbox
+          this.inputBox.show();//Shows input box for win screen
+        }
       }
     }
     checkNameEntry(key){
