@@ -3,6 +3,8 @@
 class monster extends entity{
     constructor(pos){
         super(pos);
+        this.nextPos = this.pos.copy();
+
         this.relayMemory = [];//QUEUE
         this.relayMemorySize = 6;//Number of samples stored in memory 
         this.sampleFraction = 0.7;//Fraction of samples that is tested as a batch
@@ -35,21 +37,20 @@ class monster extends entity{
         return this.dist;
     }
 
-    move(){
-        let acc = 10;//
-        
-        if(Math.floor(acc*this.nextPos.x) == Math.floor(acc*this.pos.x) && Math.floor(acc*this.nextPos.z) == Math.floor(acc*this.pos.z)){
+    move(){//nextPos never changing atm
+        let acc = 1;//
+        console.log("-------")
+        console.log(this.pos.x,this.pos.z);
+        console.log(this.nextPos.x,this.nextPos.z);
+        console.log("--------")
+        if(Math.floor(acc*this.nextPos.x) == Math.floor(acc*this.pos.x) && Math.floor(acc*this.nextPos.z) == Math.floor(acc*this.pos.z)){    
             return;//If nextPos is equal to pos
         } 
         let dirVector = p5.Vector.sub(this.nextPos,this.pos);//direction vector from current pos to nextpos
         if(dirVector.mag()>this.speed){
             dirVector.setMag(this.speed);//Sets the speed of movement
-        } 
-         
+        }       
         this.pos.add(dirVector);//Adds the direction vector to move the monster
-        console.log(this.pos.x,this.pos.z);
-        console.log(this.nextPos.x,this.nextPos.z);
-        console.log("--------")
     }
 
     run(mazeGrid,playerPos){//Make sure playerPos is in terms of 2D x,z
@@ -91,7 +92,7 @@ class monster extends entity{
         return actionIndex;
     }
     calcReward(mazeGrid,playerPos,actionIndex){
-        let actions = [createVector(0,1),createVector(1,0),createVector(0,-1),createVector(-1,0)];//NESW  
+        let actions = [createVector(0,0,1),createVector(1,0,0),createVector(0,0,-1),createVector(-1,0,0)];//NESW  
         let reward = 0;//Set reward to 0 by default
         //console.log(Math.floor(this.pos.x),Math.floor(this.pos.z))
         let currentCell = mazeGrid[Math.floor(this.pos.x)][Math.floor(this.pos.z)];//find current cell monster is in
@@ -99,8 +100,14 @@ class monster extends entity{
             let p = -1//Reward for walking into a wall
             reward += p;//Negative reward for walking into a wall
         }else{
-            this.nextPos = p5.Vector.add(this.pos,actions[actionIndex])//Moves monster based on action   
+            console.log("Adds")
+            console.log(this.nextPos.x,this.nextPos.y)
+            this.nextPos.add(actions[actionIndex]);
+            console.log(this.pos.x,this.pos.y)
+            console.log(this.nextPos.x,this.nextPos.y)
+            ///this.nextPos = p5.Vector.add(this.pos,actions[actionIndex])//Moves monster based on action   
         }
+        console.log("Anything")
         //console.log(this.nextPos.x,this.nextPos.y);
         let distance = p5.Vector.dist(this.pos,playerPos);//Calculate distance from player
         let k = 5;//reward multiplayer to getting closer to the player

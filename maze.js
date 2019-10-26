@@ -93,7 +93,7 @@ class Maze{
       y = exitNum - 2*w - h;
     }
     grid[x][y].getWalls()[direction] = 0;//Break wall for exit
-    this.monsterStart = createVector(x+0.49,y+0.49);//+0.49 so that it is between the walls and floors to x and y
+    this.monsterStart = createVector(x+0.49,-2,y+0.49);//+0.49 so that it is between the walls and floors to x and y
     //Find place for player to spawn
     let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
     while (p5.Vector.dist(pos, createVector(x,y)) > 1.1*h){//Find random start far enough from exit
