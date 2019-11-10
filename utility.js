@@ -71,7 +71,6 @@ function merge(F,S,type){
   let i = 0; //First list index
   let k = 0; //Second list index
   for(let l=0;l<F.length+S.length-2;l++){
-
     if(F[i].getValue()>=S[k].getValue() && type == "desc"){ //Change this for a general get function
       n.push(F[i]); //Adds current item from first list to final list
       i++; //Increment first list index

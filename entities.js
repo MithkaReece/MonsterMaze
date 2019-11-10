@@ -72,7 +72,7 @@ class entity{
       }
       monster.setDist(p5.Vector.dist(monster.getPos(),this.pos));
       newObjects.push(monster);
-      newObjects = mergeSort(newObjects,"asc");
+      newObjects = mergeSort(newObjects,"desc");
       return newObjects;//Return all ways that need rendering
     }
 
@@ -143,6 +143,7 @@ class entity{
         }      
       }
       this.pos.add(dir);
+      //console.log(Math.floor(this.pos.x),Math.floor(this.pos.z))
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
     }
 

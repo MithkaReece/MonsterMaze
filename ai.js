@@ -3,31 +3,35 @@
 class monster extends entity{
     constructor(pos){
         super(pos);
-        this.nextPos = this.pos.copy();
+        this.nextPos = pos.copy()
 
         this.relayMemory = [];//QUEUE
         this.relayMemorySize = 6;//Number of samples stored in memory 
         this.sampleFraction = 0.7;//Fraction of samples that is tested as a batch
 
-        this.policyNetwork = new neuralNetwork([4,5,3]);//Creates the policy network
-        this.targetNetwork = new neuralNetwork([4,5,3]);//Create the target network the same size as target network
+        this.policyNetwork = new neuralNetwork([6,10,4]);//Creates the policy network
+        this.targetNetwork = new neuralNetwork([6,10,4]);//Create the target network the same size as target network
         this.updateTargetNetwork();//Updates target network to reflect the policy network
         this.TNInterval = 50;//How many iterations it takes to update the target network
 
-        this.exploreThreshold = 1;
+        this.exploreThreshold = 0.7;
         this.minExploration = 0.1;
         this.explorationDecay = 0.001;
 
         this.state; //Monster pos, Player pos
 
-        this.speed = 1;//Calculated based on how far it will move compared to how long it makes decisions (distance/time)
-        this.nextPos = pos;//Pos that it is current travelling to
+        this.speed = 10;//Calculated based on how far it will move compared to how long it makes decisions (distance/time)
 
         this.iterations = 0;
 
         this.policyNetwork.initialiseWeights();
 
         this.dist;//Distance from player
+
+        this.moveIterations = 0;
+
+
+        this.tempCube = new cuboid(pos,0.1,1,0.1,0,[100,0,0]);
     }
 
     setDist(value){
@@ -38,45 +42,56 @@ class monster extends entity{
     }
 
     move(){//nextPos never changing atm
-        let acc = 1;//
-        console.log("-------")
-        console.log(this.pos.x,this.pos.z);
-        console.log(this.nextPos.x,this.nextPos.z);
-        console.log("--------")
-        if(Math.floor(acc*this.nextPos.x) == Math.floor(acc*this.pos.x) && Math.floor(acc*this.nextPos.z) == Math.floor(acc*this.pos.z)){    
-            return;//If nextPos is equal to pos
-        } 
         let dirVector = p5.Vector.sub(this.nextPos,this.pos);//direction vector from current pos to nextpos
-        if(dirVector.mag()>this.speed){
-            dirVector.setMag(this.speed);//Sets the speed of movement
+        if(dirVector.mag()>1/this.speed){
+            dirVector.setMag(1/this.speed);//Sets the speed of movement  
         }       
         this.pos.add(dirVector);//Adds the direction vector to move the monster
     }
 
     run(mazeGrid,playerPos){//Make sure playerPos is in terms of 2D x,z
-        //Select action (explore/exploit) 
-        let actionIndex = this.selectAction(playerPos);//Picks an action   
-        let reward = this.calcReward(mazeGrid,playerPos,actionIndex);//Calculates the reward for picked action
-        //Store old state, action, reward, new state in replay memory
-        this.storeReplayMemory([this.pos.x,this.pos.z,playerPos.x,playerPos.z],actionIndex,reward,[this.nextPos.x,this.nextPos.z,playerPos.x,playerPos.z]);
-        let sample = this.getSample();//Gets a sample from relay memory
-        for(let i=0;i<sample.length;i++){//Loops through the sample
-            let data = sample[i];//Set data to current data in sample
-            this.policyNetwork.train(data,this.targetNetwork);//Train the policy network using current data and target network
-            this.iterations++;//Increment iteration counter
-            if(this.iterations % this.TNInterval == 0){//Every TNInterval iterations
-                this.updateTargetNetwork();//Update the target network to match current policy network
+        if(this.moveIterations == 0){
+            //Select action (explore/exploit) 
+            let actionIndex = this.selectAction(playerPos,mazeGrid);//Picks an action   
+            let reward = this.calcReward(mazeGrid,playerPos,actionIndex);//Calculates the reward for picked action
+            
+            let currentState = this.getState(playerPos,this.pos,mazeGrid);//Collect current state
+            let nextState =this.getState(playerPos,this.nextPos,mazeGrid);//Collect next state
+            this.storeReplayMemory(currentState,actionIndex,reward,nextState);//Store old state, action, reward, new state in replay memory
+            let sample = this.getSample();//Gets a sample from relay memory
+            for(let i=0;i<sample.length;i++){//Loops through the sample
+                let data = sample[i];//Set data to current data in sample
+                this.policyNetwork.train(data,this.targetNetwork);//Train the policy network using current data and target network
+                this.iterations++;//Increment iteration counter
+                if(this.iterations % this.TNInterval == 0){//Every TNInterval iterations
+                    this.updateTargetNetwork();//Update the target network to match current policy network
+                }
             }
-        }
-        if(this.exploreThreshold > this.minExploration){//If exploration is above minimium
-            this.exploreThreshold-=this.explorationDecay;//Decay exploration threshold/rate
+            if(this.exploreThreshold > this.minExploration){//If exploration is above minimium
+                this.exploreThreshold-=this.explorationDecay;//Decay exploration threshold/rate
+            }         
+            
+            //console.log(this.relayMemory[0][3])
+        }   
+        this.moveIterations++;
+        if(this.moveIterations>=this.speed){
+            this.moveIterations = 0;
         }
         this.move()
     }
-    selectAction(playerPos){
+    getState(playerPos, currentPos, mazeGrid){
+        let cell = mazeGrid[Math.floor(currentPos.x)][Math.floor(currentPos.z)];
+        let mazeSize = mazeGrid.length;
+        let diffX = (playerPos.x-currentPos.x)/(mazeSize-1);
+        let diffZ = (playerPos.z-currentPos.z)/(mazeSize-1);
+        return [diffX,diffZ].concat(clone(cell.getWalls()));//Return vector from current pos to player plus walls of that cell
+    }
+    
+    selectAction(playerPos,mazeGrid){
         let actionIndex;
-        if(Math.random(1)>this.exploreThreshold){//If exploitation is needed
-            let outputs = matrixToArray(this.policyNetwork.feedForward([this.pos.x,this.pos.z,playerPos.x,playerPos.z])[0]);//Find q-values through neural network
+        let directions = ["N","E","S","W"]
+        if(random(1)>this.exploreThreshold){//If exploitation is needed
+            let outputs = matrixToArray(this.policyNetwork.feedForward(this.getState(playerPos, this.pos, mazeGrid))[0]);//Find q-values through neural network
             let max = outputs[0];//Defaults first q value as max
             let indexOfMax = 0;//Defaults index of max as first index
             for(let i=1;i<outputs.length;i++){//Loop through all q values
@@ -86,29 +101,24 @@ class monster extends entity{
                 }
             }
             actionIndex = indexOfMax;//Pick action with highest q-value
-        }else{//Exploring has been picked         
-            actionIndex = Math.floor(Math.random(4));//Pick a random action 
+            //console.log("C " + directions[actionIndex])
+        }else{//Exploring has been picked   
+            actionIndex = Math.floor(random(4));//Pick a random action 
+            //console.log("E " + directions[actionIndex])    
         }
         return actionIndex;
     }
     calcReward(mazeGrid,playerPos,actionIndex){
-        let actions = [createVector(0,0,1),createVector(1,0,0),createVector(0,0,-1),createVector(-1,0,0)];//NESW  
+        let actions = [createVector(0,0,-1),createVector(1,0,0),createVector(0,0,1),createVector(-1,0,0)];//NESW  
+        let directions = ["N","E","S","W"]
         let reward = 0;//Set reward to 0 by default
-        //console.log(Math.floor(this.pos.x),Math.floor(this.pos.z))
         let currentCell = mazeGrid[Math.floor(this.pos.x)][Math.floor(this.pos.z)];//find current cell monster is in
         if(currentCell.getWalls()[actionIndex]==1){//If you walk into a wall
             let p = -1//Reward for walking into a wall
             reward += p;//Negative reward for walking into a wall
         }else{
-            console.log("Adds")
-            console.log(this.nextPos.x,this.nextPos.y)
-            this.nextPos.add(actions[actionIndex]);
-            console.log(this.pos.x,this.pos.y)
-            console.log(this.nextPos.x,this.nextPos.y)
-            ///this.nextPos = p5.Vector.add(this.pos,actions[actionIndex])//Moves monster based on action   
+            this.nextPos.add(actions[actionIndex]);//Add to desired position     
         }
-        console.log("Anything")
-        //console.log(this.nextPos.x,this.nextPos.y);
         let distance = p5.Vector.dist(this.pos,playerPos);//Calculate distance from player
         let k = 5;//reward multiplayer to getting closer to the player
         return reward += k/distance;//Add reward based on how close to the player the monster is
@@ -124,18 +134,17 @@ class monster extends entity{
     getSample(){
         let newSample = [];
         if(this.relayMemory.length>Math.floor(this.sampleFraction*this.relayMemorySize)){//If the sample size is larger than the fraction needed
-            let temp = this.relayMemory.slice();//Copy relay memory
+            let tempCopy = clone(this.relayMemory);//Copy relay memory
             while (newSample.length<Math.floor(this.sampleFraction*this.relayMemorySize)){//While newSample length is too small
-                let i =Math.floor(Math.random(0,temp.length))//Randomly pick a memory from temp (relay memory copy)
-                newSample.push(temp[i]);//Adds current memory to new sample
-                temp.splice(i,1);//Remove current memory from sample
+                let i = Math.floor(Math.random(0,tempCopy.length))//Randomly pick a memory from temp (relay memory copy)
+                newSample.push(tempCopy[i]);//Adds current memory to new sample
+                tempCopy.splice(i,1);//Remove current memory from sample
             }
             return newSample;//Return a new random sample
         }else{
-            return this.relayMemory;
+            return clone(this.relayMemory);
         }
     }
-
     updateTargetNetwork(){
         let weights = this.policyNetwork.getWeights();
         let copiedWeights = [];
@@ -146,11 +155,9 @@ class monster extends entity{
         }
         this.targetNetwork.setWeights(copiedWeights);
     }
-
-    show3D(){
-
+    show3D(player,perspective){
+        this.tempCube.show3D(player,perspective)
     }
-
 }
 
 class neuralNetwork{
@@ -188,35 +195,17 @@ class neuralNetwork{
         this.weights = weights;
     }
 
-    feedForward(inputs){
-        let outputs = [];
-        if(inputs.length != this.inputCount){//If the amount of inputs is not correction
-            return null;
-        }
-        let iMatrix = new Matrix(inputs);//Turn inputs into a matrix
-        outputs.push(new Matrix(iMatrix.getData()));
-        for(let i=0;i<this.weights.length;i++){//Loops through the layers
-            let currentWeights = this.weights[i];
-            iMatrix = Matrix.multiply(currentWeights,iMatrix);//Times by the weights of
-            iMatrix = Matrix.map(iMatrix,this.activationFunction) //<= need to fix so activation function acc works
-            outputs.push(new Matrix(iMatrix.getData()));
-        }
-        //console.log(outputs)
-        return outputs.reverse();//Workss
-    }
+  
     train(data,targetNetwork){
-        let state = data[0];//Input state
+        let state = clone(data[0]);//Input state
         let actionIndex = data[1];
         let reward = data[2];
-        let newState = data[3];
-        //console.log(state)
-        let inputs = state;//Add normalization
-        //console.log(data)
-        let outputs = this.feedForward(inputs);//Feed forward inputs
-        //console.log(outputs)
-        let finalOutput = matrixToArray(outputs[0])
-        //console.log(finalOutput)
+        let newState = clone(data[3]);
+
+        let outputs = this.feedForward(state);//Gets list of outputs throughout the neural network
+        let finalOutput = matrixToArray(outputs[0])//Gets the last outputs of the neural network (q values)
         let Qvalue = finalOutput[actionIndex]//Using action index to select the q-value we are working with
+
         let futureOutputs = matrixToArray(targetNetwork.feedForward(newState)[0]);//Gets outputs from future decision from targetNetwork
         
         let futureQvalue = futureOutputs[0];//Max future Q value
@@ -227,18 +216,35 @@ class neuralNetwork{
         }
 
         let loss = (reward + this.discountFactor*futureQvalue) - Qvalue;//Calc loss
-        //console.log(loss)
-        let arrayError = new Array(outputs.length);//Make an array to place loss in
-        arrayError = arrayError.fill(0);//Fill array with 0s
+        //console.log(Math.round(loss*100));
+        let arrayError = new Array(finalOutput.length).fill(0);//Make an array to place loss in
         arrayError[actionIndex] = loss;//Add in loss
         let matrixError = new Matrix(arrayError);//Convert to matrix
-        //console.log(matrixError)
+
         this.gradientDecent(matrixError,outputs);//Use gradient descent to update weights to reduce
+        //onsole.log(this.weights[0].getData()[0]);
+
         //To calculate loss feedforward with new state
         //From feeding forward new state save the highest q-value
         //Use highest q-value in loss equation 
 
         //Call gradient decent on the network
+    }
+    feedForward(inputs){
+        let outputs = [];
+        if(inputs.length != this.inputCount){//If the amount of inputs is not correction
+            return null;
+        }
+        let iMatrix = new Matrix(clone(inputs));//Turn inputs into a matrix
+        outputs.push(new Matrix(clone(iMatrix.getData())));
+        for(let i=0;i<this.weights.length;i++){//Loops through the layers
+            let currentWeights = this.weights[i];
+            iMatrix = Matrix.multiply(currentWeights,iMatrix);//Times by the weights of
+            iMatrix = Matrix.map(iMatrix,this.activationFunction) //<= need to fix so activation function acc works
+            outputs.push(new Matrix(clone(iMatrix.getData())));
+        }
+        //console.log(outputs)
+        return outputs.reverse();//Workss
     }
 
     gradientDecent(matrixError,outputs){
@@ -247,10 +253,10 @@ class neuralNetwork{
         //this.printNetwork()
         let currentErrors = matrixError;//Define the intital output error (q error)
         for(let i=0;i<this.layers.length-1;i++){//Loop through and update all weights
-            let currentOutputs = outputs[i]
-            let currentInputs = outputs[i+1]
+            let currentOutputs = outputs[i]//Sets current outputs
+            let currentInputs = outputs[i+1]//Set current inputs
             
-            let currentTranspose = Matrix.transpose(this.weights[this.layers.length-i-2]);//Transpose the weights between layers
+            let currentTranspose = Matrix.transpose(this.weights[this.layers.length-i-2]);//Transpose the weights between current layers
             let nextError = Matrix.multiply(currentTranspose,currentErrors);//Calculate the next layers errors
             //New weights = learningRate * currentErrors * (derivative(outputs of layer)) * Transpose(inputs of layer)
             let lrCurrentErrors = Matrix.scale(currentErrors,this.learningRate);
@@ -258,7 +264,7 @@ class neuralNetwork{
             let inputTranspose = Matrix.transpose(currentInputs);
             let deltaWeights = Matrix.multiply(Matrix.elementWiseMult(lrCurrentErrors,outputDerivative),inputTranspose);
             //console.log(this.weights[i])
-            //console.log(deltaWeights)
+            //console.log(deltaWeights.getData())
             this.weights[this.layers.length-i-2].add(deltaWeights);//Update weights
             currentErrors = nextError;//Use the next errors as current for next iteration
         }

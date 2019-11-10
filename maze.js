@@ -48,58 +48,29 @@ class Maze{
   }
 
   generateMaze(w,h,c,ingrid){
-    let grid = ingrid;
-    for(let y=0;y<c;y++){//For all ys
-      for(let x=0;x<c;x++){//For all xs
-        let ranx = Math.floor(random(x*w/c,(x+1)*w/c));//random x within segment
-        let rany = Math.floor(random(y*h/c,(y+1)*h/c));//random y within segment
+    let grid = clone(ingrid);
+    for(let y=0;y<c;y++){//For all segment ys
+      for(let x=0;x<c;x++){//For all segment xs
+        const ranx = Math.floor(random(x*w/c,(x+1)*w/c));//random x within segment
+        const rany = Math.floor(random(y*h/c,(y+1)*h/c));//random y within segment
         this.generate(grid[ranx][rany],x*w/c,y*w/c,(x+1)*w/c,(y+1)*w/c,grid);//Generate a segment
         
-        let openings = Math.ceil(12/c);//Calcs how many joinings of segments
-        for(let i=0;i<openings;i++){
+        for(let i=0;i<Math.ceil(12/c);i++){//Loop through needed openings
             if(x!=c-1){//loop 1 less the segments for inner walls
-              let nx = (x+1)*w/c;//Go through each vertical segment walls
-              let ny = Math.floor(random(y*h/c,(y+1)*h/c))//Calc random y within the segment
+              const nx = (x+1)*w/c;//Go through each vertical segment walls
+              const ny = Math.floor(random(y*h/c,(y+1)*h/c))//Calc random y within the segment
               grid[nx-1][ny].getWalls()[1] = 0;//Open east wall
               grid[nx][ny].getWalls()[3] = 0;//Open west counter part wall
             }
             if(y!=c-1){//loop 1 less the segments for inner walls
-              let nx = Math.floor(random(x*w/c,(x+1)*w/c));//Calc random x within the segment
-              let ny = (y+1)*h/c;//Go through each horizontal segment walls
+              const nx = Math.floor(random(x*w/c,(x+1)*w/c));//Calc random x within the segment
+              const ny = (y+1)*h/c;//Go through each horizontal segment walls
               grid[nx][ny].getWalls()[0] = 0;//Open north wall
               grid[nx][ny-1].getWalls()[2] = 0;//Open south counter part wall
             }
           }
       }
     }
-
-
-    //Make exit
-    let exitNum = Math.floor(random(2*(w+h)));//Exit locations
-    let direction = Math.floor(exitNum/(0.5*(w+h)));//Which wall needs breaking
-    let x;
-    let y;
-    if(direction == 0){//North
-      x = exitNum; 
-      y = 0;
-    }else if(direction == 1){//East
-      x = w-1;
-      y = exitNum - w;
-    }else if(direction == 2){//South
-      x = exitNum - w - h;
-      y = h-1;
-    }else{//West
-      x = 0;
-      y = exitNum - 2*w - h;
-    }
-    grid[x][y].getWalls()[direction] = 0;//Break wall for exit
-    this.monsterStart = createVector(x+0.49,-2,y+0.49);//+0.49 so that it is between the walls and floors to x and y
-    //Find place for player to spawn
-    let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
-    while (p5.Vector.dist(pos, createVector(x,y)) > 1.1*h){//Find random start far enough from exit
-      pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
-    }
-    this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);
     return grid;
   }
   generate(cell,minh,minv,maxh,maxv,grid){
@@ -133,84 +104,55 @@ class Maze{
     return null;//No valid neighbour found
   }
   generateWalls(w,h,grid){
+     //Make exit
+     let exitNum = Math.floor(random(2*(w+h)));//Exit locations
+     let direction = Math.floor(exitNum/(0.5*(w+h)));//Which wall needs breaking
+     let exitx;
+     let exity;
+     if(direction == 0){//North
+       exitx = exitNum; 
+       exity = 0;
+     }else if(direction == 1){//East
+       exitx = w-1;
+       exity = exitNum - w;
+     }else if(direction == 2){//South
+       exitx = exitNum - w - h;
+       exity = h-1;
+     }else if(direction == 3){//West
+       exitx = 0;
+       exity = exitNum - 2*w - h;
+     }
+     grid[exitx][exity].getWalls()[direction] = 0;//Break wall for exit
+     this.monsterStart = createVector(exitx+0.49,-2,exity+0.49);//+0.49 so that it is between the walls and floors to x and y
+     //Find place for player to spawn
+     let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
+     while (p5.Vector.dist(pos, createVector(exitx,exity)) > 1.1*h){//Find random start far enough from exit
+       pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
+     }
+    this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);
+    //Convert to walls
     let walls = [];
-    let hwalls = 0;
-    let hPos;
-  
-    let vwalls = 0;
-    let vPos;
-  
-    for(let y=-1;y<h;y++){
+    for(let y=0;y<h;y++){
       for(let x=0;x<w;x++){
-        if(y==-1){
-          let currentCell = grid[x][y+1]
-          if(currentCell.getWalls()[0]==1){//If there is south wall and is not on the map edge
-            if(hwalls==0){//Start new wall
-              hPos = createVector(x,y);//First wall in row position
-            }
-            hwalls++;//Counts walls in a row
-            if(x == grid.length-1){//If at edge of maze
-              walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
-              hwalls = 0;//End wall
-            }
-          }else if(hwalls != 0){//If wall have been incremented    
-            walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
-            hwalls = 0;//End wall
-          }
-  
-          currentCell = grid[y+1][x] //Vertical walls
-          if(currentCell.getWalls()[3]==1){//If there is east wall and is not on the map edge
-            if(vwalls==0){//Start new wall
-              vPos = createVector(y,x);//First wall in row position
-            }
-            vwalls++;//Counts walls in a row
-            if(x == grid[0].length-1){//If at edge of maze
-              walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
-              vwalls = 0;//End wall
-            }
-          }else if(vwalls != 0){//If wall have been incremented
-            walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
-            vwalls = 0;//End wall
-          }
-  
-  
-        }else{
-          let currentCell = grid[x][y];//Horizontal walls
-          if (currentCell.getWalls()[2]==1){//If there is south wall and is not on the map edge
-            if(hwalls==0){//Start new wall
-              hPos = createVector(x,y);//First wall in row position
-            }
-            hwalls++;//Counts walls in a row
-            if(x == grid.length-1){//If at edge of maze
-              walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
-              hwalls = 0;//End wall
-            }
-          }else if(hwalls != 0){//If wall have been incremented    
-            walls.push(new wall(hPos.x,(hPos.y+1),hwalls,0))//Add wall
-            hwalls = 0;//End wall
-          }
-        
-          currentCell = grid[y][x] //Vertical walls
-          if(currentCell.getWalls()[1]==1){//If there is east wall and is not on the map edge
-            if(vwalls==0){//Start new wall
-              vPos = createVector(y,x);//First wall in row position
-            }
-            vwalls++;//Counts walls in a row
-            if(x == grid[0].length-1){//If at edge of maze
-              walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
-              vwalls = 0;//End wall
-            }
-          }else if(vwalls != 0){//If wall have been incremented
-            walls.push(new wall((vPos.x+1),vPos.y,vwalls,90));//Add wall
-            vwalls = 0;//End wall
-          }
+        let cell = grid[x][y]
+        if(cell.getWalls()[0]==1 && y == 0){//If north wall and top
+          walls.push(new wall(x,y,1,0));
+        }
+        if(cell.getWalls()[1]==1){//If east wall
+          walls.push(new wall(x+1,y,1,90));
+        }
+        if(cell.getWalls()[2]==1){//If south wall
+          walls.push(new wall(x,y+1,1,0));
+        }
+        if(cell.getWalls()[3]==1 && x == 0){//If west wall and left
+          walls.push(new wall(x,y,1,90));
         }
       }
-    } 
-
-    
+    }
+    grid[exitx][exity].getWalls()[direction] = 1;//Fill up exit for the monster
     return walls;
   }
+
   wallToTree(){
     for(let i=0;i<this.walls.length;i++){
       let current = this.walls[i];
@@ -265,14 +207,14 @@ class cell{
   }
 }
 class wall extends cuboid{
-  constructor(x,y,length,rotation,colour = [255,0,0]){
+  constructor(x,y,length,rotation,colour = [0,0,100]){
     const thicknessOfWall = 0.1
     let newL = length;
     if(rotation !=0){
       newL += thicknessOfWall;
     }
     let pos = createVector(x,-2,y);
-    super(pos,newL,wallHeight,thicknessOfWall,rotation);
+    super(pos,newL,wallHeight,thicknessOfWall,rotation,[colour]);
 
     //For displaying 2D version
     this.pos2D = createVector(x,y);

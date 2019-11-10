@@ -1,8 +1,9 @@
 'use strict';
 class cuboid{
-    constructor(pos,l,h,w,r){
+    constructor(pos,l,h,w,r,colour){
 
       this.pos3D = pos;
+      this.colour = colour;
       this.faces = this.generateFaces(l/2,h/2,w/2,r);
       //Should have colour array for faces I guess
     }
@@ -26,6 +27,8 @@ class cuboid{
   
   
     show3D(player,perspective){
+      stroke(this.colour)
+      fill(this.colour);
       for(let i=0;i<this.faces.length;i++){
         this.faces[i].show(this.pos3D,player,perspective);
       }

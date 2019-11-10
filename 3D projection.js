@@ -31,9 +31,9 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 function sommet(){
-  gameMan.runAi();
+  //gameMan.runAi();
 }
-setInterval(sommet,500)// This should all the ai to do its move (milliseconds)
+setInterval(sommet,50)// This should all the ai to do its move (milliseconds)
 
 
 class button{
@@ -101,24 +101,19 @@ class label{
 class perspective{
   constructor(){
     this.distance = 20;
-
     this.n;//Normal of plane
     this.d;//d of plane
   }
-
   getN(){
     return this.n.copy();
   }
-
   getD(){
     return this.d;
   }
-
   update(player){
     this.n = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),player.getRY()),player.getRX());//RotateXY plane round camera
     this.d = -(p5.Vector.dot(this.n,player.getPos()) +(this.distance));//Calc d of the plane equation
   }
-  
 }
 
 
