@@ -126,9 +126,10 @@ class Maze{
      this.monsterStart = createVector(exitx+0.49,-2,exity+0.49);//+0.49 so that it is between the walls and floors to x and y
      //Find place for player to spawn
      let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
-     while (p5.Vector.dist(pos, createVector(exitx,exity)) > 1.1*h){//Find random start far enough from exit
+     while (p5.Vector.dist(pos, createVector(exitx,exity)) < 0.7*h){//Find random start far enough from exit
        pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
      }
+    //console.log(p5.Vector.dist(pos,createVector(exitx,exity)));
     this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);
     //Convert to walls
     let walls = [];

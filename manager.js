@@ -105,7 +105,21 @@ class manager{
       this.buttonsAndLabels.push(new label(createVector(width/2,height/20),300,50,"SCORE: " + this.player.getScore(),[255,255,255,60]))//Label for current score
     }
     setupLoseScreen(){//5 to do
-    
+      this.buttonsAndLabels=[];
+      this.buttonsAndLabels.push(new label(createVector(width/2,4*height/20),700,120,"You Lost",[255,0,0]))
+      this.buttonsAndLabels.push(new button(createVector(width/2,8*height/20),720,120,"RESTART",[60,150,0],() =>{
+        canvas.requestPointerLock();//Hide mouse
+        this.newGame();//Launch a new game
+        this.layer=1;//Change to gameplay layer
+      }))
+      this.buttonsAndLabels.push(new button(createVector(width/2,12*height/20),720,120,"MAIN MENU",[60,150,0],() =>{
+        this.setupMainMenu();//Launches the main menu
+        this.layer = 0;//Changes to main menu layer
+      }))
+      this.buttonsAndLabels.push(new button(createVector(width/2,16*height/20),900,120,"LEADERBOARD",[0,0,255],() => {
+        this.setupLeaderboard();//Setupts the leaderboard menu
+        this.layer = 2;//Changes to learderboard layer
+      }))
     }
 
 
@@ -208,6 +222,15 @@ class manager{
     updateGameplay(){
       this.perspect.update(this.player);//Update perspective
       this.player.controls(this.perspect.getN(),this.maze.getQuadTree(this.player.getHitBox()));//Handles player controls
+      //this.checkLoss();
+    }
+    checkLoss(){
+      let distance = p5.Vector.dist(this.player.getPos(),this.monster.getPos());
+      if(distance<0.7){
+        this.setupLoseScreen();
+        this.layer = 5;
+        document.exitPointerLock();//Show mouse
+      }
     }
     drawGameplay(){
       background(0,0,20);

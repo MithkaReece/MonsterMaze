@@ -9,8 +9,8 @@ class monster extends entity{
         this.relayMemorySize = 6;//Number of samples stored in memory 
         this.sampleFraction = 0.7;//Fraction of samples that is tested as a batch
 
-        this.policyNetwork = new neuralNetwork([6,10,4]);//Creates the policy network
-        this.targetNetwork = new neuralNetwork([6,10,4]);//Create the target network the same size as target network
+        this.policyNetwork = new neuralNetwork([6,10,8,4]);//Creates the policy network
+        this.targetNetwork = new neuralNetwork([6,10,8,4]);//Create the target network the same size as target network
         this.updateTargetNetwork();//Updates target network to reflect the policy network
         this.TNInterval = 50;//How many iterations it takes to update the target network
 
@@ -31,7 +31,7 @@ class monster extends entity{
         this.moveIterations = 0;
 
 
-        this.tempCube = new cuboid(pos,0.1,1,0.1,0,[100,0,0]);
+        this.tempCube = new cuboid(createVector(Math.floor(pos.x+0.1),Math.floor(pos.y),Math.floor(pos.z+0.1)),0.9,1,0.9,0,[255,20,20]);
     }
 
     setDist(value){
@@ -47,9 +47,11 @@ class monster extends entity{
             dirVector.setMag(1/this.speed);//Sets the speed of movement  
         }       
         this.pos.add(dirVector);//Adds the direction vector to move the monster
+        this.tempCube.addPos(dirVector);
     }
 
     run(mazeGrid,playerPos){//Make sure playerPos is in terms of 2D x,z
+        //console.log(p5.Vector.dist(playerPos,this.pos))
         if(this.moveIterations == 0){
             //Select action (explore/exploit) 
             let actionIndex = this.selectAction(playerPos,mazeGrid);//Picks an action   
@@ -84,7 +86,16 @@ class monster extends entity{
         let mazeSize = mazeGrid.length;
         let diffX = (playerPos.x-currentPos.x)/(mazeSize-1);
         let diffZ = (playerPos.z-currentPos.z)/(mazeSize-1);
-        return [diffX,diffZ].concat(clone(cell.getWalls()));//Return vector from current pos to player plus walls of that cell
+        return [diffX,diffZ].concat(this.swapDigits(clone(cell.getWalls())));//Return vector from current pos to player plus walls of that cell
+    }
+    swapDigits(list){
+        return list.map(x => {
+            if(x == 1){
+                return 0;
+            }else{
+                return 1;
+            }
+        })
     }
     
     selectAction(playerPos,mazeGrid){
@@ -101,11 +112,13 @@ class monster extends entity{
                 }
             }
             actionIndex = indexOfMax;//Pick action with highest q-value
-            //console.log("C " + directions[actionIndex])
+            console.log("C " + directions[actionIndex])
         }else{//Exploring has been picked   
             actionIndex = Math.floor(random(4));//Pick a random action 
-            //console.log("E " + directions[actionIndex])    
+            console.log("R " + directions[actionIndex])    
         }
+        console.log(this.exploreThreshold)
+        //console.log(this.pos.x,this.pos.z)
         return actionIndex;
     }
     calcReward(mazeGrid,playerPos,actionIndex){
@@ -114,14 +127,16 @@ class monster extends entity{
         let reward = 0;//Set reward to 0 by default
         let currentCell = mazeGrid[Math.floor(this.pos.x)][Math.floor(this.pos.z)];//find current cell monster is in
         if(currentCell.getWalls()[actionIndex]==1){//If you walk into a wall
-            let p = -1//Reward for walking into a wall
+            let p = -0//Reward for walking into a wall
             reward += p;//Negative reward for walking into a wall
         }else{
-            this.nextPos.add(actions[actionIndex]);//Add to desired position     
+            this.nextPos.add(actions[actionIndex]);//Add to desired position    
+            let distance = p5.Vector.dist(this.pos,playerPos);//Calculate distance from player
+            let k = 20;//reward multiplayer to getting closer to the player 
+            reward += k/(distance*distance);//Add reward based on how close to the player the monster is
         }
-        let distance = p5.Vector.dist(this.pos,playerPos);//Calculate distance from player
-        let k = 5;//reward multiplayer to getting closer to the player
-        return reward += k/distance;//Add reward based on how close to the player the monster is
+        
+        return reward;
     }
     storeReplayMemory(oldState,actionIndex,reward,newState){
         if(this.relayMemory.length >= this.relayMemorySize){

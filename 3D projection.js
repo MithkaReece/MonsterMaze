@@ -31,7 +31,7 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 function sommet(){
-  //gameMan.runAi();
+  gameMan.runAi();
 }
 setInterval(sommet,50)// This should all the ai to do its move (milliseconds)
 

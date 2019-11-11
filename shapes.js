@@ -24,6 +24,9 @@ class cuboid{
     generateFace(points,r){
       return new face(points.map(a => Matrix.rotateY(a,radians(-r))));
     }
+    addPos(vector){
+      this.pos3D.add(vector);
+    }
   
   
     show3D(player,perspective){
@@ -34,5 +37,6 @@ class cuboid{
       }
     }
   }
+
   
   
