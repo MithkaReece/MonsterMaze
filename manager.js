@@ -1,11 +1,7 @@
 'use strict';
-/*Layers meanings
-0:Main menu
-1:Playing the game
-2:LeaderBoard
-3:Pause menu
-4:Win screen
-5:Lose screen*/
+
+//The manager class is the first to be created and manages the sequence in which the program will run
+//This class contains any objects made throughout the program running
 class manager{
     constructor(){
       this.mazeSize = 5;//Defines the size of the maze
@@ -13,25 +9,25 @@ class manager{
       this.layer = 0;//Sets the main menu layer by default
       this.setupMainMenu();//Launches the main menu by default
     }
-    getMazeSize(){
+    getMazeSize(){//Get property for mazeSize
       return this.mazeSize;
     }
-    getPlayer(){
+    getPlayer(){//Get property for player
       return this.player;
     }
 
-    setupMainMenu(){//0
-      this.buttonsAndLabels = [];
-      this.buttonsAndLabels.push(new button(createVector(width/2,height/2),300,100,"PLAY",[0,0,255],() => {
+    setupMainMenu(){
+      this.buttonsAndLabels = [];//Clear all current buttons and labels
+      this.buttonsAndLabels.push(new button(createVector(width/2,height/2),300,100,"PLAY",[0,0,255],() => {//Add a new play button
         this.newGame();//Launches a new game
         this.layer = 1;//Changes to gameplay layer
-        canvas.requestPointerLock();//Hides mouse
+        canvas.requestPointerLock();//Hides the mouse
       })) 
-      this.buttonsAndLabels.push(new button(createVector(width/2,height/4),380,50,"LEADERBOARD",[0,0,255],() => {
-        this.setupLeaderboard();//Setupts the leaderboard menu
+      this.buttonsAndLabels.push(new button(createVector(width/2,height/4),380,50,"LEADERBOARD",[0,0,255],() => {//Add a new leaderboard button
+        this.setupLeaderboard();//Setup the leaderboard menu
         this.layer = 2;//Changes to learderboard layer
       }))
-      this.buttonsAndLabels.push(new button(createVector(width/2,3*height/4),300,100,"EXIT",[0,0,255],() =>{
+      this.buttonsAndLabels.push(new button(createVector(width/2,3*height/4),300,100,"EXIT",[0,0,255],() =>{//Add a new exit button
         window.close();//Closes the window
       }))
     }
@@ -43,35 +39,35 @@ class manager{
       this.setupGame();//Sets up on screen labels
     }
     setupGame(){//1
-      this.buttonsAndLabels = [];
-      this.buttonsAndLabels.push(new label(createVector(10*width/11,height/20),300,50,"TAB = Menu",[255,255,255,60]))
-      this.buttonsAndLabels.push(new label(createVector(width/10,height/20),360,40,"WASD = Movement",[255,255,255,60]))
-      this.buttonsAndLabels.push(new label(createVector(3*width/10,height/20),355,40,"Arrows keys to look",[255,255,255,60]))
+      this.buttonsAndLabels = [];//Clear all current buttons and labels
+      this.buttonsAndLabels.push(new label(createVector(10*width/11,height/20),300,50,"TAB = Menu",[255,255,255,60]))//Add a new label showing the control for the pause menu
+      this.buttonsAndLabels.push(new label(createVector(width/10,height/20),360,40,"WASD = Movement",[255,255,255,60]))//Add a new label showing movement controls (WASD)
+      this.buttonsAndLabels.push(new label(createVector(3*width/10,height/20),355,40,"Mouse/Arrows keys to look",[255,255,255,60]))//Add a new label showing looking controls (Mouse or arrow keys)
     }
     setupLeaderboard(){//2
-      this.buttonsAndLabels = [];
-      this.buttonsAndLabels.push(new label(createVector(width/2,height/15),800,100,"LEADERBOARD",[255,255,255,60]))
-      this.buttonsAndLabels.push(new button(createVector(width/2,13*height/16),600,100,"Main menu",[0,0,255],() =>{
+      this.buttonsAndLabels = [];//Clear all current buttons and labels
+      this.buttonsAndLabels.push(new label(createVector(width/2,height/15),800,100,"LEADERBOARD",[255,255,255,60]))//Add a new label showing the title "LEADERBOARD"
+      this.buttonsAndLabels.push(new button(createVector(width/2,13*height/16),600,100,"Main menu",[0,0,255],() =>{//Add a new main menu button
         this.setupMainMenu();//Launches the main menu
         this.layer=0;//Changes to main menu layer
       }))
       let scores = [];//Creates empty list of scores
-      let names = localStorage.getItem("names");//Retrieves stored names
+      let names = localStorage.getItem("names");//Retrieves list of stored names saved under "names"
       if(names != null){//If more than one name is stored in local storage
         names = names.split(",");//Split the names into a list of names
         for(let i=0;i<names.length;i++){//Loops through list of names
           let currentName = names[i];//Sets currentName to the current name in the loop
-          let scoresFromName = localStorage.getItem(currentName).split(",");//Retrieves a list of scores from currentName
+          let scoresFromName = localStorage.getItem(currentName).split(",");//Retrieves a list of scores under currentName
           for(let k=0;k<scoresFromName.length;k++){//Loops through list of scores 
             let nextScore = new score(parseInt(scoresFromName[k]));//Create a new score object with the current score
             nextScore.setName(currentName);//Allocate the new object the name of the user who achieved that score
             scores.push(nextScore);//Adds pairs of name and score to scores list
           }
         }
-        scores = mergeSort(scores,"desc");//Sorts the scores into numerical order
-        this.leaderboard = new leaderboard(createVector(width/2,3*height/16),scores);//Creates a new leaderboard and gives it a list of scores it will dispaly
+        scores = mergeSort(scores,"desc");//Sorts the scores into descending numerical order
+        this.leaderboard = new leaderboard(createVector(width/2,3*height/16),scores);//Creates a new leaderboard and gives it a list of scores it will display
       }else{//If no data is stored
-        console.log("no leaderboard data")
+        console.log("no leaderboard data")//TO DO
       } 
     }
     setupPauseMenu(){//3

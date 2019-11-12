@@ -5,100 +5,96 @@ class entity{
       this.pos = pos;//Position of entity
       this.rotation = createVector(radians(0),radians(0));//Orientation of entity
     }
-    getRX(){
+    getRX(){//Get property for the x component of its rotation
       return this.rotation.x;
     }
-    getRY(){
+    getRY(){//Get property for the y component of its rotation
       return this.rotation.y;
     }
-    getPos(){
+    getPos(){//Get property for the position of the entity
       return this.pos;
     }
-  
   }
   
   class character extends entity{
     constructor(pos){
-      super(pos);
-      this.score = 0;
-      this.fov = 140/2;
-      this.size = 0.3;
-      this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
-      this.rays = [];
-      for(let a=90-this.fov;a<=this.fov+90;a+=0.8){
-        this.rays.push(new ray(radians(a)));
+      super(pos);//Call inherited constructor function with pos parameter
+      this.score = 0;//Default score of a new player
+      this.fov = 140;//Defines the fov of the player
+      this.size = 0.3;//Defines how wide the player is
+      this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//Defining the region of the hitbox
+      this.rays = [];//Defines an empty list of rays
+      for(let a=90-(this.fov/2);a<=(this.fov/2)+90;a+=0.8){//For the region of the fov in intervals of 0.8 degrees
+        this.rays.push(new ray(radians(a)));//Add a new ray to the list of rays with current angle
       }
     }
 
     rayCast(walls,monster){
-      let newObjects = [];
-      for(let ray of this.rays){//For every ray
+      let newObjects = [];//Defines an empty list of objects
+      for(let ray of this.rays){//For every ray in the stored rays
         let distRecord = Infinity;//Set smallest distance to always greater than any wall
-        let closestWall = null;
-        let closestPoint = null;
-        for(let wall of walls){//For every wall
-          let a;
-          let b;
-          if(wall.getRotation()!=0){//If vertical wall
-            a = createVector(wall.getX()+0.05,wall.getY());//Front end of wall
-            b = createVector(wall.getX()+0.05,wall.getY()+wall.getLength());//Back end of wall
-          }else{
-            a = createVector(wall.getX(),wall.getY()+0.05);//Front end of wall
-            b = createVector(wall.getX()+wall.getLength(),wall.getY()+0.05);//Back end of wall
+        let closestWall = null;//Initiates the current closest wall of the loop
+        let closestPoint = null;//Will remove
+        for(let wall of walls){//For every wall in the given list of walls
+          let aEnd;//Defines aEnd representing one end of the wall
+          let bEnd;//Defines bEnd representing the other end of the wall
+          if(wall.getRotation()!=0){//If current wall is a vertical wall
+            aEnd = createVector(wall.getX()+0.05,wall.getY());//Point of the front end of wall
+            bEnd = createVector(wall.getX()+0.05,wall.getY()+wall.getLength());//Point of the back end of wall
+          }else{//If current wall is a horizontal wall
+            aEnd = createVector(wall.getX(),wall.getY()+0.05);//Point of the front end of wall
+            bEnd = createVector(wall.getX()+wall.getLength(),wall.getY()+0.05);//Point of the back end of wall
           }
     
-          let point = ray.cast(createVector(this.pos.x,this.pos.z),a,b);//Cast current ray through line of wall
+          let point = ray.cast(createVector(this.pos.x,this.pos.z),aEnd,bEnd);//Cast current ray through a line between both ends of the wall
           if(point!=null){//If a point of intersection was found
             let dist = p5.Vector.dist(createVector(this.pos.x,this.pos.z),point);//Calculate distance from entity
             if(dist<distRecord){//If wall is closer than previous closest wall       
               distRecord = dist;//Update smallest distance
-              closestPoint = point.copy();
+              closestPoint = point.copy();//Will remove
               closestWall = wall;//Update the closest wall the ray hits       
             }
           }
         }
-        if(newObjects.includes(closestWall)==false && closestWall!=null){//If wall is no duplicate and exists
-          push();
-          translate(-width/2,-height/2)
+        if(newObjects.includes(closestWall)==false && closestWall!=null){//If a closest wall has been found and not already been hit by a ray
+          push();//Will remove
+          translate(-width/2,-height/2)//Will remove
           //closestWall.show2D();
           stroke(0,255,0);
           strokeWeight(1)
           //line(hscale*this.pos.x,vscale*this.pos.z,hscale*closestPoint.x,vscale*closestPoint.y);
           pop();
           //console.log(distRecord,this.pos.x,this.pos.y,closestPoint.x,closestPoint.y);
-          closestWall.setDist(distRecord);
-          newObjects.push(closestWall);//Add wall hit from ray into new walls
+          closestWall.setDist(distRecord);//Record the distance the wall current being added using its setDist property
+          newObjects.push(closestWall);//Add currently found wall to be in view to list of newObjects which will be returned
         }
       }
-      monster.setDist(p5.Vector.dist(monster.getPos(),this.pos));
-      newObjects.push(monster);
-      newObjects = mergeSort(newObjects,"desc");
-      return newObjects;//Return all ways that need rendering
+      monster.setDist(p5.Vector.dist(monster.getPos(),this.pos));//Give the monster the distance from itself to the player using its setDist property
+      newObjects.push(monster);//<----------- Ray cast the monster before adding it
+      newObjects = mergeSort(newObjects,"desc");//Sort the objects in descending order of distances so that the further away objects are drawn first
+      return newObjects;//Return all objects that need rendering
     }
 
-    displayRays(){
+    displayRays(){//Will remove
       for(let ray of this.rays){
         ray.show(createVector(this.pos.x*hscale,this.pos.z*vscale));
       }
     }
 
-    getHitBox(){
+    getHitBox(){//Get property for hitbox
       return this.hitBox;
     }
 
+    //This checks that if the player added on the direction vector called dir whether it would be inside a wall
+    //This is done by simply checked using X,Y, width, height of the hitbox of the player and the wall
     collide(wall,dir){
-      let result = this.hitBox.getX() + this.hitBox.getWidth() + dir.x > wall.getX() && this.hitBox.getX() + dir.x < wall.getX() + wall.getWidth() && this.hitBox.getY() + this.hitBox.getHeight() + dir.y > wall.getY() && this.hitBox.getY() + dir.y < wall.getY() + wall.getHeight();
+      let result = this.hitBox.getX() + this.hitBox.getWidth() + dir.x > wall.getX() &&
+       this.hitBox.getX() + dir.x < wall.getX() + wall.getWidth() &&
+        this.hitBox.getY() + this.hitBox.getHeight() + dir.y > wall.getY() &&
+         this.hitBox.getY() + dir.y < wall.getY() + wall.getHeight();
       return result;
     }
-    withinBounds(x,y,length,width,pos){
-      if(pos.x > x &&
-      pos.x < x + length &&
-      pos.y > y &&
-      pos.y < y + width){
-        return pos;//If point intersects return it
-      }
-      return null;//If no intersection return null
-    }
+
     controls(normalVector,retrievedWalls){
       let speed = 0.035;
       let dir = createVector(0,0,0);
