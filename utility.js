@@ -88,18 +88,18 @@ function merge(F,S,type){
 
 class score{
   constructor(value){
-    this.value = value;
+    this.value = value;//Stored the value of the score when initialised
     this.name;
   }
-  setName(value){
-    this.name = value;
-  }
-  getName(){
+  
+  getName(){//Get property for name
     return this.name;
   }
+  setName(value){//Set property for name
+    this.name = value;
+  }
 
-
-  getValue(){
+  getValue(){//Get property for value (representing the value of the score of this object)
     return this.value;
   }
 }
@@ -109,13 +109,13 @@ class score{
       this.angle = angle;
     }
 
-    cast(pos,wallA,wallB){
+    cast(pos,aEnd,bEnd){
       let dir = p5.Vector.fromAngle(this.angle);
 
-      const x1 = wallA.x;
-      const y1 = wallA.y;
-      const x2 = wallB.x;
-      const y2 = wallB.y;
+      const x1 = aEnd.x;
+      const y1 = aEnd.y;
+      const x2 = bEnd.x;
+      const y2 = bEnd.y;
 
       const x3 = pos.x;
       const y3 = pos.y;
@@ -128,18 +128,15 @@ class score{
       }
       const t = ((x1 - x3)*(y3 - y4) - (y1 - y3)*(x3 - x4))/den;
       const u = -((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3))/den;
-      if(t>0 && t<1 && u>0){//If intersection
-        const pt = createVector();
-        pt.x = x1 + t * (x2-x1);
-        pt.y = y1 + t * (y2-y1);
-        return pt;
+      if(t>0 && t<1 && u>0){//If intersection between the wall segment and ray half line
+        return createVector(x1 + t * (x2-x1),y1 + t * (y2-y1));
       }else{
         return null; 
       }
     }
 
     addAngle(angle){
-      this.angle+=angle;
+      this.angle+=angle;//Add given angle to ray's angle
     }
   }
 

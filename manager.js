@@ -217,7 +217,7 @@ class manager{
 
     updateGameplay(){
       this.perspect.update(this.player);//Update perspective
-      this.player.controls(this.perspect.getN(),this.maze.getQuadTree(this.player.getHitBox()));//Handles player controls
+      this.player.controls(this.perspect.getNormal(),this.maze.getQuadTree(this.player.getHitBox()));//Handles player controls
       //this.checkLoss();
     }
     checkLoss(){

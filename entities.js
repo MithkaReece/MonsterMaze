@@ -96,36 +96,36 @@ class entity{
     }
 
     controls(normalVector,retrievedWalls){
-      let speed = 0.035;
+      const speed = 0.035;//Defines the speed at which the player walks
       let dir = createVector(0,0,0);
 
-        if(keyIsDown(87)){//w
+        if(keyIsDown(87)){//If "w" is being pressed
           dir.add(normalVector);
         }
-        if(keyIsDown(65)){//a
+        if(keyIsDown(65)){//If "a" is being pressed
           dir.add(Matrix.rotateY(normalVector,radians(270)));
         }
-        if(keyIsDown(83)){//s
+        if(keyIsDown(83)){//If "s" is being pressed
           dir.add(Matrix.rotateY(normalVector,radians(180)));
         }
-        if(keyIsDown(68)){//d
+        if(keyIsDown(68)){//If "d" is being pressed
           dir.add(Matrix.rotateY(normalVector,radians(90)));
         }
         let sens = radians(1);
-        if(keyIsDown(38)){//up arrow
+        if(keyIsDown(38)){//If up arrow is being pressed
           this.addRY(1.8*sens)
         }
-        if(keyIsDown(39)){//right arrow
+        if(keyIsDown(39)){//If right arrow is being pressed
           this.addRX(2.5*sens)
         }
-        if(keyIsDown(40)){//down arrow
+        if(keyIsDown(40)){//If down arrow is being pressed
           this.addRY(-1.8*sens)
         }
-        if(keyIsDown(37)){//left arrow
+        if(keyIsDown(37)){//If left arrow is being pressed
           this.addRX(-2.5*sens)
         }
-        dir.y = 0;
-        dir.setMag(speed);
+        dir.y = 0;//Remove any change in the y component so the player has gravity
+        dir.setMag(speed);//Sets the magnitude of the direction vector being added to the magnitude of the speed
       let walls = retrievedWalls;
       for(let i=0;i<walls.length;i++){
         let result = this.collide(walls[i],createVector(dir.x,dir.z));//Check if player collides with current walls
@@ -138,9 +138,8 @@ class entity{
           }
         }      
       }
-      this.pos.add(dir);
-      //console.log(Math.floor(this.pos.x),Math.floor(this.pos.z))
-      this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//For collision detection
+      this.pos.add(dir);//Add the final direction vector to the position of the player to move the player
+      this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//Redefined the hitbox based on the new position
     }
 
     won(size){
