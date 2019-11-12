@@ -141,26 +141,5 @@ class score{
     addAngle(angle){
       this.angle+=angle;
     }
-
-    show(point){
-      push();
-      translate(point.x,point.y)
-      strokeWeight(1)
-      stroke(0,150,255)
-      let dir = p5.Vector.fromAngle(this.angle);
-      dir.setMag(0.5)
-      line(0,0,hscale*dir.x,vscale*dir.y);
-      pop();
-    }
   }
 
-  class Particle{
-    constructor(){
-      this.pos = createVector(width/2,height/2);
-      this.rays = [];
-      for(let a=0;a<360;a+=10){
-        this.rays.push(new ray(pos.copy(),radians(a)));
-      }
-    }
-
-  }
