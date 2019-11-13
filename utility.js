@@ -1,89 +1,69 @@
 'use strict';
 function VtoArray(vector){
-    let arr;
-    if(vector.z != undefined){
-      arr = make2Darray(3,1);
-    }else{
-      arr = make2Darray(2,1); 
-    }
-    arr[0][0] = vector.x;
-    arr[1][0] = vector.y;
-    if(vector.z != undefined){
-      arr[2][0] = vector.z; 
-    }
-    return arr;
+  let array;
+  if(vector.z != undefined){
+    array = make2Darray(3,1);
+  }else{
+    array = make2Darray(2,1); 
   }
-  function toVector(matrix){
-    let vector = createVector();
-    vector.x = matrix[0];
-    vector.y = matrix[1];
-    if(matrix.length > 2){
-      vector.z = matrix[2]; 
-    }
-    return vector;
+  array[0][0] = vector.x;
+  array[1][0] = vector.y;
+  if(vector.z != undefined){
+    array[2][0] = vector.z; 
   }
-  function matrixToArray(matrix){
-    if(matrix.getData()[0].length == 0){   
-      return null;
-    }
-    let data = [];
-    for(let i=0;i<matrix.getData().length;i++){
-      data.push(matrix.getData()[i][0]);
-    }
-    return data
-  }
-  function make2Darray(cols,rows){
-    //Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array
-    return new Array(cols).fill().map(item =>(new Array(rows))) 
-  }
-  const clone = (items) => items.map(item => Array.isArray(item) ? clone(item) : item);
-
-
-function setup() {
-  array = [createVector(99,1),createVector(20,20),createVector(0,0)];
-  createCanvas(400, 400);
-  let narray = mergeSort(array);
-  for(let i=0;i<narray.length;i++){
-    console.log(narray[i].mag()); 
-  }
+  return array;
 }
-
+function matrixToArray(matrix){
+  if(matrix.getData()[0].length == 0){   
+    return null;
+  }
+  let data = [];
+  for(let i=0;i<matrix.getData().length;i++){
+    data.push(matrix.getData()[i][0]);
+  }
+  return data
+}
+function make2Darray(cols,rows){
+  //Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array
+  return new Array(cols).fill().map(item =>(new Array(rows))) 
+}
+const clone = (items) => items.map(item => Array.isArray(item) ? clone(item) : item);
 
 function mergeSort(a,type){
   if(a.length == 1){ //If the array only contains one item
     return a; //Return this item
   }
-  let first = mergeSort(a.slice(0,a.length/2),type); //Sort first half of list
-  let second = mergeSort(a.slice(a.length/2,a.length),type); //Sort second half of list
-  return merge(first,second,type); //Return the two lists merged together
+  let firstList = mergeSort(a.slice(0,a.length/2),type); //Sort first half of list
+  let secondList = mergeSort(a.slice(a.length/2,a.length),type); //Sort second half of list
+  return merge(firstList,secondList,type); //Return the two lists merged together
 }
 
-function merge(F,S,type){
+function merge(firstList,secondList,type){
   //Account for when one of the list is completely emptied
-  if(type == "desc"){
-    F.push(new score(-Infinity));
-    S.push(new score(-Infinity));
-  }else if(type == "asc"){
-    F.push(new score(Infinity));
-    S.push(new score(Infinity));
+  if(type == "desc"){//If in descending order
+    firstList.push(new score(-Infinity));//Add a lowest score for comparison but will not be in final result
+    secondList.push(new score(-Infinity));//Add a lowest score for comparison but will not be in final result
+  }else if(type == "asc"){//If in ascending order
+    firstList.push(new score(Infinity));//Add a highest score for comparison but will not be in final result
+    secondList.push(new score(Infinity));//Add a highest score for comparison but will not be in final result
   }
-  let n = []; //Sorted array
+  let sorted = []; //Sorted array
   let i = 0; //First list index
   let k = 0; //Second list index
-  for(let l=0;l<F.length+S.length-2;l++){
-    if(F[i].getValue()>=S[k].getValue() && type == "desc"){ //Change this for a general get function
-      n.push(F[i]); //Adds current item from first list to final list
+  for(let l=0;l<firstList.length+secondList.length-2;l++){
+    if(firstList[i].getValue()>=secondList[k].getValue() && type == "desc"){ //Change this for a general get function
+      sorted.push(firstList[i]); //Adds current item from first list to final list
       i++; //Increment first list index
     }
-    else if(F[i].getValue()<=S[k].getValue() && type == "asc"){
-      n.push(F[i]); //Adds current item from first list to final list
+    else if(firstList[i].getValue()<=secondList[k].getValue() && type == "asc"){
+      sorted.push(firstList[i]); //Adds current item from first list to final list
       i++; //Increment first list index
     }else{ //If current item in second list is greater
-      n.push(S[k]); //Add current item from second list to final list
+      sorted.push(secondList[k]); //Add current item from second list to final list
       k++; //Increment second list index
     }   
   }
-  return n; //Return sorted array
+  return sorted; //Return sorted array
 }
 
 class score{
@@ -104,39 +84,24 @@ class score{
   }
 }
 
-  class ray{
-    constructor(angle){
-      this.angle = angle;
-    }
 
-    cast(pos,aEnd,bEnd){
-      let dir = p5.Vector.fromAngle(this.angle);
-
-      const x1 = aEnd.x;
-      const y1 = aEnd.y;
-      const x2 = bEnd.x;
-      const y2 = bEnd.y;
-
-      const x3 = pos.x;
-      const y3 = pos.y;
-      const x4 = pos.x + dir.x;
-      const y4 = pos.y + dir.y;
-
-      const den = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
-      if(den == 0){
-        return null;
-      }
-      const t = ((x1 - x3)*(y3 - y4) - (y1 - y3)*(x3 - x4))/den;
-      const u = -((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3))/den;
-      if(t>0 && t<1 && u>0){//If intersection between the wall segment and ray half line
-        return createVector(x1 + t * (x2-x1),y1 + t * (y2-y1));
-      }else{
-        return null; 
-      }
-    }
-
-    addAngle(angle){
-      this.angle+=angle;//Add given angle to ray's angle
-    }
+class Rectangle{
+  constructor(x,y,width,height){
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
   }
-
+  getX(){
+    return this.x;
+  }
+  getY(){
+    return this.y;
+  }
+  getWidth(){
+    return this.width;
+  }
+  getHeight(){
+    return this.height;
+  }
+}

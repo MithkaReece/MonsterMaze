@@ -47,24 +47,24 @@ class Maze{
     return this.monsterStart;
   }
 
-  generateMaze(w,h,c,ingrid){
+  generateMaze(width,height,complexity,ingrid){
     let grid = clone(ingrid);
-    for(let y=0;y<c;y++){//For all segment ys
-      for(let x=0;x<c;x++){//For all segment xs
-        const ranx = Math.floor(random(x*w/c,(x+1)*w/c));//random x within segment
-        const rany = Math.floor(random(y*h/c,(y+1)*h/c));//random y within segment
-        this.generate(grid[ranx][rany],x*w/c,y*w/c,(x+1)*w/c,(y+1)*w/c,grid);//Generate a segment
+    for(let y=0;y<complexity;y++){//For all segment ys
+      for(let x=0;x<complexity;x++){//For all segment xs
+        const ranx = Math.floor(random(x*width/complexity,(x+1)*width/complexity));//random x within segment
+        const rany = Math.floor(random(y*height/complexity,(y+1)*height/complexity));//random y within segment
+        this.generate(grid[ranx][rany],x*width/complexity,y*width/complexity,(x+1)*width/complexity,(y+1)*width/complexity,grid);//Generate a segment
         
-        for(let i=0;i<Math.ceil(12/c);i++){//Loop through needed openings
-            if(x!=c-1){//loop 1 less the segments for inner walls
-              const nx = (x+1)*w/c;//Go through each vertical segment walls
-              const ny = Math.floor(random(y*h/c,(y+1)*h/c))//Calc random y within the segment
+        for(let i=0;i<Math.ceil(12/complexity);i++){//Loop through needed openings
+            if(x!=complexity-1){//loop 1 less the segments for inner walls
+              const nx = (x+1)*width/complexity;//Go through each vertical segment walls
+              const ny = Math.floor(random(y*height/complexity,(y+1)*height/complexity))//Calc random y within the segment
               grid[nx-1][ny].getWalls()[1] = 0;//Open east wall
               grid[nx][ny].getWalls()[3] = 0;//Open west counter part wall
             }
-            if(y!=c-1){//loop 1 less the segments for inner walls
-              const nx = Math.floor(random(x*w/c,(x+1)*w/c));//Calc random x within the segment
-              const ny = (y+1)*h/c;//Go through each horizontal segment walls
+            if(y!=complexity-1){//loop 1 less the segments for inner walls
+              const nx = Math.floor(random(x*width/complexity,(x+1)*width/complexity));//Calc random x within the segment
+              const ny = (y+1)*height/complexity;//Go through each horizontal segment walls
               grid[nx][ny].getWalls()[0] = 0;//Open north wall
               grid[nx][ny-1].getWalls()[2] = 0;//Open south counter part wall
             }
@@ -74,62 +74,61 @@ class Maze{
     return grid;
   }
   generate(cell,minh,minv,maxh,maxv,grid){
-      let dir = shuffle([0,1,2,3]);//shuffle directions nesw
-      for(let i=0;i<dir.length;i++){//For each directions
-          let neighbour = this.checkCell(dir[i],cell,minh,minv,maxh,maxv,grid);//Check random neighbour
-          if(neighbour != null){//If neighbour exists
-              this.generate(neighbour,minh,minv,maxh,maxv,grid);//Recurse
-          }
-      } 
+    let dir = shuffle([0,1,2,3]);//shuffle directions nesw
+    for(let i=0;i<dir.length;i++){//For each directions
+        let neighbour = this.checkCell(dir[i],cell,minh,minv,maxh,maxv,grid);//Check random neighbour
+        if(neighbour != null){//If neighbour exists
+            this.generate(neighbour,minh,minv,maxh,maxv,grid);//Recurse
+        }
+    } 
   }
   checkCell(dir,cell,minh,minv,maxh,maxv,grid){
-      let x = cell.getX();
-      let y = cell.getY();
-      let neighbour;
-      if(dir == 0){
-          neighbour = (y==minv?null:grid[x][y-1]);//If North cell on map  
-      }else if(dir == 1){
-          neighbour = (x==maxh-1?null:grid[x+1][y]);//If East cell on map
-      }else if(dir == 2){
-          neighbour = (y==maxv-1?null:grid[x][y+1]);//If South cell on map
-      }else if(dir == 3){
-          neighbour = (x==minh?null:grid[x-1][y]);//If West cell on map
-      }
-    if(neighbour != null && neighbour.getVisited() == false){//If valid neighbour
-      cell.getWalls()[dir]=0;//Break wall of current cell
-      neighbour.getWalls()[(dir+2)%4]=0;//Break opposite wall of visiting cell
-      neighbour.setVisited(true);//Make visiting cell next cell
-      return neighbour;
+    let x = cell.getX();
+    let y = cell.getY();
+    let neighbour;
+    if(dir == 0){
+        neighbour = (y==minv?null:grid[x][y-1]);//If North cell on map  
+    }else if(dir == 1){
+        neighbour = (x==maxh-1?null:grid[x+1][y]);//If East cell on map
+    }else if(dir == 2){
+        neighbour = (y==maxv-1?null:grid[x][y+1]);//If South cell on map
+    }else if(dir == 3){
+        neighbour = (x==minh?null:grid[x-1][y]);//If West cell on map
+    }
+  if(neighbour != null && neighbour.getVisited() == false){//If valid neighbour
+    cell.getWalls()[dir]=0;//Break wall of current cell
+    neighbour.getWalls()[(dir+2)%4]=0;//Break opposite wall of visiting cell
+    neighbour.setVisited(true);//Make visiting cell next cell
+    return neighbour;
     }
     return null;//No valid neighbour found
   }
   generateWalls(w,h,grid){
-     //Make exit
-     let exitNum = Math.floor(random(2*(w+h)));//Exit locations
-     let direction = Math.floor(exitNum/(0.5*(w+h)));//Which wall needs breaking
-     let exitx;
-     let exity;
-     if(direction == 0){//North
-       exitx = exitNum; 
-       exity = 0;
-     }else if(direction == 1){//East
-       exitx = w-1;
-       exity = exitNum - w;
-     }else if(direction == 2){//South
-       exitx = exitNum - w - h;
-       exity = h-1;
-     }else if(direction == 3){//West
-       exitx = 0;
-       exity = exitNum - 2*w - h;
-     }
-     grid[exitx][exity].getWalls()[direction] = 0;//Break wall for exit
-     this.monsterStart = createVector(exitx+0.49,-2,exity+0.49);//+0.49 so that it is between the walls and floors to x and y
-     //Find place for player to spawn
-     let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
-     while (p5.Vector.dist(pos, createVector(exitx,exity)) < 0.7*h){//Find random start far enough from exit
-       pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
-     }
-    //console.log(p5.Vector.dist(pos,createVector(exitx,exity)));
+    //Make exit
+    let exitNum = Math.floor(random(2*(w+h)));//Exit locations
+    let direction = Math.floor(exitNum/(0.5*(w+h)));//Which wall needs breaking
+    let exitx;
+    let exity;
+    if(direction == 0){//North
+      exitx = exitNum; 
+      exity = 0;
+    }else if(direction == 1){//East
+      exitx = w-1;
+      exity = exitNum - w;
+    }else if(direction == 2){//South
+      exitx = exitNum - w - h;
+      exity = h-1;
+    }else if(direction == 3){//West
+      exitx = 0;
+      exity = exitNum - 2*w - h;
+    }
+    grid[exitx][exity].getWalls()[direction] = 0;//Break wall for exit
+    this.monsterStart = createVector(exitx+0.49,-2,exity+0.49);//+0.49 so that it is between the walls and floors to x and y
+    //Find place for player to spawn
+    let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
+    while (p5.Vector.dist(pos, createVector(exitx,exity)) < 0.7*h){//Find random start far enough from exit
+      pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
+    }
     this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);
     //Convert to walls
     let walls = [];
@@ -173,7 +172,6 @@ class cell{
   }
   getVisited(){
     return this.visited;
-    
   }
   setVisited(value){
     this.visited = value;
@@ -187,8 +185,8 @@ class cell{
   getWalls(){
     return this.walls;
   }
-  //Won't be used in game but for showing it works
-  showWalls(){
+  
+  showWalls(){//Will remove
     strokeWeight(10)
     stroke(0,255,255,100);
     let scale = 0.1/hscale*vscale;
@@ -205,88 +203,6 @@ class cell{
       rect(this.pos.x*hscale,(this.pos.y+1)*vscale-scale/2,width/this.l,scale);  
     }
     
-  }
-}
-class wall extends cuboid{
-  constructor(x,y,length,rotation,colour = [0,0,100]){
-    const thicknessOfWall = 0.1
-    let newL = length;
-    if(rotation !=0){
-      newL += thicknessOfWall;
-    }
-    let pos = createVector(x,-2,y);
-    super(pos,newL,wallHeight,thicknessOfWall,rotation,[colour]);
-
-    //For displaying 2D version
-    this.pos2D = createVector(x,y);
-    this.width = newL;
-    this.height = thicknessOfWall;
-    this.colour = colour;
-    this.r = rotation;//Rotation
-  }
-  setDist(value){
-    this.dist = value;
-  }
-  getValue(){
-    return this.dist;
-  }
-
-  getLength(){//Returns always the longer side
-    return this.width;
-  }
-  getRotation(){
-    return this.r;
-  }
-  getX(){
-    return this.pos2D.x;
-  }
-  getY(){
-    return this.pos2D.y;
-  }
-  getWidth(){//Returns the width relative to the x axis
-    if(this.r != 0){//If vertical wall
-      return this.height;
-    }//If horizontal wall
-    return this.width;
-  }
-  getHeight(){//Returns the height relative to the y axis
-    if(this.r != 0){//If vertical wall
-      return this.width;
-    }//If horizontal wall
-    return this.height;
-  }
-
-  show2D(){
-    strokeWeight(0)
-    stroke(this.colour);
-    fill(this.colour);
-    rectMode(CORNER);
-    push();
-    let sc = width/mazeSize;
-    translate(sc*this.pos2D.x,sc*this.pos2D.y)
-    rotate(radians(this.r));
-    rect(0,0,sc*this.width,sc*this.height);
-    pop();
-  }
-}
-class Rectangle{
-  constructor(x,y,width,height){
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-  }
-  getX(){
-    return this.x;
-  }
-  getY(){
-    return this.y;
-  }
-  getWidth(){
-    return this.width;
-  }
-  getHeight(){
-    return this.height;
   }
 }
 class QuadTree{
@@ -309,7 +225,6 @@ class QuadTree{
       }
     }
     this.objects.push(wall);
-
   }
 
   subdivide(){
@@ -331,42 +246,20 @@ class QuadTree{
      this.pBounds(x,y+h);
   }
   pBounds(x,y){
-    let answer = x >= this.bound.getX() &&
+    return x >= this.bound.getX() &&
     x < this.bound.getX() + this.bound.getWidth() &&
     y >= this.bound.getY() &&
     y < this.bound.getY() + this.bound.getHeight();
-    return answer
-  }
-
-  retrieveold(){
-    let array = this.objects.slice(0);
-    for(let i=0;i<this.quads.length;i++){
-      let result = this.quads[i].retrieveold()
-      if(result.length>0){
-        array = array.concat(result);
-      }
-    }
-    return array;
   }
 
   retrieve(hitbox){
-    let array = this.objects.slice(0);
+    let walls = this.objects.slice(0);
     for(let i=0;i<this.quads.length;i++){
-      let x = hitbox.getX();
-      let y = hitbox.getY();
-      let w = hitbox.getWidth();
-      let h = hitbox.getHeight();
-      let current = this.quads[i];
-      if(current.withinBounds(x,y,w,h)){
-        array = array.concat(current.retrieve(hitbox));
+      let currentWall = this.quads[i];
+      if(currentWall.withinBounds(hitbox.getX(),hitbox.getY(),hitbox.getWidth(),hitbox.getHeight())){
+        walls = walls.concat(currentWall.retrieve(hitbox));
       }
     }
-
-    return array;
+    return walls;
   }
-
-  show(){
-    
-  }
-
 }

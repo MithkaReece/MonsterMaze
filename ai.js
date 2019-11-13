@@ -1,4 +1,4 @@
-
+'use strict';
 
 class monster extends entity{
     constructor(pos){
@@ -47,7 +47,8 @@ class monster extends entity{
             dirVector.setMag(1/this.speed);//Sets the speed of movement  
         }       
         this.pos.add(dirVector);//Adds the direction vector to move the monster
-        this.tempCube.addPos(dirVector);
+        this.tempCube.setPos(p5.Vector.add(dirVector,this.tempCube.getPos()))
+        //this.tempCube.addPos(dirVector);
     }
 
     run(mazeGrid,playerPos){//Make sure playerPos is in terms of 2D x,z

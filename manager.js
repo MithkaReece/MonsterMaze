@@ -42,7 +42,7 @@ class manager{
       this.buttonsAndLabels = [];//Clear all current buttons and labels
       this.buttonsAndLabels.push(new label(createVector(10*width/11,height/20),300,50,"TAB = Menu",[255,255,255,60]))//Add a new label showing the control for the pause menu
       this.buttonsAndLabels.push(new label(createVector(width/10,height/20),360,40,"WASD = Movement",[255,255,255,60]))//Add a new label showing movement controls (WASD)
-      this.buttonsAndLabels.push(new label(createVector(3*width/10,height/20),355,40,"Mouse/Arrows keys to look",[255,255,255,60]))//Add a new label showing looking controls (Mouse or arrow keys)
+      this.buttonsAndLabels.push(new label(createVector(7*width/20,height/20),480,40,"Mouse/Arrows keys to look",[255,255,255,60]))//Add a new label showing looking controls (Mouse or arrow keys)
     }
     setupLeaderboard(){//2
       this.buttonsAndLabels = [];//Clear all current buttons and labels
@@ -100,7 +100,7 @@ class manager{
       this.buttonsAndLabels=[];
       this.buttonsAndLabels.push(new label(createVector(width/2,height/20),300,50,"SCORE: " + this.player.getScore(),[255,255,255,60]))//Label for current score
     }
-    setupLoseScreen(){//5 to do
+    setupLoseScreen(){//5 
       this.buttonsAndLabels=[];
       this.buttonsAndLabels.push(new label(createVector(width/2,4*height/20),700,120,"You Lost",[255,0,0]))
       this.buttonsAndLabels.push(new button(createVector(width/2,8*height/20),720,120,"RESTART",[60,150,0],() =>{
@@ -141,12 +141,12 @@ class manager{
     mouseMoved(){//When mouse is moved
         if(document.pointerLockElement === canvas){//If mouse is hidden
             this.player.addRX(event.movementX*radians(0.1));//Allow looking horizontally
-            this.player.addRY(-event.movementY*radians(0.1))//Allow looking vertically
+            this.player.setRY(constrain(this.player.getRY()-(event.movementY*radians(0.1)),radians(-85),radians(80)))//Allow looking vertically with limitations
         }
     }
     mouseWheel(event){//If mouse wheel used
       if(this.layer == 2){//If in leaderboard
-        this.leaderboard.addPos(createVector(0,-event.delta));//Move the list of scores in the direction of scrolling
+        this.leaderboard.moveLabels(createVector(0,-event.delta));//Move the list of scores in the direction of scrolling
       }
     }
     keyDown(event){//When key is pressed
@@ -233,7 +233,7 @@ class manager{
       push();//Encapsulates any transformations
       translate(width/2,height/2);//Make 0,0 the centre of the screen
       const objects = this.player.rayCast(this.maze.getWalls(),this.monster);//Find all the walls that need showing
-      //onst objects = this.maze.getWalls();
+      //const objects = this.maze.getWalls();
       objects.forEach(object=>object.show3D(this.player,this.perspect));//Show the walls
       pop();      
     }
@@ -281,7 +281,7 @@ class leaderboard{
     this.createLabels(scores);
   }
 
-  addPos(vector){
+  moveLabels(vector){
     vector.setMag(25)//How fast you can scroll
     if(this.labels[0].getPos().y > this.pos.y && vector.y > 0){//If the top label is at the top 
       return;//Don't let them scroll down
@@ -316,5 +316,61 @@ class leaderboard{
         }
       }
     }
+  }
+}
+class button{
+  constructor(pos,width,height,text,colour,click){
+    this.click = click;//Stores the function that will be executed when the button is clicked
+    this.text = text;//Stores the text that is displayed on the button
+    this.colour = colour;//Stores the colour of the button
+    this.pos = pos;//Stores the position of the button on the screen
+    this.width = width;//Stores the width of the button
+    this.height = height;//Stores the height of the button
+  }
+  region(){//Checks whether the mouse coordinates are within the region of the button
+    return mouseX >= this.pos.x-this.width/2 &&
+      mouseX <= this.pos.x+this.width/2 &&
+      mouseY >= this.pos.y-this.height/2 &&
+      mouseY <= this.pos.y+this.height/2;
+  }
+  show(){
+    rectMode(CENTER);//Drawing the rectangle of the button with the position being the center of the rectangle
+    fill(this.colour);//Setting the colour of the rectangle to the colour stored
+    rect(this.pos.x,this.pos.y,this.width,this.height);//Drawing a rectangle using the properties of the button stored
+    fill(0);//Setting the colour of the text to black
+    textAlign(CENTER,CENTER)//Alligning the text to the centre of the button
+    textSize(this.height)//Setting the size of the text to the size of the button
+    text(this.text,this.pos.x,this.pos.y+this.height/10);//Drawing the text onto the button's rectangle
+  }
+}
+
+class label{
+  constructor(pos,width,height,text,colour){
+    this.pos = pos;//Stores the position of the label
+    this.width = width;//Stores the width of the label
+    this.height = height;//Stores the height of the label
+    this.text = text;//Stores the text that is displayed on the label
+    this.colour = colour;//Stores the colour of the button
+  }
+  getText(){//Get property for the label's text
+    return this.text;
+  }
+  setText(text){//Set property for the label's text
+    this.text = text;
+  }
+  getPos(){//Get property for the label's position
+    return this.pos;
+  }
+  addPos(vector){//Adds a vector to the label's position
+    this.pos.add(vector);
+  }
+  show(){
+    rectMode(CENTER);//Drawing the rectangle of the label with the position being the center of the rectangle
+    fill(this.colour);//Setting the colour of the rectangle to the colour stored
+    rect(this.pos.x,this.pos.y,this.width,this.height);//Drawing a rectangle using the properties of the label stored
+    fill(0);//Setting the colour of the text to black
+    textAlign(CENTER,CENTER)//Alligning the text to the centre of the label
+    textSize(this.height)//Setting the size of the text to the size of the label
+    text(this.text,this.pos.x,this.pos.y+this.height/10);//Drawing the text onto the label's rectangle
   }
 }
