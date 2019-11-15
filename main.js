@@ -10,7 +10,7 @@ function setup() {
   vscale = height/mazeSize;//Will remove
 }
 function draw() {
-  gameMan.show();
+  gameMan.showAndUpdate();
 }
 function mouseClicked(){
   gameMan.mouseClick();

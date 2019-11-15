@@ -2,6 +2,7 @@
 
 //The manager class is the first to be created and manages the sequence in which the program will run
 //This class contains any objects made throughout the program running
+//The manager is responsible for defining all the buttons and labels that are used in each screen
 class manager{
     constructor(){
       this.mazeSize = 5;//Defines the size of the maze
@@ -178,6 +179,7 @@ class manager{
         }
       }
     }
+    //checkNameEntry validates whether the user has clicked enter after typing in the win screen input box
     checkNameEntry(key){
       if(key === 13 && this.layer == 4){//If enter pressed in win game menu
         if(this.inputBox.value().length>0){//If anything entered in input box
@@ -190,79 +192,90 @@ class manager{
         }
       }
     }
+    //saveNameToStorage saves the given input name to storage under the score of the current player
+    //The name is saved as a set of names so no repeated names
+    //The scores are saved under the name of the user who achieved that score
     saveNameToStorage(name){
-      let retrievedNames = localStorage.getItem("names");//Retrieves list of names as string
+      let retrievedNames = localStorage.getItem("names");//Retrieves list of names as a single string
       let names = [];//Creates an empty names list
-      if(retrievedNames != null){//If any names from
-        names = retrievedNames.split(",");//Split the string of names into a list of names
+      if(retrievedNames != null){//If retrieveNames is empty because no names are currently stored
+        names = retrievedNames.split(",");//Splits the string of names into a list of names
       }
-      if(names.includes(name) == false){//If name not stored in names
+      if(names.includes(name) == false){//If name is not stored in names
         names.push(name);//Add name to list of names
       }  
-      localStorage.setItem("names",names.join(","));//Convert new names list to string and store it
+      localStorage.setItem("names",names.join(","));//Convert new names list to a single string and store it
       let retrievedScores = localStorage.getItem(name);//Retrieve list of scores based on name as string
       let scores = [];//Creates an empty scores list
       if(retrievedScores != null){//If data recorded under name
         scores = retrievedScores.split(",");//Splits the string of scores into a list of scores
       }
       scores.push(this.player.getScore());//Add new score to list of scores
-      localStorage.setItem(name,scores.join(","));//Convert new scores list to string and store it
+      localStorage.setItem(name,scores.join(","));//Convert new scores list to a single string and store it
     }
-
+    //runAi is runs the monster's ai independent of the user input
     runAi(){
       if(this.layer == 1){//If in gameplay layer
         this.monster.run(this.maze.getGrid(),this.player.getPos());//Runs the ai of the monster
       }
     }
-
+    //updateGameplay is responsible for updating all the game mechanics every tick
+    //It is also responsible for checking win and loss conditions
     updateGameplay(){
-      this.perspect.update(this.player);//Update perspective
+      this.perspect.update(this.player);//Updates player's perspective based on player's orientation
       this.player.controls(this.perspect.getNormal(),this.maze.getQuadTree(this.player.getHitBox()));//Handles player controls
-      //this.checkLoss();
+      //this.checkLoss();//Checks if the player has been caught
     }
+    //checkLoss checks whether the player is close enough to the monster that they have been caught
+    //If the player has been caught then it moves the program to the lose screen
     checkLoss(){
-      let distance = p5.Vector.dist(this.player.getPos(),this.monster.getPos());
-      if(distance<0.7){
-        this.setupLoseScreen();
-        this.layer = 5;
-        document.exitPointerLock();//Show mouse
+      let distance = p5.Vector.dist(this.player.getPos(),this.monster.getPos());//Find the disstance from the player and monster
+      if(distance<0.7){//If the distance is within 0.7 units
+        this.setupLoseScreen();//Setup the lose screen menu
+        this.layer = 5;//Changes the layer to the lose screen
+        document.exitPointerLock();//Shows the mouse
       }
     }
+    //drawGameplay is responsible for showing all the 3D objects when in gameplay
+    //It only draw the necessary objects retrieved from the player's rayCast function
     drawGameplay(){
-      background(0,0,20);
+      background(0,0,20);//Set background colour to rgb value
       push();//Encapsulates any transformations
       translate(width/2,height/2);//Make 0,0 the centre of the screen
       const objects = this.player.rayCast(this.maze.getWalls(),this.monster);//Find all the walls that need showing
-      //const objects = this.maze.getWalls();
-      objects.forEach(object=>object.show3D(this.player,this.perspect));//Show the walls
-      pop();      
+      objects.forEach(object=>object.show3D(this.player,this.perspect));//For every found wall tell it to show
+      pop();//End of encapsulation
     }
-
+    //drawLeaderboard is responsible for telling the leaderboard to show itself
+    //It does this only when there is any recorded data to show
     drawLeaderboard(){
-      let storageNames = localStorage.getItem("names");//Get all recored names
+      let storageNames = localStorage.getItem("names");//Retrieve all recorded names from local storage
       if(storageNames != null){//If more than 1 name recorded
-        this.leaderboard.show();//Show the leaderboard
-      }else{//If no recorded names
-        console.log("empty")
+        this.leaderboard.show();//Shows the leaderboard
+      }else{
+
       }
     }
-
-    show(){
+    //ShowAndUpdate is a manager function which is called by the main program every tick
+    //This function shows and visuals and updates and game mechanics live
+    //It also does a few checks so that it only shows and updates the components needed for the
+    //current screen the user is in
+    showAndUpdate(){
         background(255); 
-        switch(this.layer){
-            case 1://Gameplay
+        switch(this.layer){//Consider the layer which represent which screen the user is in
+            case 1://If in Gameplay screen
               this.updateGameplay();//Update gameplay mechanics
               this.drawGameplay();//Show gameplay visuals
               break;
-            case 2://Leaderboard
+            case 2://If in Leaderboard screen
               this.drawLeaderboard();//Draw leaderboard
               break;
-            case 3://Pause menu
-              this.drawGameplay();//Show gameplay visuals
+            case 3://If in pause menu
+              this.drawGameplay();//Show gameplay visuals in the backgroudn
               break;
           }
         //Show all buttons and labels
-        for(let i=0;i<this.buttonsAndLabels.length;i++){//For every button and label
+        for(let i=0;i<this.buttonsAndLabels.length;i++){//For every button and label currently in use
           this.buttonsAndLabels[i].show();//Show button or label
         }
     }
