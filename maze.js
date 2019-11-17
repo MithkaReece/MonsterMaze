@@ -1,59 +1,57 @@
 'use strict';
 
-const wallHeight = 1;
-let hscale;
-let vscale;
+
+let hscale;//Will remove
+let vscale;//Will remove
 
 class Maze{
   constructor(width,height,complexity){
-    this.playerStart = createVector();
-    this.monsterStart = createVector();
-    this.startTick = new Date().getTime()
+    this.playerStart = createVector();//Define playerStart position as a vector
+    this.monsterStart = createVector();//Define monsterStart position as a vector
+    this.startTick = new Date().getTime()//Save the current tick of when the maze is first created
 
-    this.width = width;//Width of maze
-    this.height = height;//Height of maze
-    this.complexity = complexity;//Complexity of maze
+    this.width = width;//Define the width of maze
+    this.height = height;//Define the height of maze
+    this.complexity = complexity;//Define the complexity of maze
 
-    this.wallTree = new QuadTree(new Rectangle(0,0,this.width,this.height));//Walls stored as a quad tree
+    this.wallTree = new QuadTree(new Rectangle(0,0,this.width,this.height));//Define a new quadtree for the walls to go in
 
-    this.grid = make2Darray(this.width,this.height);//Creates the grid
-    for(let y=0;y<this.height;y++){
-      for(let x=0;x<this.width;x++){
-        this.grid[x][y] = (new cell(x,y,this.width,this.height));
+    this.grid = make2Darray(this.width,this.height);//Defines an empty grid
+    for(let y=0;y<this.height;y++){//For all y positions
+      for(let x=0;x<this.width;x++){//For all x positions
+        this.grid[x][y] = (new cell(x,y,this.width,this.height));//Insert a new cell in every x,y position of the grid
       }
     }
-    this.grid = this.generateMaze(this.width,this.height,this.complexity,this.grid)
-    this.walls = this.generateWalls(this.width,this.height,this.grid);//List of all the walls
-    this.wallToTree();
+    this.grid = this.generateMaze(this.width,this.height,this.complexity,this.grid)//Generates the maze in a grid of cells
+    this.walls = this.generateWalls(this.width,this.height,this.grid);//Generates a list of all the walls of the maze
+    this.wallToTree();//Insert all the walls into the quadtree ofwalls
   }
-  getTicks(){
-    return this.startTick;
+  getTicks(){//Get property for start tick
+    return this.startTick;//Returns the start tick of when the maze was made
   }
-  getWalls(){
-    return this.walls.slice();
+  getWalls(){//Get property for walls of the maze
+    return this.walls;//Returns a list of the maze's walls
   }
-  getQuadTree(hitbox){
-    return this.wallTree.retrieve(hitbox);
+  getQuadTree(hitbox){//Get property for the quadtree of walls
+    return this.wallTree.retrieve(hitbox);//Returns walls in quadtree relative to the hitbox
   }
-  getGrid(){
-    return this.grid;
+  getGrid(){//Get property for the grid of the maze
+    return this.grid;//Returns the grid of the maze
   }
-
-  getPlayerPos(){
-    return this.playerStart;
+  getPlayerPos(){//Get property for the player's start position
+    return this.playerStart;//Returns the player's start position
   }
-
-  getMonsterPos(){
-    return this.monsterStart;
+  getMonsterPos(){//Get property for the monster's start position
+    return this.monsterStart;//Returns the monster's  start position
   }
 
   generateMaze(width,height,complexity,ingrid){
-    let grid = clone(ingrid);
+    let grid = clone(ingrid);//Makes a copy of the given grid of cells
     for(let y=0;y<complexity;y++){//For all segment ys
       for(let x=0;x<complexity;x++){//For all segment xs
-        const ranx = Math.floor(random(x*width/complexity,(x+1)*width/complexity));//random x within segment
-        const rany = Math.floor(random(y*height/complexity,(y+1)*height/complexity));//random y within segment
-        this.generate(grid[ranx][rany],x*width/complexity,y*width/complexity,(x+1)*width/complexity,(y+1)*width/complexity,grid);//Generate a segment
+        const ranx = Math.floor(random(x*width/complexity,(x+1)*width/complexity));//random x within segment to start
+        const rany = Math.floor(random(y*height/complexity,(y+1)*height/complexity));//random y within segment to start
+        this.generate(grid[ranx][rany],x*width/complexity,y*width/complexity,(x+1)*width/complexity,(y+1)*width/complexity,grid);//Generates maze for a segment
         
         for(let i=0;i<Math.ceil(12/complexity);i++){//Loop through needed openings
             if(x!=complexity-1){//loop 1 less the segments for inner walls
@@ -74,53 +72,63 @@ class Maze{
     return grid;
   }
   generate(cell,minh,minv,maxh,maxv,grid){
-    let dir = shuffle([0,1,2,3]);//shuffle directions nesw
-    for(let i=0;i<dir.length;i++){//For each directions
-        let neighbour = this.checkCell(dir[i],cell,minh,minv,maxh,maxv,grid);//Check random neighbour
-        if(neighbour != null){//If neighbour exists
-            this.generate(neighbour,minh,minv,maxh,maxv,grid);//Recurse
+    let dir = shuffle([0,1,2,3]);//shuffle directions north, east, south, west
+    for(let i=0;i<dir.length;i++){//For each available directions
+        let neighbour = this.checkCell(dir[i],cell,minh,minv,maxh,maxv,grid);//Check if neighbour in this direction is unvisited
+        if(neighbour != null){//If neighbour exists and is unvisited
+            this.generate(neighbour,minh,minv,maxh,maxv,grid);//Call generate on the chosen neighbour
         }
     } 
   }
-  checkCell(dir,cell,minh,minv,maxh,maxv,grid){
-    let x = cell.getX();
-    let y = cell.getY();
+  checkCell(direction,cell,minX,minY,maxX,maxY,grid){
+    const x = cell.getX();
+    const y = cell.getY();
     let neighbour;
-    if(dir == 0){
-        neighbour = (y==minv?null:grid[x][y-1]);//If North cell on map  
-    }else if(dir == 1){
-        neighbour = (x==maxh-1?null:grid[x+1][y]);//If East cell on map
-    }else if(dir == 2){
-        neighbour = (y==maxv-1?null:grid[x][y+1]);//If South cell on map
-    }else if(dir == 3){
-        neighbour = (x==minh?null:grid[x-1][y]);//If West cell on map
+    switch(direction){
+      case 0://If direction is north of this cell
+        neighbour = (y==minY?null:grid[x][y-1]);//Set neighbour to north cell
+        break;
+      case 1://If direction is east of this cell
+        neighbour = (x==maxX-1?null:grid[x+1][y]);//Set neighbour to east cell
+        break;
+      case 2://If direction is south of this cell
+        neighbour = (y==maxY-1?null:grid[x][y+1]);//Set neighbour to south cell
+        break;
+      case 3://If direction is west of this cell
+        neighbour = (x==minX?null:grid[x-1][y]);//Set neighbour to west cell
+        break;
     }
-  if(neighbour != null && neighbour.getVisited() == false){//If valid neighbour
-    cell.getWalls()[dir]=0;//Break wall of current cell
-    neighbour.getWalls()[(dir+2)%4]=0;//Break opposite wall of visiting cell
-    neighbour.setVisited(true);//Make visiting cell next cell
-    return neighbour;
+    if(neighbour != null && neighbour.getVisited() == false){//If neighbour exists and is unvisited
+      cell.getWalls()[direction]=0;//Break wall of current cell in that direction
+      neighbour.getWalls()[(direction+2)%4]=0;//Break opposite wall of visiting neighbour cell
+      neighbour.setVisited(true);//Set the neighbour cell to visited
+      return neighbour;//Return neighbour cell
     }
-    return null;//No valid neighbour found
+    return null;//Return null if invalid neighbour
   }
   generateWalls(w,h,grid){
     //Make exit
-    let exitNum = Math.floor(random(2*(w+h)));//Exit locations
-    let direction = Math.floor(exitNum/(0.5*(w+h)));//Which wall needs breaking
+    let exitNum = Math.floor(random(2*(w+h)));//Make a random exit locations
+    let direction = Math.floor(exitNum/(0.5*(w+h)));//Calculate which wall needs breaking
     let exitx;
     let exity;
-    if(direction == 0){//North
-      exitx = exitNum; 
-      exity = 0;
-    }else if(direction == 1){//East
-      exitx = w-1;
-      exity = exitNum - w;
-    }else if(direction == 2){//South
-      exitx = exitNum - w - h;
-      exity = h-1;
-    }else if(direction == 3){//West
-      exitx = 0;
-      exity = exitNum - 2*w - h;
+    switch(direction){//Considering direction
+      case 0://North
+        exitx = exitNum; 
+        exity = 0;
+        break;
+      case 1://East
+        exitx = w-1;
+        exity = exitNum - w;
+        break;
+      case 2://South
+        exitx = exitNum - w - h;
+        exity = h-1;
+        break;
+      case 3://West
+        exitx = 0;
+        exity = exitNum - 2*w - h;
+        break;
     }
     grid[exitx][exity].getWalls()[direction] = 0;//Break wall for exit
     this.monsterStart = createVector(exitx+0.49,-2,exity+0.49);//+0.49 so that it is between the walls and floors to x and y
