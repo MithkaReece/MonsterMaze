@@ -1,11 +1,11 @@
 'use strict';
-
+//This is a base class for moveable entities in this program
 class entity{
     constructor(pos){
-      this.pos = pos;//Position of entity
+      this.pos = pos;//Defines the position of the entity
     }  
     getPos(){//Get property for the position of the entity
-      return this.pos;
+      return this.pos;//Returns the position of the entity
     }
   }
   
@@ -22,32 +22,32 @@ class entity{
         this.rays.push(new ray(radians(a)));//Add a new ray to the list of rays with current angle
       }
     }
-    getScore(){
-      return this.score;
+    getScore(){//Get property for the score of the player
+      return this.score;//Returns the current score of the player
     }
-    setScore(value){
-      this.score = value;
+    setScore(value){//Set property for the score of the player
+      this.score = value;//Sets the score of the player to given value
     }
 
-    getRX(){//Get property for the x component of its rotation
-      return this.rotation.x;
+    getRX(){//Get property for the x component of the player's rotational orientation
+      return this.rotation.x;//Returns x component of the player's rotation
     }
-    addRX(value){
-      this.rotation.x+=value;
-      for(let ray of this.rays){
-        ray.setAngle(ray.getAngle()-value)
+    addRX(value){//Adds a value to the x component of the player's rotational orientation
+      this.rotation.x+=value;//Adds given value to x component of player's rotation
+      for(let ray of this.rays){//For every rays stored in this player
+        ray.setAngle(ray.getAngle()-value)//Minus the given value to the angle of the current ray
       }
     }
 
-    getRY(){//Get property for the y component of its rotation
-      return this.rotation.y;
+    getRY(){//Get property for the y component of the player's rotation
+      return this.rotation.y;//Returns the y component of the player's rotation
     }
-    setRY(value){
-      this.rotation.y = value;
+    setRY(value){//Set property for the y component of the player's rotational orientation
+      this.rotation.y = value;//Sets the y component of the player's rotation to a given value
     }
 
     getHitBox(){//Get property for hitbox
-      return this.hitBox;
+      return this.hitBox;//Return the player's hitbox rectangle
     }
 
     rayCast(walls,monster){
@@ -114,7 +114,6 @@ class entity{
     controls(normalVector,retrievedWalls){
       const speed = 0.035;//Defines the speed at which the player walks
       let dirVector = createVector(0,0,0);
-
       if(keyIsDown(87)){//If "w" is being pressed
         dirVector.add(normalVector);
       }
@@ -166,14 +165,14 @@ class entity{
 
   class ray{
     constructor(angle){
-      this.angle = angle;
+      this.angle = angle;//Defines the ray's initial angle
     }
 
-    getAngle(){
-      return this.angle;
+    getAngle(){//Get property for ray's angle
+      return this.angle;//Returns the ray's angle
     }
-    setAngle(value){ 
-      this.angle = value;
+    setAngle(value){//Set property for ray's angle
+      this.angle = value;//Sets ray's angle to given value
     }
 
     cast(pos,aEnd,bEnd){

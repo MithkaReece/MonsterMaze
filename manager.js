@@ -7,7 +7,7 @@ class manager{
   constructor(){
     this.mazeSize = 5;//Defines the size of the maze
     this.buttonsAndLabels = []//Array of all the currently in use buttons and labels
-    this.layer = 0;//Sets the main menu layer by default
+    this.layer = 0;//Sets the default layer to the main menu
     this.perspect = new perspective();//Setups the a new 3D viewing plane of what the user can see
     this.setupMainMenu();//Launches the main menu by default
   }
@@ -59,6 +59,13 @@ class manager{
       this.setupMainMenu();//Launches the main menu
       this.layer=0;//Changes to main menu layer
     }))
+    let scores = this.retrieveStoredData();//To do
+    if(scores != null){
+      this.leaderboard = new leaderboard(createVector(width/2,3*height/16),scores);//Creates a new leaderboard and gives it a list of scores it will display
+    }
+  }
+
+  retrieveStoredData(){//To do
     let scores = [];//Creates empty list of scores
     let names = localStorage.getItem("names");//Retrieves list of stored names saved under "names"
     if(names != null){//If more than one name is stored in local storage
@@ -72,11 +79,10 @@ class manager{
           scores.push(nextScore);//Adds pairs of name and score to scores list
         }
       }
-      scores = mergeSort(scores,"desc");//Sorts the scores into descending numerical order
-      this.leaderboard = new leaderboard(createVector(width/2,3*height/16),scores);//Creates a new leaderboard and gives it a list of scores it will display
-    }else{//If no data is stored
+      return mergeSort(scores,"desc");//Sorts the scores into descending numerical order  
+    }//If no data is stored
       console.log("no leaderboard data")//TO DO
-    } 
+      return null
   }
   //setupPauseMenu replaces the current buttons with all the buttons used for the pause menu
   setupPauseMenu(){//3
@@ -186,24 +192,7 @@ class manager{
         this.layer = 1;//Close pause menu
         this.setupGame();//Bring back the game labels
     }
-    this.checkWin();//Check if the player has won
     this.checkNameEntry(event.keyCode);//Validate input box when in win screen
-  }
-  //Checks whether the player has won by escaping the maze
-  //If the player has won this function then calculates the score based on the time it took
-  //It then launches the win screen and defines the input box for the user's name to go in
-  checkWin(){
-    if(this.layer == 1){//If in gameplay layer
-      if(this.player.won(this.mazeSize)){//If player has won
-        document.exitPointerLock();//Bring the mouse back
-        let timeDiff = new Date().getTime() - this.maze.getTicks()//Find how long the player was playing for
-        this.player.setScore(Math.floor((1/timeDiff)*Math.pow(10,8)))//Score = 1/ticks of played times 10^8  
-        this.layer = 4;//Change to win screen
-        this.setupWinScreen();//Setups up win screen
-        this.inputBox.position(width/2,height/2);//Set position of inputbox
-        this.inputBox.show();//Shows input box for win screen
-      }
-    }
   }
   //checkNameEntry validates whether the user has clicked enter after typing in the win screen input box
   checkNameEntry(key){
@@ -250,7 +239,22 @@ class manager{
   updateGameplay(){
     this.perspect.update(this.player);//Updates player's perspective based on player's orientation
     this.player.controls(this.perspect.getNormal(),this.maze.getQuadTree(this.player.getHitBox()));//Handles player controls
-    //this.checkLoss();//Checks if the player has been caught
+    this.checkWin();//Check if the player has won
+    this.checkLoss();//Checks if the player has been caught
+  }
+  //Checks whether the player has won by escaping the maze
+  //If the player has won this function then calculates the score based on the time it took
+  //It then launches the win screen and defines the input box for the user's name to go in
+  checkWin(){
+    if(this.player.won(this.mazeSize)){//If player has won
+      document.exitPointerLock();//Bring the mouse back
+      let timeDiff = new Date().getTime() - this.maze.getTicks()//Find how long the player was playing for
+      this.player.setScore(Math.floor((1/timeDiff)*Math.pow(10,8)))//Score = 1/ticks of played times 10^8  
+      this.layer = 4;//Change to win screen
+      this.setupWinScreen();//Setups up win screen
+      this.inputBox.position(width/2,height/2);//Set position of inputbox
+      this.inputBox.show();//Shows input box for win screen
+    }
   }
   //checkLoss checks whether the player is close enough to the monster that they have been caught
   //If the player has been caught then it moves the program to the lose screen
@@ -308,19 +312,20 @@ class manager{
 
   
 }
-
+//The leaderboard class is used to store all the currently stored scores of the previous games
+//This class also allows you to scroll through the list of scores in its menu as well as
+//showing all the scores as labels with their names and scores achieved
 class leaderboard{
   constructor(pos,scores){
-    this.pos = pos;
-    this.labels = [];
-    this.labelWidth = 600;
-    this.labelHeight = 80;
-    this.labelGap = 20;
-    this.height = (7*height/15);
-    this.createLabels(scores);
+    this.pos = pos;//Defines the position of the leaderboard
+    this.labelWidth = 600;//Defines the width of each label
+    this.labelHeight = 80;//Defines the height of each label
+    this.labelGap = 20;//Defines the vertical gap between the listed labels
+    this.height = (7*height/15);//Defines the height of the leaderboard
+    this.labels = this.createLabels(scores);//Creates the list of labels to be displayed from given data
   }
 
-  moveLabels(vector){
+  moveLabels(vector){//Moves all the positions of the labels in the direction of a given vector
     vector.setMag(25)//How fast you can scroll
     if(this.labels[0].getPos().y > this.pos.y && vector.y > 0){//If the top label is at the top 
       return;//Don't let them scroll down
@@ -332,20 +337,21 @@ class leaderboard{
       this.labels[i].addPos(vector);//Add vector to its position
     }
   }
-
-  createLabels(data){
-    this.labels = [];
+  
+  createLabels(data){//Converts given data into a list of labels
+    let labels = [];//Defines an empty list of labels
     for(let i=0;i<data.length;i++){//For every bit of data
       let name = data[i].getName();//Get name
       let score = data[i].getValue();//Get score
       let x = this.pos.x;//Set x to leaderboard's x
       let y = this.pos.y + i*(this.labelHeight+this.labelGap);//Set y to leaderbaord's y + offset times data number
-      this.labels.push(new label(createVector(x,y),this.labelWidth,this.labelHeight,name + ": " + score ,[255,255,255,60]))//add the new label to list
+      labels.push(new label(createVector(x,y),this.labelWidth,this.labelHeight,name + ": " + score ,[255,255,255,60]))//add the new label to list
     }
+    return labels;//Returns the new list of labels
   }
 
   show(){
-    for(let i=0;i<this.labels.length;i++){//For every label
+    for(let i=0;i<this.labels.length;i++){//For every label in the list of labels in the leaderboard
       let label = this.labels[i];//Set label to current label
       if(label.getPos().y > this.pos.y + this.height){//If label is below desired area
         i = this.labels.length;//Set i to max to stop loop
@@ -357,6 +363,7 @@ class leaderboard{
     }
   }
 }
+//The button class is used to simulate a button on a screen by displaying a box with text on it
 class button{
   constructor(pos,width,height,text,colour,click){
     this.click = click;//Stores the function that will be executed when the button is clicked
@@ -382,7 +389,7 @@ class button{
     text(this.text,this.pos.x,this.pos.y+this.height/10);//Drawing the text onto the button's rectangle
   }
 }
-
+//The label class is used to display a box with text on it to provide the user with information
 class label{
   constructor(pos,width,height,text,colour){
     this.pos = pos;//Stores the position of the label
@@ -391,17 +398,11 @@ class label{
     this.text = text;//Stores the text that is displayed on the label
     this.colour = colour;//Stores the colour of the button
   }
-  getText(){//Get property for the label's text
-    return this.text;
-  }
-  setText(text){//Set property for the label's text
-    this.text = text;
-  }
   getPos(){//Get property for the label's position
-    return this.pos;
+    return this.pos;//Returns the position of the label
   }
   addPos(vector){//Adds a vector to the label's position
-    this.pos.add(vector);
+    this.pos.add(vector);//Does an element wise addition of the given vector to the label's position
   }
   show(){
     rectMode(CENTER);//Drawing the rectangle of the label with the position being the center of the rectangle

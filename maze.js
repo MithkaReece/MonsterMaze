@@ -9,22 +9,15 @@ class Maze{
     this.playerStart = createVector();//Define playerStart position as a vector
     this.monsterStart = createVector();//Define monsterStart position as a vector
     this.startTick = new Date().getTime()//Save the current tick of when the maze is first created
-
-    this.width = width;//Define the width of maze
-    this.height = height;//Define the height of maze
-    this.complexity = complexity;//Define the complexity of maze
-
-    this.wallTree = new QuadTree(new Rectangle(0,0,this.width,this.height));//Define a new quadtree for the walls to go in
-
-    this.grid = make2Darray(this.width,this.height);//Defines an empty grid
-    for(let y=0;y<this.height;y++){//For all y positions
-      for(let x=0;x<this.width;x++){//For all x positions
-        this.grid[x][y] = (new cell(x,y,this.width,this.height));//Insert a new cell in every x,y position of the grid
+    this.grid = make2Darray(width,height);//Defines an empty grid
+    for(let y=0;y<height;y++){//For all y positions
+      for(let x=0;x<width;x++){//For all x positions
+        this.grid[x][y] = new cell(x,y);//Insert a new cell in every x,y position of the grid
       }
     }
-    this.grid = this.generateMaze(this.width,this.height,this.complexity,this.grid)//Generates the maze in a grid of cells
-    this.walls = this.generateWalls(this.width,this.height,this.grid);//Generates a list of all the walls of the maze
-    this.wallToTree();//Insert all the walls into the quadtree ofwalls
+    this.grid = this.generateMaze(width,height,complexity,this.grid)//Generates the maze in a grid of cells
+    this.walls = this.generateWalls(width,height,this.grid);//Generates a list of all the walls of the maze
+    this.wallTree = this.wallToTree(this.walls,width,height);//Insert all the walls into the quadtree ofwalls
   }
   getTicks(){//Get property for start tick
     return this.startTick;//Returns the start tick of when the maze was made
@@ -84,7 +77,7 @@ class Maze{
     const x = cell.getX();
     const y = cell.getY();
     let neighbour;
-    switch(direction){
+    switch(direction){//Consider the given direction
       case 0://If direction is north of this cell
         neighbour = (y==minY?null:grid[x][y-1]);//Set neighbour to north cell
         break;
@@ -132,85 +125,68 @@ class Maze{
     }
     grid[exitx][exity].getWalls()[direction] = 0;//Break wall for exit
     this.monsterStart = createVector(exitx+0.49,-2,exity+0.49);//+0.49 so that it is between the walls and floors to x and y
-    //Find place for player to spawn
-    let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
+    let pos = createVector(Math.floor(random(w)),Math.floor(random(h)));//Find random place for player to spawn
     while (p5.Vector.dist(pos, createVector(exitx,exity)) < 0.7*h){//Find random start far enough from exit
-      pos = createVector(Math.floor(random(w)),Math.floor(random(h)));
+      pos = createVector(Math.floor(random(w)),Math.floor(random(h)));//Create a new random place for the player to spawn
     }
-    this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);
+    this.playerStart = createVector(pos.x+0.5,-2,pos.y+0.5);//Convert 2D location on the maze to a 3D position
     //Convert to walls
     let walls = [];
-    for(let y=0;y<h;y++){
-      for(let x=0;x<w;x++){
-        let cell = grid[x][y]
+    for(let y=0;y<h;y++){//For every y position
+      for(let x=0;x<w;x++){//For every x position
+        let cell = grid[x][y]//Retrieve current cell
         if(cell.getWalls()[0]==1 && y == 0){//If north wall and top
-          walls.push(new wall(x,y,1,0));
+          walls.push(new wall(x,y,1,0));//Create a new wall and add to list of walls
         }
         if(cell.getWalls()[1]==1){//If east wall
-          walls.push(new wall(x+1,y,1,90));
+          walls.push(new wall(x+1,y,1,90));//Create a new wall and add to list of walls
         }
         if(cell.getWalls()[2]==1){//If south wall
-          walls.push(new wall(x,y+1,1,0));
+          walls.push(new wall(x,y+1,1,0));//Create a new wall and add to list of walls
         }
         if(cell.getWalls()[3]==1 && x == 0){//If west wall and left
-          walls.push(new wall(x,y,1,90));
+          walls.push(new wall(x,y,1,90));//Create a new wall and add to list of walls
         }
       }
     }
     grid[exitx][exity].getWalls()[direction] = 1;//Fill up exit for the monster
-    return walls;
+    return walls;//Returns the list of walls generated from the maze
   }
 
-  wallToTree(){
-    for(let i=0;i<this.walls.length;i++){
-      let current = this.walls[i];
-      this.wallTree.insert(current);
+  wallToTree(walls,width,height){
+    let wallTree = new QuadTree(new Rectangle(0,0,width,height));//Define a new quadtree for the walls to go in
+    for(let i=0;i<walls.length;i++){//For every wall from given walls
+      wallTree.insert(walls[i]);//Insert current wall into quad tree
     }
-  }
-}
-
-
-class cell{
-  constructor(x,y,w,h){
-    this.visited = false;
-    this.pos = createVector(x,y); 
-    this.l = w;
-    this.w = h;
-    this.walls = [1,1,1,1];//NESW
-  }
-  getVisited(){
-    return this.visited;
-  }
-  setVisited(value){
-    this.visited = value;
-  }
-  getX(){
-    return this.pos.x;
-  }
-  getY(){
-    return this.pos.y;
-  }
-  getWalls(){
-    return this.walls;
+    return wallTree;//Return new quad tree
   }
   
-  showWalls(){//Will remove
-    strokeWeight(10)
-    stroke(0,255,255,100);
-    let scale = 0.1/hscale*vscale;
-    if(this.pos.x==0 && this.walls[3]==1){//West
-      rect(this.pos.x*hscale,this.pos.y*vscale,scale,height/this.w);  
-    }
-    if(this.pos.y==0 && this.walls[0]==1){//North
-      rect(this.pos.x*hscale,this.pos.y*vscale,width/this.l,scale); 
-    }
-    if(this.walls[1]==1){//East
-      rect((this.pos.x+1)*hscale-scale/2,this.pos.y*vscale,scale,height/this.w);  
-    }
-    if(this.walls[2]==1){//South
-      rect(this.pos.x*hscale,(this.pos.y+1)*vscale-scale/2,width/this.l,scale);  
-    }
-    
+}
+//The cell class is used when generating the maze by creating a grid of cells that start
+//with four walls which are then broken through using a recursive algorithm
+//The cell is used to store whether is has been visited by this algorithm or not and 
+//stores which walls are there and which are not
+class cell{
+  constructor(x,y){
+    this.visited = false;//Defaults boolean visited to false
+    this.pos = createVector(x,y);//Defines an xy position 
+    this.walls = [1,1,1,1];//Initialising cell to have all four walls in directions
+    //North, East, South and West
+  }
+  getVisited(){//Get property for visited
+    return this.visited;//Returns the boolean of if the cell has been visited
+  }
+  setVisited(value){//Set property for visited
+    this.visited = value;//Sets the boolean of if the cell has been visited
+  }
+  getX(){//Get property for x position
+    return this.pos.x;//Returns the x value of the position
+  }
+  getY(){//Get property for y position
+    return this.pos.y;//Returns the y value of the position
+  }
+  getWalls(){//Get property for four walls of the cell
+    return this.walls;//Returns a list of 1s and 0s representing the four walls
   }
 }
 class QuadTree{
