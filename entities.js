@@ -115,51 +115,47 @@ class entity{
       const speed = 0.035;//Defines the speed at which the player walks
       let dirVector = createVector(0,0,0);
       if(keyIsDown(87)){//If "w" is being pressed
-        dirVector.add(normalVector);
+        dirVector.add(normalVector);//Add plane's normal vector to the direction vector reprenting forwards direction
       }
       if(keyIsDown(65)){//If "a" is being pressed
-        dirVector.add(Matrix.rotateY(normalVector,radians(270)));
+        dirVector.add(Matrix.rotateY(normalVector,radians(270)));//Add plane's normal vector rotation 270 degress from y axis to direction vector reprenting left direction
       }
       if(keyIsDown(83)){//If "s" is being pressed
-        dirVector.add(Matrix.rotateY(normalVector,radians(180)));
+        dirVector.add(Matrix.rotateY(normalVector,radians(180)));//Add plane's normal vector rotation 180 degress from y axis to direction vector reprenting backwards direction
       }
       if(keyIsDown(68)){//If "d" is being pressed
-        dirVector.add(Matrix.rotateY(normalVector,radians(90)));
+        dirVector.add(Matrix.rotateY(normalVector,radians(90)));//Add plane's normal vector rotation 90 degress from y axis to direction vector reprenting right direction
       }
-      let sensitivity = radians(1);
+      let sensitivity = radians(1);//Defines the magnitude of the angle moved each run through
       if(keyIsDown(38)){//If up arrow is being pressed
-        this.setRY(constrain(this.getRY() + 1.8*sensitivity,radians(-85),radians(80)))
+        this.setRY(constrain(this.getRY() + 1.8*sensitivity,radians(-85),radians(80)))//Add a positive angle to the player's rotation y component and constrain between bounds
       }
       if(keyIsDown(39)){//If right arrow is being pressed
-        this.addRX(2.5*sensitivity)
+        this.addRX(2.5*sensitivity)//Add a positive angle to the player's rotation x component
       }
       if(keyIsDown(40)){//If down arrow is being pressed
-        this.setRY(constrain(this.getRY() - 1.8*sensitivity,radians(-85),radians(80)));
+        this.setRY(constrain(this.getRY() - 1.8*sensitivity,radians(-85),radians(80)));//Add a negative angle to the player's rotation y component and constrain between bounds
       }
       if(keyIsDown(37)){//If left arrow is being pressed
-        this.addRX(-2.5*sensitivity)
+        this.addRX(-2.5*sensitivity)//Add a negative angle to the player's rotation x component
       }
       dirVector.y = 0;//Remove any change in the y component so the player has gravity
       dirVector.setMag(speed);//Sets the magnitude of the direction vector being added to the magnitude of the speed
       let walls = retrievedWalls;
       for(let i=0;i<walls.length;i++){
-        if(this.collide(walls[i],createVector(dirVector.x,dirVector.z))){//Check if player collides with current walls
-          if(this.collide(walls[i],createVector(dirVector.x,0))){
-            dirVector.x = 0;
-          }
-          if(this.collide(walls[i],createVector(0,dirVector.z))){
-            dirVector.z = 0;
-          }
-        }      
+        if(this.collide(walls[i],createVector(dirVector.x,0))){//Checks if player still collides only moving with the x component of the movement
+          dirVector.x = 0;//Set the x component to 0 to prevent collision
+        }
+        if(this.collide(walls[i],createVector(0,dirVector.z))){//Checks if player still collides only moving with the z component of the movment
+          dirVector.z = 0;//Set the z component to 0 to prevent collision
+        }
       }
       this.pos.add(dirVector);//Add the final direction vector to the position of the player to move the player
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//Redefined the hitbox based on the new position
     }
 
-    won(size){
-      let x = this.pos.x;
-      let z = this.pos.z;
-      return x<0 || x>size || z<0 || z>size;
+    won(size){//Checks if the player has won given the size of the maze
+      return this.pos.x<0 || this.pos.x>size || this.pos.z<0 || this.pos.z>size;//Return the boolean result of whether the player is outside the maze or not
     }
   }
 
@@ -174,22 +170,24 @@ class entity{
     setAngle(value){//Set property for ray's angle
       this.angle = value;//Sets ray's angle to given value
     }
-
+    //Cast function takes a position and two ends of a line segment representing a wall
+    //This function returns a point of intersection between the line segment and the half line from the position
+    //in the direction of the current ray
     cast(pos,aEnd,bEnd){
-      let dir = p5.Vector.fromAngle(this.angle);
-      const [x1,y1,x2,y2] = [aEnd.x,aEnd.y,bEnd.x,bEnd.y];
-      const [x3,y3,x4,y4] = [pos.x,pos.y,pos.x+dir.x,pos.y+dir.y];
+      let dir = p5.Vector.fromAngle(this.angle);//Retrieve a 2D vector from ray's angle
+      const [x1,y1,x2,y2] = [aEnd.x,aEnd.y,bEnd.x,bEnd.y];//Set values used for line segment equations
+      const [x3,y3,x4,y4] = [pos.x,pos.y,pos.x+dir.x,pos.y+dir.y];//Set values used for line segment equations
 
-      const den = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
-      if(den == 0){
-        return null;
+      const den = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);//Calculate the denominator of line intersection formula
+      if(den == 0){//If denominator is 0 meaning lines do not intersect
+        return null;//Return null as no point found
       }
-      const t = ((x1 - x3)*(y3 - y4) - (y1 - y3)*(x3 - x4))/den;
-      const u = -((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3))/den;
+      const t = ((x1 - x3)*(y3 - y4) - (y1 - y3)*(x3 - x4))/den;//Calculate t in formula
+      const u = -((x1 - x2)*(y1 - y3) - (y1 - y2)*(x1 - x3))/den;//Calculate u in formula
       if(t>0 && t<1 && u>0){//If intersection between the wall segment and ray half line
-        return createVector(x1 + t * (x2-x1),y1 + t * (y2-y1));
-      }else{
-        return null; 
+        return createVector(x1 + t * (x2-x1),y1 + t * (y2-y1));//Return found point of intersection
+      }else{//If no intersection
+        return null; //Return null as no point found
       }
     }
   }
