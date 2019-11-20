@@ -103,17 +103,16 @@ class entity{
 
     //This checks that if the player added on the direction vector called dir whether it would be inside a wall
     //This is done by simply checked using X,Y, width, height of the hitbox of the player and the wall
-    collide(wall,dir){
-      let result = this.hitBox.getX() + this.hitBox.getWidth() + dir.x > wall.getX() &&
-       this.hitBox.getX() + dir.x < wall.getX() + wall.getWidth() &&
-        this.hitBox.getY() + this.hitBox.getHeight() + dir.y > wall.getY() &&
-         this.hitBox.getY() + dir.y < wall.getY() + wall.getHeight();
-      return result;
+    collide = (wall,dir) =>{
+      return this.hitBox.getX() + this.hitBox.getWidth() + dir.x > wall.getX() && //If after player movement x plus width is above wall x
+      this.hitBox.getX() + dir.x < wall.getX() + wall.getWidth() && //If after player movement x is below wall x plus wall width
+      this.hitBox.getY() + this.hitBox.getHeight() + dir.y > wall.getY() && //If after player movement y plus height is above wall y
+      this.hitBox.getY() + dir.y < wall.getY() + wall.getHeight(); //If after player movement y is below wall y plus height
     }
 
     controls(normalVector,retrievedWalls){
       const speed = 0.035;//Defines the speed at which the player walks
-      let dirVector = createVector(0,0,0);
+      let dirVector = createVector(0,0,0);//Create zero vector as default direction vector
       if(keyIsDown(87)){//If "w" is being pressed
         dirVector.add(normalVector);//Add plane's normal vector to the direction vector reprenting forwards direction
       }
@@ -141,8 +140,8 @@ class entity{
       }
       dirVector.y = 0;//Remove any change in the y component so the player has gravity
       dirVector.setMag(speed);//Sets the magnitude of the direction vector being added to the magnitude of the speed
-      let walls = retrievedWalls;
-      for(let i=0;i<walls.length;i++){
+      let walls = retrievedWalls;//Define walls as retrieveWalls
+      for(let i=0;i<walls.length;i++){//For every wall in walls
         if(this.collide(walls[i],createVector(dirVector.x,0))){//Checks if player still collides only moving with the x component of the movement
           dirVector.x = 0;//Set the x component to 0 to prevent collision
         }

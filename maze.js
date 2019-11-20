@@ -174,7 +174,7 @@ class cell{
     //North, East, South and West
   }
   getVisited(){//Get property for visited
-    return this.visited;//Returns the boolean of if the cell has been visited
+    return this.visited;//Returns the boolean of if the cell 8has been visited
   }
   setVisited(value){//Set property for visited
     this.visited = value;//Sets the boolean of if the cell has been visited
@@ -198,38 +198,38 @@ class QuadTree{
   }
 
   insert(wall){
-    if(!this.divided){
-      this.subdivide();
+    if(!this.divided){//If current quad tree is not divided
+      this.subdivide();//Sub divide current quad tree
     }
-    for(let i=0;i<this.quads.length;i++){
-      let current = this.quads[i];
-      if(current.withinBounds(wall.getX(),wall.getY(),wall.getWidth(),wall.getHeight())){
-        current.insert(wall);
-        return;
+    for(let i=0;i<this.quads.length;i++){//For every quad in quads of quadtree
+      let current = this.quads[i];//Define current as current quad tree
+      if(current.withinBounds(wall.getX(),wall.getY(),wall.getWidth(),wall.getHeight())){//If wall is within the bounds of current quad of quad tree
+        current.insert(wall);//Insert wall into current quad tree found out of on these quads of the current quad tree
+        return;//End the function when a quad tree has been found the current wall fits within
       }
-    }
-    this.objects.push(wall);
+    }//If wall does not fit into any future quads
+    this.objects.push(wall);//Add wall to current quad tree objects
   }
 
   subdivide(){
-    let x = this.bound.getX();
-    let y = this.bound.getY();
-    let w = this.bound.getWidth();
-    let h = this.bound.getHeight();
-    this.quads.push(new QuadTree(new Rectangle(x, y, w/2, h/2)));
-    this.quads.push(new QuadTree(new Rectangle(x + w/2, y , w/2, h/2)));
-    this.quads.push(new QuadTree(new Rectangle(x + w/2, y + h/2, w/2, h/2)));
-    this.quads.push(new QuadTree(new Rectangle(x, y + h/2, w/2, h/2)));
-    this.divided = true;
+    let x = this.bound.getX();//Define x as the x position of the boundary
+    let y = this.bound.getY();//Define y as the y position of the boundary
+    let w = this.bound.getWidth();//Define w as the width of the boundary
+    let h = this.bound.getHeight();//Define h as the height of the boundary
+    this.quads.push(new QuadTree(new Rectangle(x, y, w/2, h/2)));//Add new quad tree to quads (top left)
+    this.quads.push(new QuadTree(new Rectangle(x + w/2, y , w/2, h/2)));//Add new quad tree to quads (top right)
+    this.quads.push(new QuadTree(new Rectangle(x + w/2, y + h/2, w/2, h/2)));//Add new quad tree to quads (bottom right)
+    this.quads.push(new QuadTree(new Rectangle(x, y + h/2, w/2, h/2)));//Add new quad tree to quads (bottom left)
+    this.divided = true;//Change divided boolean to true
   }
   
-  withinBounds(x,y,w,h){
+  withinBounds = (x,y,w,h) => {
     return this.pBounds(x,y) &&
      this.pBounds(x+w,y) &&
      this.pBounds(x+w,y+h) &&
      this.pBounds(x,y+h);
   }
-  pBounds(x,y){
+  pBounds = (x,y) => {
     return x >= this.bound.getX() &&
     x < this.bound.getX() + this.bound.getWidth() &&
     y >= this.bound.getY() &&
@@ -237,13 +237,13 @@ class QuadTree{
   }
 
   retrieve(hitbox){
-    let walls = this.objects.slice(0);
-    for(let i=0;i<this.quads.length;i++){
-      let currentWall = this.quads[i];
-      if(currentWall.withinBounds(hitbox.getX(),hitbox.getY(),hitbox.getWidth(),hitbox.getHeight())){
-        walls = walls.concat(currentWall.retrieve(hitbox));
+    let walls = this.objects.slice(0);//Define walls as a copy of objects in this quad tree
+    for(let i=0;i<this.quads.length;i++){//For every quad in quads
+      let currentWall = this.quads[i];//Define currentWall to the current quad
+      if(currentWall.withinBounds(hitbox.getX(),hitbox.getY(),hitbox.getWidth(),hitbox.getHeight())){//If hitbox is within currentWall's boundaries
+        walls = walls.concat(currentWall.retrieve(hitbox));//Join the currentWall's hitbox to the walls array
       }
     }
-    return walls;
+    return walls;//Return walls array
   }
 }

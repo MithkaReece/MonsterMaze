@@ -31,7 +31,7 @@ class cuboid extends shape{
     
       return faces;//Returns new list of all six faces
     }
-    //Returns a new face based the given points and rotation
+    //Returns a new face based on the given points and rotation
     generateFace = (points,rotation) => new face(points.map(a => Matrix.rotateY(a,radians(-rotation))))
 
     show3D(player,perspective){
@@ -80,15 +80,15 @@ class cuboid extends shape{
     }
     getWidth(){//Returns the width relative to the x axis
       if(this.rotation != 0){//If vertical wall
-        return this.height;
+        return this.height;//Return the 2D height
       }//If horizontal wall
-      return this.width;
+      return this.width;//Return the 2D width
     }
     getHeight(){//Returns the height relative to the y axis
       if(this.rotation != 0){//If vertical wall
-        return this.width;
+        return this.width;//Return the 2D width
       }else//If horizontal wall
-      return this.height;
+      return this.height;//Return the 2D height
     }
   
     show2D(){//Will be removed
