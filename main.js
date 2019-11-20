@@ -48,7 +48,7 @@ function windowResized() {//Wat does this do?
 //runAi is called by a set interval which makes sure the manager knows
 //to run the Ai every given interval
 function runAi(){
-  //gameMan.runAi();
+  gameMan.runAi();
 }
 //Set interval calls the runAi function every given seconds in milliseconds
 setInterval(runAi,50)// This should all the ai to do its move (milliseconds)

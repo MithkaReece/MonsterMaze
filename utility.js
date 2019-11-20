@@ -1,36 +1,38 @@
 'use strict';
-function VtoArray(vector){
-  let array;
-  if(vector.z != undefined){
-    array = make2Darray(3,1);
-  }else{
-    array = make2Darray(2,1); 
+function VtoArray(vector){//Returns an array of the components of a given vector
+  let array;//Define new array
+  if(vector.z != undefined){//If given vector is 3D
+    array = make2Darray(3,1);//Make a 3 long array
+  }else{//If given vector is 2D
+    array = make2Darray(2,1);//Make a 2 long array
   }
-  array[0][0] = vector.x;
-  array[1][0] = vector.y;
-  if(vector.z != undefined){
-    array[2][0] = vector.z; 
+  array[0][0] = vector.x;//Slot in the x component into the array
+  array[1][0] = vector.y;//Slot in the y component into the array
+  if(vector.z != undefined){//If there was a z component (if from 3D vector)
+    array[2][0] = vector.z;//Slot in the z component into the array
   }
-  return array;
+  return array;//Returns new array of components from given vector
 }
-function matrixToArray(matrix){
-  if(matrix.getData()[0].length == 0){   
-    return null;
+function matrixToArray(matrix){//Returns an 2D array of the elements from a given matrix
+  if(matrix.getData()[0].length == 0){//If the matrix is empty
+    return null;//Return null as no array can be produced
   }
-  let data = [];
-  for(let i=0;i<matrix.getData().length;i++){
-    data.push(matrix.getData()[i][0]);
+  return clone(matrix.getData());//Returns a clone of the 2D array representing the given matrix
+  let array = [];//Define new array
+  for(let i=0;i<matrix.getData().length;i++){//
+    array.push(matrix.getData()[i][0]);
   }
-  return data
+  return array
 }
-function make2Darray(cols,rows){
-  //Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array
-  return new Array(cols).fill().map(item =>(new Array(rows))) 
-}
+//Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array
+const make2Darray = (cols,rows) => new Array(cols).fill().map(item =>(new Array(rows))) 
+//function make2Darray(cols,rows){ //return new Array(cols).fill().map(item =>(new Array(rows))) 
+//}
+//Recursively goes through any array inside arrays and returns a deep clone of the array by copying every valued element
 const clone = (items) => items.map(item => Array.isArray(item) ? clone(item) : item);
 
 function mergeSort(a,type){
-  if(a.length == 1){ //If the array only contains one item
+  if(a.length == 1){ //If the array only contains one item 
     return a; //Return this item
   }
   let firstList = mergeSort(a.slice(0,a.length/2),type); //Sort first half of list
@@ -65,43 +67,41 @@ function merge(firstList,secondList,type){
   }
   return sorted; //Return sorted array
 }
-
+//The score class is used to stored scores achieved when a user finishes the game
+//This stores the score achieved and the name of the user who scored it
+//This data is then retrieved to display the leaderboard
 class score{
-  constructor(value){
+  constructor(value,name){
     this.value = value;//Stored the value of the score when initialised
-    this.name;
+    this.name = name;//Defines the name for the score
   }
-  
   getName(){//Get property for name
-    return this.name;
+    return this.name;//Returns the name of this score
   }
-  setName(value){//Set property for name
-    this.name = value;
-  }
-
   getValue(){//Get property for value (representing the value of the score of this object)
-    return this.value;
+    return this.value;//Returns the stored score value
   }
 }
 
-
+//The Rectangle class is a very simple representation of a rectangle which is mainly used 
+//for collision boxes by saving the properties of hitboxes using this rectangle class
 class Rectangle{
   constructor(x,y,width,height){
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+    this.x = x;//Defines the x position of the rectangle
+    this.y = y;//Defines the y position of the rectangle
+    this.width = width;//Defines the width of the rectangle
+    this.height = height;//Defines the height of the rectangle
   }
-  getX(){
-    return this.x;
+  getX(){//Get property for the x position
+    return this.x;//Returns the x position
   }
-  getY(){
-    return this.y;
+  getY(){//Get property for the y position
+    return this.y;//Returns the y position
   }
-  getWidth(){
-    return this.width;
+  getWidth(){//Get property for the width
+    return this.width;//Returns the rectangle's width
   }
-  getHeight(){
-    return this.height;
+  getHeight(){//Get property for the height
+    return this.height;//Returns the rectangle's height
   }
 }

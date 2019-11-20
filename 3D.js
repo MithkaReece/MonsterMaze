@@ -1,61 +1,61 @@
 'use strict';
 class face{
   constructor(points){
-    this.points = points;
-    this.normal = this.getNormal(points);
-    this.screenScale = 35; //Scales up projection
+    this.points = points;//Defines the lists of points representing this face
+    this.normal = this.getNormal(points);//Defines the normal by calculating a normal vector using the given points
+    this.screenScale = 35;//Scales up projection (zooms in)
   }
   getNormal(points){//Gets the face's normal(plane)
-    let a;//Direction vector 1
-    let b;//Direction vector 2
-    let n;//Normal of the face
-    for(let i=0;i<points.length-1;i++){
-      a = p5.Vector.sub(points[i+1],points[i]);
-      for(let k=i+1;k<points.length-1;k++){
-        b = p5.Vector.sub(points[k+1],points[k]);
-        if(a.angleBetween(b) != 0){//If direction vectors are not parallel
-          n = p5.Vector.cross(a,b);//Created normal      
+    let dirA;//Direction vector A
+    let dirB;//Direction vector B
+    let normal;//Normal of the face
+    for(let i=0;i<points.length-1;i++){//For every point but the last point
+      dirA = p5.Vector.sub(points[i+1],points[i]);//Set direction vector A to be the vector from current point i to next point
+      for(let k=i+1;k<points.length-1;k++){//For every point but the first and last point
+        dirB = p5.Vector.sub(points[k+1],points[k]);//Set direction vector B to the vector from current point k to next point
+        if(dirA.angleBetween(dirB) != 0){//If direction vectors are not parallel
+          normal = p5.Vector.cross(dirA,dirB);//Create a potential normal by doing the cross product of the two direction vectors    
           k=points.length;//Exit k loop
           i=points.length;//Exit i loop
         }
       }
     }
-    if(points.length>3){//If more than 3 points
-      if(this.isFace(points,n) == false){//If points don't all lie on a plane
+    if(points.length>3){//If more than 3 points forming this plane
+      if(this.isFace(points,normal) == false){//If points don't all lie on a single plane then invalid face
         console.log("invalid face")
       }
     }
-    return n;//Return a valid n
+    return normal;//Returns a valid normal
   }
   isFace(points,n){//Checks if all points lies on the same plane to form a face
     let k = p5.Vector.dot(points[0],n);//k = a.n
-    for(let i=1;i<points.length;i++){
+    for(let i=1;i<points.length;i++){//For every point apart from the first point
       if(Math.floor(p5.Vector.dot(points[i],n)) != Math.floor(k)){//If point doesn't lie of the plane
-        return false;//If at least one point is invalid, face is invalid
+        return false;//If at least one point is invalid, face is invalid therefore return false
       }
     }
-    return true;//If no invalid points then face is valid
+    return true;//If no invalid points then face is valid therefore return true
   }
 
-  project(pos,player,perspective){
+  project(pos,player,perspective){//Projects the face's points onto a 2D plane of the screen
     let points = this.points.map(a => p5.Vector.add(a.copy(),pos));//Translates all the points to the objects location from a copy of all the points
     if(this.visible(points,player.getPos()) == null || points.map(point => this.get2D(point,player,perspective)).every(point => (point.z == null))){
       return null //Checks if face is visible in direction the player is and if all points are behind the player
     }
     
-    let projected = [];
-    for(let i=0;i<points.length;i++){
+    let projected = [];//Define projected as an empty array
+    for(let i=0;i<points.length;i++){//For every point in points
       let point = this.get2D(points[i],player,perspective);//Projects the current point into 2D
       if(Math.abs(point.x) <= width/2 && Math.abs(point.y) <= height/2 && point.z != null){//If point is on screen
-        projected.push(point);
+        projected.push(point);//Add valid 2D point to projected points
       }else{// If point not on screen
-        let left;
-        let right;
+        let left;//Define left point
+        let right;//Define right point
         //Split point into 2 points on the screen
-        if(this.get2D(points[(i-1+points.length) % points.length],player,perspective).z!=null){
+        if(this.get2D(points[(i-1+points.length) % points.length],player,perspective).z!=null){//If left neighbour point is infront of camera
           left = this.get2D(this.behindPlayerEstimation(points[i],points[(i-1+points.length) % points.length],player,perspective),player,perspective)//Get left 3D point
         }
-        if(this.get2D(points[(i+1) % points.length],player,perspective).z!=null){
+        if(this.get2D(points[(i+1) % points.length],player,perspective).z!=null){//If right neighbour point is infront of camera
           right = this.get2D(this.behindPlayerEstimation(points[i],points[(i+1) % points.length],player,perspective),player,perspective)//Get right 3D point
         }
         //Add left connection
@@ -70,33 +70,34 @@ class face{
         }
       }
     }
-  if(projected.length==0){
-    return null;
+  if(projected.length==0){//If no valid points have been projected onto 2D
+    return null;//Return null as nothing to draw
   }
-  return projected;
+  return projected;//Return the valid projected 2D points
   }
-
+  //Estimates a point behind the player to the most accurate point infront of the player
+  //by following the line between the point and the neighbouring point if the neighbouring
+  //point is infront of the player
   behindPlayerEstimation(currentPoint,connectingPoint,player,perspective){
-    const accuracy = 100;//Accuaracy of estimate points behind the camera
-
-    let dir = p5.Vector.sub(connectingPoint,currentPoint);//Direction vector
-    let point = currentPoint.copy();//Copy of the point
-    while(this.get2D(point,player,perspective).z == null){//While it can't be projected
-      point.add(p5.Vector.mult(dir,1/accuracy));//Add a little in 3D
+    const accuracy = 100;//Accuracy of estimate points behind the camera
+    let directionVector = p5.Vector.sub(connectingPoint,currentPoint);//Direction vector
+    let newPoint = currentPoint.copy();//Copy of the point
+    while(this.get2D(newPoint,player,perspective).z == null){//While it can't be projected
+      newPoint.add(p5.Vector.mult(directionVector,1/accuracy));//Add a little direction vector in 3D
     }
-    return point;
+    return newPoint;//Return a new estimate point found
   }
 
   visible(points,playerPos){//Checks if face is visible
-    let centre = createVector();
-    for(let i=0;i<points.length;i++){
+    let centre = createVector();//Define centre as a new vector
+    for(let i=0;i<points.length;i++){//For every point of face
       centre.add(p5.Vector.div(points[i],points.length))//Gets the centre of the face by adding fractions of each point
     }
-    let faceNormal = p5.Vector.sub(centre,playerPos);//Vector from face to camera
+    let faceNormal = p5.Vector.sub(centre,playerPos);//Defines faceNormal as the Vector from the face to the camera
     return(Math.acos(p5.Vector.dot(this.normal,faceNormal)/(this.normal.mag()*faceNormal.mag()))<=PI/2 ? null : points);//Return face if face towards the camera
   }
   
-  get2D(point,player,perspective){
+  get2D(point,player,perspective){//Calculates the 2D point based on a given 3D point
   let dir = p5.Vector.sub(point,player.getPos());//Direction of line vector
   //Forming r = a + λb using line and plane equation(r.n = -d)
   let lambda = ((-perspective.getD() - p5.Vector.dot(player.getPos(),perspective.getNormal())) / (p5.Vector.dot(dir,perspective.getNormal())));//finding λ    
@@ -114,16 +115,16 @@ class face{
   }
 
   show(pos,player,perspective){
-    let points = this.project(pos,player,perspective);
-    if(points!=null){
-      beginShape();
-      for(let i=0;i<points.length;i++){
-        let point = points[i];
-        if(point != null){
-          vertex(point.x,point.y);
+    let points = this.project(pos,player,perspective);//Retrieve all the points in 2D 
+    if(points!=null){//If there exists points to be drawn
+      beginShape();//Begin drawing the shape will the following vertices
+      for(let i=0;i<points.length;i++){//For every points in points
+        let point = points[i];//Let point be the current point
+        if(point != null){//If point exists (point is not null)
+          vertex(point.x,point.y);//Draw vertix with current x and y position
         }
       }
-      endShape(CLOSE);
+      endShape(CLOSE);//End shape and join the first and last vertices
     }
   }
 }
@@ -137,9 +138,9 @@ class perspective{
     return this.normal.copy();//Returns a copy of the vector
   }
   getD(){//Get propery for the d from the plane equation r.n = d
-    return this.d;
+    return this.d;//Returns the stored value of d
   }
-  update(player){
+  update(player){//Update the plane equation based on the player's orientation
     this.normal = Matrix.rotateY(Matrix.rotateZ(createVector(0,0,1),player.getRY()),player.getRX());//RotateXY screen plane round camera
     this.d = -(p5.Vector.dot(this.normal,player.getPos()) +(this.distance));//Calculate d of the plane equation from the plane equation and the given distance
   }

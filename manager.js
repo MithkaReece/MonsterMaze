@@ -74,8 +74,7 @@ class manager{
         let currentName = names[i];//Sets currentName to the current name in the loop
         let scoresFromName = localStorage.getItem(currentName).split(",");//Retrieves a list of scores under currentName
         for(let k=0;k<scoresFromName.length;k++){//Loops through list of scores 
-          let nextScore = new score(parseInt(scoresFromName[k]));//Create a new score object with the current score
-          nextScore.setName(currentName);//Allocate the new object the name of the user who achieved that score
+          let nextScore = new score(parseInt(scoresFromName[k]),currentName);//Create a new score object with the current score
           scores.push(nextScore);//Adds pairs of name and score to scores list
         }
       }
