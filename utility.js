@@ -1,5 +1,5 @@
 'use strict';
-function VtoArray(vector){//Returns an array of the components of a given vector
+function vectorToArray(vector){//Returns an array of the components of a given vector
   let array;//Define new array
   if(vector.z != undefined){//If given vector is 3D
     array = make2Darray(3,1);//Make a 3 long array
@@ -13,16 +13,27 @@ function VtoArray(vector){//Returns an array of the components of a given vector
   }
   return array;//Returns new array of components from given vector
 }
+function matrixToVector(matrix){
+  return arrayToVector(matrix.getData().map(x => x[0]));
+}
+function arrayToVector(array){//Returns a vector made from a give narray
+  if(!Array.isArray(array)){//If given array is not an array
+    console.log("array to vector not given an array")
+    return null//Return null as no array to convert to vector
+  }
+  if(array.length == 2){//If array is 2 long
+    return createVector(array[0],array[1]);//Return a 2D vector from array data
+  }else if(array.length == 3){//If array is 3 long
+    return createVector(array[0],array[1],array[2]);//Returns a 3D vector from array data
+  }//If array is not 2 or 3 long then it can't be converted to a vector
+  console.log("array can't be made into vector")
+  return null//Return null as no vector to be produced
+}
 function matrixToArray(matrix){//Returns an 2D array of the elements from a given matrix
   if(matrix.getData()[0].length == 0){//If the matrix is empty
     return null;//Return null as no array can be produced
   }
   return clone(matrix.getData());//Returns a clone of the 2D array representing the given matrix
-  let array = [];//Define new array
-  for(let i=0;i<matrix.getData().length;i++){//
-    array.push(matrix.getData()[i][0]);
-  }
-  return array
 }
 //Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array
 const make2Darray = (cols,rows) => new Array(cols).fill().map(item =>(new Array(rows))) 

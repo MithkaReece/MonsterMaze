@@ -1,79 +1,38 @@
 class Matrix{
     constructor(rowsOrData,cols){
-      if(cols === undefined){
-        this.data = rowsOrData;
-        this.rows = this.data.length;
-        if(Array.isArray(this.data[0])){//If cols > 1
-          this.cols = this.data[0].length;
-        }else{
-          for(let i = 0;i<this.rows;i++){
-            let array = []
-            array.push(this.data[i]);
-            this.data[i] = array;
+      if(cols === undefined){//If parameter is purely data to be inserted into matrix
+        this.data = clone(rowsOrData);//Define data as a clone of the given data
+        this.rows = this.data.length;//Define rows as the length of the data
+        if(!Array.isArray(this.data[0])){//If columns is greater than 1
+          for(let i = 0;i<this.rows;i++){//Loop through each element of the array
+            let array = []//Create a new array
+            array.push(this.data[i]);//Add current element to array
+            this.data[i] = array;//Set current element to knew array containing the element
           }
-          this.cols = 1;
         }
-      }else{
-      this.rows = rowsOrData;
-      this.cols = cols;
-      this.data = Array(this.rows).fill().map(() => Array(this.cols).fill(0)); 
+        this.cols = this.data[0].length;//Define columns as the vertical length of the 2D array
+      }else{//If parameter is rows and columns
+      this.rows = rowsOrData;//Define rows as given rows
+      this.cols = cols;//Defines cols as given columns
+      this.data = Array(this.rows).fill().map(() => Array(this.cols).fill(0));//Define data as an array full of 0s with dimensions rows by columns
       }   
     }
 
-    getData(){
-      return clone(this.data);
+    getData(){//Get property for the matrix data
+      return clone(this.data);//Return a clone of the 2D array of data representing this matrix
     }
     
-    insert(array){
-      this.data = array;
+    insert(array){//Inserts a 2D array into the matrix by replacing its data
+      this.data = array;//Set data to a given array
     }
     
-    mult(vector){
-      let v = VtoArray(vector); //Turn vector into array
-      if(this.cols != v.length){ //Test if comformable
-        console.log("not comformable"); 
-        return undefined
+    multiply(matrix){
+     if(matrix instanceof Matrix){ //Matrix * Matrix
+       return Matrix.multiply(this,matrix);
+     }else if(matrix instanceof p5.Vector){ //Matrix * Vector
+       return matrixToVector(Matrix.multiply(this,new Matrix(vectorToArray(matrix))))//Return the vector result from the multipication
       }
-      
-      let newV = []; 
-      for(let i=0;i<this.rows;i++){ //Loop through rows
-        let sum = 0;
-        for(let k=0;k<v.length;k++){ //Loop through cols
-          sum += this.data[i][k] * v[k]; //Times elements
-        }
-        newV.push(sum); //Push new element sums
-      }
-      
-      v = createVector(); //Create the new vector
-      v.x = newV[0];
-      v.y = newV[1];    
-      if(this.rows>2){ //3D vector
-       v.z = newV[2];  
-      }
-      return v;
     }
-    
-    multiply(n){
-     if(n instanceof Matrix){ //Matrix * Matrix
-       
-       
-     }else if(n instanceof p5.Vector){ //Matrix * Vector
-       //Fix for 1d arrays
-       
-       let v = VtoArray(n); //Turn vector into array
-       let m = new Matrix(v); //Turn array into matrix  
-       v = Matrix.multiply(this,m); //Multiply this with vector
-       let newV = createVector();
-       newV.x = v.data[0][0];
-       newV.y = v.data[1][0];
-       if(this.rows>2){ //If 3D vector
-         newV.z = v.data[2][0]; 
-       }
-       return newV; //Return new vector
-     }
-    }
-
-
     static elementWiseMult(a,b){
       if(a.cols == b.cols && a.rows == b.rows){
         let aArray = a.getData();
@@ -164,7 +123,7 @@ class Matrix{
         [-sin(angle), 0,cos(angle)]
         ]
       let matrix = new Matrix(rotationX);
-      return matrix.mult(vector);
+      return matrix.multiply(vector);
     }
     
     static rotateZ(vector,angle){
@@ -174,7 +133,7 @@ class Matrix{
         [0,sin(angle), cos(angle)]
         ]
       let matrix = new Matrix(rotationX);
-      return matrix.mult(vector);
+      return matrix.multiply(vector);
     }
     
     
