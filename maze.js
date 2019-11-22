@@ -1,9 +1,12 @@
 'use strict';
-
-
 let hscale;//Will remove
 let vscale;//Will remove
 
+//Maze is the class which is responsible for generating a random maze when it is created
+//This stores three version of the maze generated. These consist of a 2D array of cells where
+//each cell stored which walls it has, a list of walls which have been generated from the grid of
+//cells which contain its position, rotation and length as well as a quad tree which contains all
+//the generated walls where the walls are as far down the tree as they can possibily fit within
 class Maze{
   constructor(width,height,complexity){
     this.playerStart = createVector();//Define playerStart position as a vector
@@ -17,7 +20,7 @@ class Maze{
     }
     this.grid = this.generateMaze(width,height,complexity,this.grid)//Generates the maze in a grid of cells
     this.walls = this.generateWalls(width,height,this.grid);//Generates a list of all the walls of the maze
-    this.wallTree = this.wallToTree(this.walls,width,height);//Insert all the walls into the quadtree ofwalls
+    this.wallTree = this.wallToTree(this.walls,width,height);//Insert all the walls into the quadtree of walls
   }
   getTicks(){//Get property for start tick
     return this.startTick;//Returns the start tick of when the maze was made
@@ -153,7 +156,7 @@ class Maze{
     return walls;//Returns the list of walls generated from the maze
   }
 
-  wallToTree(walls,width,height){
+  wallToTree(walls,width,height){//Inserts a given list of walls into a quad tree of walls
     let wallTree = new QuadTree(new Rectangle(0,0,width,height));//Define a new quadtree for the walls to go in
     for(let i=0;i<walls.length;i++){//For every wall from given walls
       wallTree.insert(walls[i]);//Insert current wall into quad tree
@@ -189,6 +192,12 @@ class cell{
     return this.walls;//Returns a list of 1s and 0s representing the four walls
   }
 }
+//QuadTree is a class that is responsible for handling an abstract data structure of quad trees within
+//quads trees within quads trees etc... This class as well as storing quad tree generated is also responsible
+//for inserting objects with 2D dimensions within the quadtree as far down the tree as possible. This is down by
+//starting with a single quadtree and subdividing into four quad trees within this quad tree until the object being
+//inserted can no longer fit within the smaller bounds. This same technique is used to retrieve walls saved within the
+//quad tree that fit within the same quad tree of a given hitbox which is used for collision detection
 class QuadTree{
   constructor(bound){
     this.bound = bound;
@@ -197,20 +206,22 @@ class QuadTree{
     this.divided = false;
   }
 
-  insert(wall){
+  insert(wall){//Inserts a given wall into any of the 4 quads, containing a quadtree each, it completely fits between or in this quad tree
     if(!this.divided){//If current quad tree is not divided
       this.subdivide();//Sub divide current quad tree
     }
     for(let i=0;i<this.quads.length;i++){//For every quad in quads of quadtree
       let current = this.quads[i];//Define current as current quad tree
-      if(current.withinBounds(wall.getX(),wall.getY(),wall.getWidth(),wall.getHeight())){//If wall is within the bounds of current quad of quad tree
+      if(current.withinBounds(wall.getX(),wall.getY(),wall.getWidth(),wall.getHeight())){//If wall is within the bounds of current quad
         current.insert(wall);//Insert wall into current quad tree found out of on these quads of the current quad tree
         return;//End the function when a quad tree has been found the current wall fits within
       }
     }//If wall does not fit into any future quads
     this.objects.push(wall);//Add wall to current quad tree objects
   }
-
+  //Subdivide creates four new quadtrees which represent the four corners of this quadtree's region
+  //and store these quad trees in this.quads as well as making sure it is only subdivided once by setting
+  //divided to true
   subdivide(){
     let x = this.bound.getX();//Define x as the x position of the boundary
     let y = this.bound.getY();//Define y as the y position of the boundary
@@ -222,25 +233,20 @@ class QuadTree{
     this.quads.push(new QuadTree(new Rectangle(x, y + h/2, w/2, h/2)));//Add new quad tree to quads (bottom left)
     this.divided = true;//Change divided boolean to true
   }
-  
-  withinBounds = (x,y,w,h) => {
-    return this.pBounds(x,y) &&
-     this.pBounds(x+w,y) &&
-     this.pBounds(x+w,y+h) &&
-     this.pBounds(x,y+h);
-  }
-  pBounds = (x,y) => {
-    return x >= this.bound.getX() &&
-    x < this.bound.getX() + this.bound.getWidth() &&
-    y >= this.bound.getY() &&
-    y < this.bound.getY() + this.bound.getHeight();
-  }
-
+  //withinBounds is a function that checks whether all four corners of a rectangle, given the dimensions and position, are
+  //within the bounds of this quad tree's boundary
+  withinBounds = (x,y,w,h) => {return this.pBounds(x,y) && this.pBounds(x+w,y) && this.pBounds(x+w,y+h) && this.pBounds(x,y+h)}
+  //pBounds is a function that checks whether a given x and y position is within the bounds of this quadtree's boundary
+  pBounds = (x,y) => {return x >= this.bound.getX() && x < this.bound.getX() + this.bound.getWidth() &&
+    y >= this.bound.getY() && y < this.bound.getY() + this.bound.getHeight()}
+  //Retrieve is a function that runs through a similar procedure as the insert function using the given hitbox but instead of
+  //inserting the hitbox it copies all the objects that it has come across and therefore returns a list of the only
+  //objects that could possibily collide with the given hitbox
   retrieve(hitbox){
     let walls = this.objects.slice(0);//Define walls as a copy of objects in this quad tree
     for(let i=0;i<this.quads.length;i++){//For every quad in quads
       let currentWall = this.quads[i];//Define currentWall to the current quad
-      if(currentWall.withinBounds(hitbox.getX(),hitbox.getY(),hitbox.getWidth(),hitbox.getHeight())){//If hitbox is within currentWall's boundaries
+      if(currentWall.withinBounds(hitbox.getX(),hitbox.getY(),hitbox.getWidth(),hitbox.getHeight())){//If hitbox is within currentWall's bounds
         walls = walls.concat(currentWall.retrieve(hitbox));//Join the currentWall's hitbox to the walls array
       }
     }

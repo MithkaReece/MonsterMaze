@@ -114,7 +114,8 @@ class manager{
     this.inputBox = createInput('');//Defined input box for when player wins
     this.inputBox.hide();//Hides input box until in layer 4
     this.buttonsAndLabels=[];
-    this.buttonsAndLabels.push(new label(createVector(width/2,height/20),300,50,"SCORE: " + this.player.getScore(),[255,255,255,60]))//Label for current score
+    //Add the Label for current score just achieved to current buttons and labels
+    this.buttonsAndLabels.push(new label(createVector(width/2,height/20),300,50,"SCORE: " + this.player.getScore(),[255,255,255,60]))
   }
   //setupLoseScreen replaces the current buttons and labels with all the labels and buttons used for the lose screen
   setupLoseScreen(){//5 
@@ -281,8 +282,6 @@ class manager{
     let storageNames = localStorage.getItem("names");//Retrieve all recorded names from local storage
     if(storageNames != null){//If more than 1 name recorded
       this.leaderboard.show();//Shows the leaderboard
-    }else{
-
     }
   }
   //ShowAndUpdate is a manager function which is called by the main program every tick
@@ -362,6 +361,9 @@ class leaderboard{
     }
   }
 }
+//textObject is a base class used by button and label which defines an object
+//with given text and a rectangle for the text to be on which is defined by 
+//position, dimensions and colour
 class textObject{
   constructor(pos,width,height,text,colour){
     this.pos = pos;//Stores the position of the text object

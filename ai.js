@@ -1,5 +1,9 @@
 'use strict';
-
+//Monster class inherits entity so that it can be a moveable object within the program.
+//It is defined by is position and generates its own decision making process.
+//This is done by inititating two neural networks and having a complex training
+//process run everytime the monster is updated to experiment and learn to find
+//the user moving around the maze with the objective of catching the user
 class monster extends entity{
     constructor(pos){
         super(pos);
@@ -175,7 +179,11 @@ class monster extends entity{
         this.tempCube.show3D(player,perspective)
     }
 }
-
+//neuralNetwork is a class responsible for storing all the layers of a neural network as a list of matrices
+//where all the elements represent the weights of the connection between the layers
+//This is also responsible for running inputs through the neural network to find the resulting outputs after
+//applying all the weights of each layer as well as adjusting the weights of the network using calculated 
+//errors of the outputs by back propagating through the layers and tweaking weights using gradient descent
 class neuralNetwork{
     constructor(layers){
         this.inputCount = layers[0];

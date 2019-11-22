@@ -1,4 +1,10 @@
 'use strict';
+//Face is used to stored a 3D face that can project itself onto a 2D plane of a screen depending
+//on the properties of the camera such as position and orientation
+//This class also validates whether a given list of points can be made into a single face as well
+//as handling the actual projection onto 2D using matrix and vector mathematics
+//Points can also be created in the projection process to represent edges connecting to points
+//that are behind the camera/player
 class face{
   constructor(points){
     this.points = points;//Defines the lists of points representing this face
