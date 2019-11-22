@@ -153,7 +153,7 @@ class entity{
       this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//Redefined the hitbox based on the new position
     }
 
-    won(size){//Checks if the player has won given the size of the maze
+    won = (size) =>{//Checks if the player has won given the size of the maze
       return this.pos.x<0 || this.pos.x>size || this.pos.z<0 || this.pos.z>size;//Return the boolean result of whether the player is outside the maze or not
     }
   }

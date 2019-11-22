@@ -2,10 +2,10 @@
 class face{
   constructor(points){
     this.points = points;//Defines the lists of points representing this face
-    this.normal = this.getNormal(points);//Defines the normal by calculating a normal vector using the given points
+    this.normal = this.calculateNormal(points);//Defines the normal by calculating a normal vector using the given points
     this.screenScale = 35;//Scales up projection (zooms in)
   }
-  getNormal(points){//Gets the face's normal(plane)
+  calculateNormal(points){//Gets the face's normal(plane)
     let dirA;//Direction vector A
     let dirB;//Direction vector B
     let normal;//Normal of the face

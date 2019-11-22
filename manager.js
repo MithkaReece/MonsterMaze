@@ -152,7 +152,7 @@ class manager{
           let current = this.buttonsAndLabels[i];//Set current to the current element in the list
           if(current instanceof button){//If the current element is a button
             if(current.region()){//If the mouse is within the region of the button
-              current.click();//Call the click function of the button
+              current.getClick()();//Call the click function of the button
               i = this.buttonsAndLabels.length;//Set i to max to stop looping
             }
           }
@@ -196,7 +196,7 @@ class manager{
   //checkNameEntry validates whether the user has clicked enter after typing in the win screen input box
   checkNameEntry(key){
     if(key === 13 && this.layer == 4){//If enter pressed in win game menu
-      if(this.inputBox.value().length>0){//If anything entered in input box
+      if(this.inputBox.value().length>0 && this.inputBox.value() != null){//If anything entered in input box
         this.saveNameToStorage(this.inputBox.value());//Save the name entered
         this.inputBox.hide();//Hide inputbox
         this.inputBox = createInput('');//Reset inputbox
@@ -362,21 +362,13 @@ class leaderboard{
     }
   }
 }
-//The button class is used to simulate a button on a screen by displaying a box with text on it
-class button{
-  constructor(pos,width,height,text,colour,click){
-    this.click = click;//Stores the function that will be executed when the button is clicked
-    this.text = text;//Stores the text that is displayed on the button
-    this.colour = colour;//Stores the colour of the button
-    this.pos = pos;//Stores the position of the button on the screen
-    this.width = width;//Stores the width of the button
-    this.height = height;//Stores the height of the button
-  }
-  region(){//Checks whether the mouse coordinates are within the region of the button
-    return mouseX >= this.pos.x-this.width/2 &&
-      mouseX <= this.pos.x+this.width/2 &&
-      mouseY >= this.pos.y-this.height/2 &&
-      mouseY <= this.pos.y+this.height/2;
+class textObject{
+  constructor(pos,width,height,text,colour){
+    this.pos = pos;//Stores the position of the text object
+    this.width = width;//Stores the width of the text object
+    this.height = height;//Stores the height of the text object
+    this.text = text;//Stores the text that is displayed on the text object
+    this.colour = colour;//Stores the colour of the text object
   }
   show(){
     rectMode(CENTER);//Drawing the rectangle of the button with the position being the center of the rectangle
@@ -388,28 +380,31 @@ class button{
     text(this.text,this.pos.x,this.pos.y+this.height/10);//Drawing the text onto the button's rectangle
   }
 }
+//The button class is used to simulate a button on a screen by displaying a box with text on it
+class button extends textObject{
+  constructor(pos,width,height,text,colour,click){
+    super(pos,width,height,text,colour);
+    this.click = click;//Stores the function that will be executed when the button is clicked
+  }
+  getClick(){
+    return this.click;
+  }
+  region(){//Checks whether the mouse coordinates are within the region of the button
+    return mouseX >= this.pos.x-this.width/2 &&
+      mouseX <= this.pos.x+this.width/2 &&
+      mouseY >= this.pos.y-this.height/2 &&
+      mouseY <= this.pos.y+this.height/2;
+  }
+}
 //The label class is used to display a box with text on it to provide the user with information
-class label{
+class label extends textObject{
   constructor(pos,width,height,text,colour){
-    this.pos = pos;//Stores the position of the label
-    this.width = width;//Stores the width of the label
-    this.height = height;//Stores the height of the label
-    this.text = text;//Stores the text that is displayed on the label
-    this.colour = colour;//Stores the colour of the button
+    super(pos,width,height,text,colour);
   }
   getPos(){//Get property for the label's position
     return this.pos;//Returns the position of the label
   }
   addPos(vector){//Adds a vector to the label's position
     this.pos.add(vector);//Does an element wise addition of the given vector to the label's position
-  }
-  show(){
-    rectMode(CENTER);//Drawing the rectangle of the label with the position being the center of the rectangle
-    fill(this.colour);//Setting the colour of the rectangle to the colour stored
-    rect(this.pos.x,this.pos.y,this.width,this.height);//Drawing a rectangle using the properties of the label stored
-    fill(0);//Setting the colour of the text to black
-    textAlign(CENTER,CENTER)//Alligning the text to the centre of the label
-    textSize(this.height)//Setting the size of the text to the size of the label
-    text(this.text,this.pos.x,this.pos.y+this.height/10);//Drawing the text onto the label's rectangle
   }
 }

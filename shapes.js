@@ -35,7 +35,7 @@ class cuboid extends shape{
     generateFace = (points,rotation) => new face(points.map(a => Matrix.rotateY(a,radians(-rotation))))
 
     show3D(player,perspective){
-      stroke(this.colour)
+      stroke(0)
       fill(this.colour);
       for(let i=0;i<this.faces.length;i++){//For every face in faces
         this.faces[i].show(this.pos3D,player,perspective);//Show the current face
@@ -44,7 +44,7 @@ class cuboid extends shape{
   }
 
   class wall extends cuboid{
-    constructor(x,y,length,rotation,colour = [0,153,0]){
+    constructor(x,y,length,rotation,colour = [0,0,153]){
       const thicknessOfWall = 0.1//Defines the thickness of a wall
       let newLength = length;//Sets new length to given length
       if(rotation !=0){//If vertical wall

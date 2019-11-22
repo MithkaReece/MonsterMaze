@@ -113,12 +113,12 @@ class monster extends entity{
                 }
             }
             actionIndex = indexOfMax;//Pick action with highest q-value
-            console.log("C " + directions[actionIndex])
+            //console.log("C " + directions[actionIndex])
         }else{//Exploring has been picked   
             actionIndex = Math.floor(random(4));//Pick a random action 
-            console.log("R " + directions[actionIndex])    
+            //console.log("R " + directions[actionIndex])    
         }
-        console.log(this.exploreThreshold)
+        //console.log(this.exploreThreshold)
         //console.log(this.pos.x,this.pos.z)
         return actionIndex;
     }
