@@ -89,7 +89,14 @@ class character extends entity{
         newObjects.push(closestWall);//Add currently found wall to be in view to list of newObjects which will be returned
       }
     }
-    monster.setDist(p5.Vector.dist(monster.getPos(),this.pos));//Give the monster the distance from itself to the player using its setDist property
+    //console.log(this.pos.x,this.pos.z)
+    let mw = 0.24
+    let monsterDist = Math.min(p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(2*mw,0,mw)),this.pos),
+      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(2*mw,0,-mw)),this.pos),
+      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(0,0,-mw)),this.pos),
+      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(0,0,mw)),this.pos))
+
+    monster.setDist(monsterDist);//Give the monster the distance from itself to the player using its setDist property
     newObjects.push(monster);//<----------- Ray cast the monster before adding it
     newObjects = mergeSort(newObjects,"desc");//Sort the objects in descending order of distances so that the further away objects are drawn first
     return newObjects;//Return all objects that need rendering

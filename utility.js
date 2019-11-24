@@ -116,3 +116,29 @@ class Rectangle{
     return this.height;//Returns the rectangle's height
   }
 }
+class Queue{
+  constructor(length){
+    this.length = length;
+    this.data = []
+  }
+  enqueue(value){
+    this.data.push(value);
+    this.length++;
+    if(this.data.length>length){
+      this.dequeue();
+    }
+  }
+  dequeue(){
+    this.length--;
+    return this.data.shift();
+  }
+  getCurrentLength(){
+    return this.data.length;
+  }
+  getLength(){
+    return this.length;
+  }
+  getData(){
+    return clone(this.data);
+  }
+}

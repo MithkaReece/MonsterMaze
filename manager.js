@@ -260,7 +260,7 @@ class manager{
   //If the player has been caught then it moves the program to the lose screen
   checkLoss(){
     let distance = p5.Vector.dist(this.player.getPos(),this.monster.getPos());//Find the disstance from the player and monster
-    if(distance<0.7){//If the distance is within 0.7 units
+    if(distance<0.35){//If the distance is within 0.7 units
       this.setupLoseScreen();//Setup the lose screen menu
       this.layer = 5;//Changes the layer to the lose screen
       document.exitPointerLock();//Shows the mouse
