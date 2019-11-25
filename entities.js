@@ -89,7 +89,6 @@ class character extends entity{
         newObjects.push(closestWall);//Add currently found wall to be in view to list of newObjects which will be returned
       }
     }
-    //console.log(this.pos.x,this.pos.z)
     let mw = 0.24
     let monsterDist = Math.min(p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(2*mw,0,mw)),this.pos),
       p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(2*mw,0,-mw)),this.pos),

@@ -1,11 +1,17 @@
 'use strict';
 const wallHeight = 1;
+let img
+
+function preload(){
+  img = loadImage('https://pbs.twimg.com/media/EKP2OihW4AEOTcI?format=jpg&name=small');
+  
+}
 let gameMan;//Defines the manager object for this instance of the program
 //setup is a function which is called once at the very start of the program
 //This function defines a new manager which manages the whole procedure of the program.
 function setup(){
   createCanvas(windowWidth, windowHeight);
-  background(255)
+  background(100)
   gameMan = new manager();
   let mazeSize = gameMan.getMazeSize();//Will remove
   hscale = width/mazeSize;//Will remove
@@ -14,6 +20,7 @@ function setup(){
 //draw is a function which is called every tick.
 //This function tells the manager when to show and update the game.
 function draw() {
+  image(img, 0, 0,width,height);
   gameMan.showAndUpdate();
 }
 //mouseClicked is a function called everytime the mouse is clicked.

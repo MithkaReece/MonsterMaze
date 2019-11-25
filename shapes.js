@@ -40,7 +40,8 @@ class cuboid extends shape{
   generateFace = (points,rotation) => new face(points.map(a => Matrix.rotateY(a,radians(-rotation))))
   //show3D is responsible for calling show on all the faces this cuboid contains.
   show3D(player,perspective){
-    stroke(0)
+    //stroke(0)
+    stroke(this.colour);
     fill(this.colour);
     for(let i=0;i<this.faces.length;i++){//For every face in faces
       this.faces[i].show(this.pos3D,player,perspective);//Show the current face
