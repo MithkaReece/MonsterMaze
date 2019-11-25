@@ -1,6 +1,6 @@
 'use strict';
 //Shape is the base class for all 3D objects which can have a position, 3D rotation and a colour
-//for the faces that it contains that can be projected onto the 2D plane of the screen
+//for the faces that it contains that can be projected onto the 2D plane of the screen.
 class shape{
   constructor(pos,rotation,colour){
     this.pos3D = pos;//Defines the 3D position of the shape
@@ -16,40 +16,41 @@ class shape{
 }
 //Cuboid is a class which inherits the shape class so that it can be a 3D objects but is also defined
 //with a length, width and height which are used to defined the six faces of the cuboid which is saved
-//within the cuboid. The cuboid is shown by calling show on all the stored faces
+//within the cuboid. The cuboid is shown by calling show on all the stored faces.
 class cuboid extends shape{
-    constructor(pos,l,h,w,rotation,colour){
-      super(pos,rotation,colour)//Calls it's base class constructor (shape's constructor)
-      this.faces = this.generateFaces(l/2,h/2,w/2,this.rotation);//Defines the list of faces
-    }
-    generateFaces(l,h,w,r){//Sets up the six faces of the cuboid using local position
-      let faces = [];
-      faces.push(this.generateFace([createVector(0,-h,0),createVector(0,-h,2*w),createVector(0,h,2*w),createVector(0,h,0)],r));//Ends of wall
-      faces.push(this.generateFace([createVector(2*l,-h,0),createVector(2*l,h,0),createVector(2*l,h,2*w),createVector(2*l,-h,2*w)],r));
-  
-      faces.push(this.generateFace([createVector(0,-h,0),createVector(2*l,-h,0),createVector(2*l,-h,2*w),createVector(0,-h,2*w)],r));//Bottom of wall
-      faces.push(this.generateFace([createVector(0,h,0),createVector(0,h,2*w),createVector(2*l,h,2*w),createVector(2*l,h,0)],r));//Top of wall
-  
-      faces.push(this.generateFace([createVector(2*l,-h,2*w),createVector(2*l,h,2*w),createVector(0,h,2*w),createVector(0,-h,2*w)],r));
-      faces.push(this.generateFace([createVector(2*l,-h,0),createVector(0,-h,0),createVector(0,h,0),createVector(2*l,h,0)] ,r));//Sides of wall
-    
-      return faces;//Returns new list of all six faces
-    }
-    //Returns a new face based on the given points and rotation
-    generateFace = (points,rotation) => new face(points.map(a => Matrix.rotateY(a,radians(-rotation))))
-
-    show3D(player,perspective){
-      stroke(0)
-      fill(this.colour);
-      for(let i=0;i<this.faces.length;i++){//For every face in faces
-        this.faces[i].show(this.pos3D,player,perspective);//Show the current face
-      }
+  constructor(pos,length,height,width,rotation,colour){
+    super(pos,rotation,colour)//Calls it's base class constructor (shape's constructor)
+    this.faces = [];//Defines an empty list for the faces of the cuboid
+    this.generateFaces(length/2,height/2,width/2,this.rotation);//Defines all the relative faces of the cuboid
+  }
+  //generateFaces is responsible for defining all the relative location of the face according to the
+  //given dimension of width,height and length.
+  generateFaces(length,height,width,rotation){//Sets up the six faces of the cuboid using local position
+    //Define the faces on the ends of current cuboid
+    this.faces.push(this.generateFace([createVector(0,-height,0),createVector(0,-height,2*width),createVector(0,height,2*width),createVector(0,height,0)],rotation));
+    this.faces.push(this.generateFace([createVector(2*length,-height,0),createVector(2*length,height,0),createVector(2*length,height,2*width),createVector(2*length,-height,2*width)],rotation));
+    //Define the faces of the bottom and top of the current cuboid
+    this.faces.push(this.generateFace([createVector(0,-height,0),createVector(2*length,-height,0),createVector(2*length,-height,2*width),createVector(0,-height,2*width)],rotation));
+    this.faces.push(this.generateFace([createVector(0,height,0),createVector(0,height,2*width),createVector(2*length,height,2*width),createVector(2*length,height,0)],rotation));
+    //Define the faces of either side of the current cuboid
+    this.faces.push(this.generateFace([createVector(2*length,-height,2*width),createVector(2*length,height,2*width),createVector(0,height,2*width),createVector(0,-height,2*width)],rotation));
+    this.faces.push(this.generateFace([createVector(2*length,-height,0),createVector(0,-height,0),createVector(0,height,0),createVector(2*length,height,0)] ,rotation));
+  }
+  //generateFace is responsible for returning a new face based on the given points and rotation.
+  generateFace = (points,rotation) => new face(points.map(a => Matrix.rotateY(a,radians(-rotation))))
+  //show3D is responsible for calling show on all the faces this cuboid contains.
+  show3D(player,perspective){
+    stroke(0)
+    fill(this.colour);
+    for(let i=0;i<this.faces.length;i++){//For every face in faces
+      this.faces[i].show(this.pos3D,player,perspective);//Show the current face
     }
   }
+}
 //Wall is a class that inherits a cuboid however is define with 2D coordinates and dimensions which are
 //then converted into 3D and given to the inherit base class's definition. Walls are also responsible
 //for having extra properties than the cuboid so that it can be sorted in distance away from the player
-//as well many get properties used when being inserted into a quad tree
+//as well many get properties used when being inserted into a quad tree.
 class wall extends cuboid{
   constructor(x,y,length,rotation,colour = [0,0,153]){
     const thicknessOfWall = 0.1//Defines the thickness of a wall
@@ -60,10 +61,10 @@ class wall extends cuboid{
     let pos = createVector(x,-2,y);//Define the position of the wall in 3D
     super(pos,newLength,wallHeight,thicknessOfWall,rotation,colour);
 
-    //For displaying 2D version
-    this.pos2D = createVector(x,y);
-    this.width = newLength;
-    this.height = thicknessOfWall;
+    
+    this.pos2D = createVector(x,y);//For displaying 2D version so will remove
+    this.width = newLength;//Define the 2D width of wall and 3D length of the wall
+    this.height = thicknessOfWall;//Define the 2D height of the wall and 3D depth/width of the wall
   }
   
   getValue(){//Get property for distance (called value to easily be sorted by merge sort)

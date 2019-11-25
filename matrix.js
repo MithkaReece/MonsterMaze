@@ -1,3 +1,8 @@
+'use strict';
+
+
+//Matrix class is responsible for storing matrices as well as any matrix operation that this program uses
+//This basically contains a mini library of matrix operations used in the program for 3D graphics and neural networks.
 class Matrix{
     constructor(rowsOrData,cols){
       if(cols === undefined){//If parameter is purely data to be inserted into matrix

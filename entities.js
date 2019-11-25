@@ -1,5 +1,5 @@
 'use strict';
-//This is a base class for moveable entities in this program
+//This is a base class for moveable entities in this program.
 class entity{
     constructor(pos){
       this.pos = pos;//Defines the position of the entity
@@ -109,7 +109,7 @@ class character extends entity{
   }
 
   //This checks that if the player added on the direction vector called dir whether it would be inside a wall
-  //This is done by simply checked using X,Y, width, height of the hitbox of the player and the wall
+  //This is done by simply checked using X,Y, width, height of the hitbox of the player and the wall.
   collide = (wall,dir) =>{
     return this.hitBox.getX() + this.hitBox.getWidth() + dir.x > wall.getX() && //If after player movement x plus width is above wall x
     this.hitBox.getX() + dir.x < wall.getX() + wall.getWidth() && //If after player movement x is below wall x plus wall width
@@ -178,7 +178,7 @@ class ray{
   }
   //Cast function takes a position and two ends of a line segment representing a wall
   //This function returns a point of intersection between the line segment and the half line from the position
-  //in the direction of the current ray
+  //in the direction of the current ray.
   cast(pos,aEnd,bEnd){
     let dir = p5.Vector.fromAngle(this.angle);//Retrieve a 2D vector from ray's angle
     const [x1,y1,x2,y2] = [aEnd.x,aEnd.y,bEnd.x,bEnd.y];//Set values used for line segment equations

@@ -1,5 +1,6 @@
 'use strict';
-function vectorToArray(vector){//Returns an array of the components of a given vector
+//vectorToArray function is responsible for return an array of components of a given vector.
+function vectorToArray(vector){
   let array;//Define new array
   if(vector.z != undefined){//If given vector is 3D
     array = make2Darray(3,1);//Make a 3 long array
@@ -13,10 +14,12 @@ function vectorToArray(vector){//Returns an array of the components of a given v
   }
   return array;//Returns new array of components from given vector
 }
+//matrixToVector function is responsible for returning a vector from data of a given matrix.
 function matrixToVector(matrix){
   return arrayToVector(matrix.getData().map(x => x[0]));
 }
-function arrayToVector(array){//Returns a vector made from a give narray
+//arrayToVector function is responsible for returning a vector made from a given array.
+function arrayToVector(array){
   if(!Array.isArray(array)){//If given array is not an array
     console.log("array to vector not given an array")
     return null//Return null as no array to convert to vector
@@ -29,19 +32,20 @@ function arrayToVector(array){//Returns a vector made from a give narray
   console.log("array can't be made into vector")
   return null//Return null as no vector to be produced
 }
+//matrixToArray function is responsible for return an array from data of a given matrix.
 function matrixToArray(matrix){//Returns an 2D array of the elements from a given matrix
   if(matrix.getData()[0].length == 0){//If the matrix is empty
     return null;//Return null as no array can be produced
   }
   return clone(matrix.getData());//Returns a clone of the 2D array representing the given matrix
 }
-//Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array
+//Creates 1D array full of nulls then replaces the nulls with arrays making a 2D array.
 const make2Darray = (cols,rows) => new Array(cols).fill().map(item =>(new Array(rows))) 
-//function make2Darray(cols,rows){ //return new Array(cols).fill().map(item =>(new Array(rows))) 
-//}
-//Recursively goes through any array inside arrays and returns a deep clone of the array by copying every valued element
+//Recursively goes through any array inside arrays and returns a deep clone of the array by copying every valued element.
 const clone = (items) => items.map(item => Array.isArray(item) ? clone(item) : item);
-
+//mergeSort function is responsible for sorting a given array in a given order (ascending or descending) by splitting
+//the given away recursively by calling itself twice until only one item is left. Then return the merge of the two
+//splits cells recursively all the way back up to the original array size but returns the sorted version.
 function mergeSort(a,type){
   if(a.length == 1){ //If the array only contains one item 
     return a; //Return this item
@@ -50,7 +54,8 @@ function mergeSort(a,type){
   let secondList = mergeSort(a.slice(a.length/2,a.length),type); //Sort second half of list
   return merge(firstList,secondList,type); //Return the two lists merged together
 }
-
+//merge function is responsible for merging together two given sorted lists into a given order (ascending or descending) by
+//comparing on by one elements and slowly adding them to a new sorted array which is returned at the end.
 function merge(firstList,secondList,type){
   //Account for when one of the list is completely emptied
   if(type == "desc"){//If in descending order
@@ -76,11 +81,11 @@ function merge(firstList,secondList,type){
       k++; //Increment second list index
     }   
   }
-  return sorted; //Return sorted array
+  return sorted;//Returns sorted array
 }
-//The score class is used to stored scores achieved when a user finishes the game
-//This stores the score achieved and the name of the user who scored it
-//This data is then retrieved to display the leaderboard
+//The score class is used to stored scores achieved when a user finishes the game.
+//This also stores the score achieved and the name of the user who scored it.
+//This data is then retrieved to display the leaderboard.
 class score{
   constructor(value,name){
     this.value = value;//Stored the value of the score when initialised
@@ -95,7 +100,7 @@ class score{
 }
 
 //The Rectangle class is a very simple representation of a rectangle which is mainly used 
-//for collision boxes by saving the properties of hitboxes using this rectangle class
+//for collision boxes by saving the properties of hitboxes using this rectangle class.
 class Rectangle{
   constructor(x,y,width,height){
     this.x = x;//Defines the x position of the rectangle
@@ -116,29 +121,33 @@ class Rectangle{
     return this.height;//Returns the rectangle's height
   }
 }
+//Queue class is responsible for holding a queue data structure with a few basic queue operations
+//such an enqueue and dequeue for a preset sized queue.
 class Queue{
   constructor(length){
-    this.length = length;
-    this.data = []
+    this.length = length;//Define the size of the queue from given initialised length
+    this.data = []//Define the data of the queue as empty by default
   }
+  //enqueue function is responsible for enqueueing a given value onto this queue
+  //making sure that if the queue is full it will dequeue the element at the front.
   enqueue(value){
-    this.data.push(value);
-    this.length++;
-    if(this.data.length>length){
-      this.dequeue();
+    this.data.push(value);//Pushing the given value onto the data of the queue
+    if(this.data.length>length){//If the data's size is greater than the set size of the queue
+      this.dequeue();//Call dequeue to dequeue the front of the queue
     }
   }
+  //dequeue function is responsible for dequeuing the front of the queue by removing the
+  //front element and returning it.
   dequeue(){
-    this.length--;
-    return this.data.shift();
+    return this.data.shift();//Return the front element of the data
   }
-  getCurrentLength(){
-    return this.data.length;
+  getCurrentLength(){//Get property for the current length of the contents of the queue
+    return this.data.length;//Returns the current size of the data of the queue
   }
-  getLength(){
-    return this.length;
+  getLength(){//Get property for the set length of the queue
+    return this.length;//Returns the length of the queue
   }
-  getData(){
-    return clone(this.data);
+  getData(){//Get property for the data of the queue
+    return clone(this.data);//Returns a copy of the data, used to convert a queue into an list
   }
 }

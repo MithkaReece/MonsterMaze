@@ -3,7 +3,7 @@
 //It is defined by is position and generates its own decision making process.
 //This is done by inititating two neural networks and having a complex training
 //process run everytime the monster is updated to experiment and learn to find
-//the user moving around the maze with the objective of catching the user
+//the user moving around the maze with the objective of catching the user.
 class monster extends entity{
     constructor(pos){
         super(pos);
@@ -43,7 +43,8 @@ class monster extends entity{
     setDist(value){//Set property for the distance of the monster to the player
         this.distAway = value;//Sets distAway to the given value
     }
-
+    //run is responsible for running the monster by moving the monster as well as the monster making a decision
+    //of where it wants to move every certain interval which the monster will then move towards.
     run(mazeGrid,playerPos){
         //console.log(p5.Vector.dist(playerPos,this.pos))
         if(this.moveIterations == 0){//If ai has finished moving make next decision (if moveIterations is 0)
@@ -74,7 +75,7 @@ class monster extends entity{
         }
         this.move()//Move the monster towards the decided next position
     }
-    
+    //move is responsible for actually changing the position of the monster close to the decided position it wants to go to.
     move(){
         let dirVector = p5.Vector.sub(this.nextPos,this.pos);//direction vector from current pos to nextpos
         if(dirVector.mag()>1/this.speed){//If the direction vector is too large and will overstep
@@ -83,15 +84,19 @@ class monster extends entity{
         this.pos.add(dirVector);//Adds the direction vector to move the monster
         this.tempCube.setPos(p5.Vector.add(dirVector,this.tempCube.getPos()))//Add direction vector to monster's current position
     }
+    //getState is responsible for converting given player and monster position as well as the maze data into an array that
+    //represented the current state of the game that can be used an input to the monster's neural network.
     getState(playerPos, currentPos, mazeGrid){
         let cell = mazeGrid[Math.floor(currentPos.x)][Math.floor(currentPos.z)];//Set cell to the cell the monster is currently within
         let diffX = (playerPos.x-currentPos.x)/(mazeGrid.length-1);//Calculate the difference in the monster and player's x position
         let diffZ = (playerPos.z-currentPos.z)/(mazeGrid.length-1);//Calculate the difference in the monster and player's y position
         return [diffX,diffZ].concat(this.swapDigits(clone(cell.getWalls())));//Return vector from monster's current pos to player plus walls of that cell
     }
-    //Given a list of binary and returns a list with all the 1s and 0s flipped
+    //swapDigits is responsible for returning a new list of binary after flipping all the 1s and 0s of a given list of binary
     swapDigits = (list) => {return list.map(x => (x == 1 ? 0 : 1))}
-    
+    //selectAction is responsible for deciding which action the monster is going to pick. This can either be chosen to be a random
+    //move or a move generated from the monster's neural network. The probabilty for either on to be chosen is variable so gradually changes.
+    //When picked by the neural network the output is q-values for each possible move and the monster attempts the action with the biggest q-value
     selectAction(playerPos,mazeGrid){
         let actionIndex;
         let directions = ["N","E","S","W"]//Purely for testing
@@ -115,6 +120,10 @@ class monster extends entity{
         //console.log(this.pos.x,this.pos.z)
         return actionIndex;
     }
+    //calcReward is responsible for calculating a reward using the current state of the game and the given chosen action.
+    //If the action which is a movement is valid then it will change the nextPos which is where the monster will move towards.
+    //It is only valid if the move is not blocked by a wall of the maze.
+    //Finally the final reward result is return from this function.
     calcReward(mazeGrid,playerPos,actionIndex){
         let actions = [createVector(0,0,-1),createVector(1,0,0),createVector(0,0,1),createVector(-1,0,0)];//NESW  
         let directions = ["N","E","S","W"]
@@ -131,6 +140,9 @@ class monster extends entity{
         }
         return reward;
     }
+    //getSample is responsible for returning a set number of memories from relayMemory which contain a move from one state two another
+    //and the reward which was gained from doing that action. Obviously if the relayMemory is smaller than the desire sample if can only
+    //return what memory is there.
     getSample(){
         if(this.relayMemory.getCurrentLength()>Math.floor(this.sampleFraction*this.relayMemory.getLength())){//If the sample size is larger than the fraction needed
             let newSample = [];
@@ -145,6 +157,9 @@ class monster extends entity{
             return this.relayMemory.getData();//Returns all the relay memory data as a sample
         }
     }
+    //updateTargetNetwork is responsible for basically setting the targetNetwork to a copy of the current policy network.
+    //This is done so that the network is not constantly "chasing its own tail" by adjust its network towards the future policy network
+    //whilst move the policy network away in the same direction which is why there is a target network in the first place.
     updateTargetNetwork(){
         let weights = this.policyNetwork.getWeights();
         let copiedWeights = [];
@@ -155,6 +170,7 @@ class monster extends entity{
         }
         this.targetNetwork.setWeights(copiedWeights);
     }
+    //show3D is responsible for showing the monster is 3D.
     show3D(player,perspective){
         this.tempCube.show3D(player,perspective)
     }
@@ -175,8 +191,9 @@ class neuralNetwork{
         this.activationFunction = this.sigmoid;
         this.derivActivationFunction = ((x) =>{return this.sigmoid(x)*(1-this.sigmoid(x))});
     }
-
+    //sigmoid function is a mathematical function being used as an activation function as it has a useful range of values.
     sigmoid = (x) => {1/(1 + Math.pow(Math.E,-x))}
+    //setupWeights is responsible for create an array of matrices which are the correct size for the weights between layers.
     setupWeights(layers){
         let weights = [];
         for(let i=0;i<layers.length-1;i++){//Loop through all connections between layers
@@ -186,6 +203,7 @@ class neuralNetwork{
         }
         return weights;
     }
+    //initialiseWeights is responsible for filling the weights of random initial values.
     initialiseWeights(){
         for(let i=0;i<this.weights.length;i++){
             let current = this.weights[i];//Current connection between two layers
@@ -196,14 +214,14 @@ class neuralNetwork{
             }
         }
     }
-    getWeights(){
-        return this.weights;
+    getWeights(){//Get property for the weights of the neural network
+        return this.weights;//Returns the weights of the neural network
     }
-    setWeights(weights){
-        this.weights = weights;
+    setWeights(weights){//Set property for the weights of the neural network
+        this.weights = weights;//Sets the weights of the neural network to given weights
     }
-
-  
+    //train is responsible for running through the procedure of calculating the error of the neural network and
+    //therefore which way to adjust the network and then using gradient descent to adjust towards reducing the error;
     train(data,targetNetwork){
         let state = clone(data[0]);//Input state
         let actionIndex = data[1];
@@ -238,6 +256,8 @@ class neuralNetwork{
 
         //Call gradient decent on the network
     }
+    //feedForward is responsible for running given inputs through the neural network by multiplying
+    //all the weight matrices in order to the given inputs to produce the outputs of the neural network.
     feedForward(inputs){
         let outputs = [];
         if(inputs.length != this.inputCount){//If the amount of inputs is not correction
@@ -252,9 +272,11 @@ class neuralNetwork{
             outputs.push(new Matrix(clone(iMatrix.getData())));
         }
         //console.log(outputs)
-        return outputs.reverse();//Workss
+        return outputs.reverse();//Reverses the outputs list so that the final outputs are the first element
     }
-
+    //gradientDescent is responsible for backpropogating through the network calculating the errors for each individual
+    //nodes of every layer of the neural network and then adjust each weight towards reduces that individual error by
+    //gradient descent using the derivative of the activation function.
     gradientDecent(matrixError,outputs){
         //Updates weights based on loss 
         //Account learning rate
@@ -279,7 +301,7 @@ class neuralNetwork{
     }
 
 
-    printNetwork(){
+    printNetwork(){//Will remove for testing
         let list = [];     
         for(let i=0;i<this.weights.length;i++){
             list = list.concat(this.weights[i].getData())
