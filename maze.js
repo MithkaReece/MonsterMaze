@@ -264,9 +264,9 @@ class QuadTree{
   retrieve(hitbox){
     let walls = this.objects.slice(0);//Define walls as a copy of objects in this quad tree
     for(let i=0;i<this.quads.length;i++){//For every quad in quads
-      let currentWall = this.quads[i];//Define currentWall to the current quad
-      if(currentWall.withinBounds(hitbox.getX(),hitbox.getY(),hitbox.getWidth(),hitbox.getHeight())){//If hitbox is within currentWall's bounds
-        walls = walls.concat(currentWall.retrieve(hitbox));//Join the currentWall's hitbox to the walls array
+      let current = this.quads[i];//Define current to the current quad
+      if(current.withinBounds(hitbox.getX(),hitbox.getY(),hitbox.getWidth(),hitbox.getHeight())){//If hitbox is within currentWall's bounds
+        walls = walls.concat(current.retrieve(hitbox));//Join the currentWall's hitbox to the walls array
       }
     }
     return walls;//Return walls array
