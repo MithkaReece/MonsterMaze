@@ -1,6 +1,6 @@
 'use strict';
 //This is a base class for moveable entities in this program.
-class entity{
+class entity{//Done
     constructor(pos){
       this.pos = pos;//Defines the position of the entity
     }  
@@ -8,7 +8,10 @@ class entity{
       return this.pos;//Returns the position of the entity
     }
   }
-  
+//The character class is responsible for storing properties of the user whilst in the game such as position and orientation of the user.
+//This is also responsible for ray casting on objects in the world to identify which objects can be seen by the player and therefore need to be shown.
+//In addition this is responsible for validating the movement of the player by testing against collisions as well as checking if the player has
+//escaped the maze and won.
 class character extends entity{
   constructor(pos){
     super(pos);//Call inherited constructor function with pos parameter
@@ -49,13 +52,14 @@ class character extends entity{
   getHitBox(){//Get property for hitbox
     return this.hitBox;//Return the player's hitbox rectangle
   }
-
+  //rayCast is responsible for casting all the rays from the player onto all the objects to calculate which walls are 
+  //within the player's field of view and is not being completely obstructed by other objects. This list of objects is
+  //then return in order of distance away from the player.
   rayCast(walls,monster){
     let newObjects = [];//Defines an empty list of objects
     for(let ray of this.rays){//For every ray in the stored rays
       let distRecord = Infinity;//Set smallest distance to always greater than any wall
       let closestWall = null;//Initiates the current closest wall of the loop
-      let closestPoint = null;//Will remove
       for(let wall of walls){//For every wall in the given list of walls
         let aEnd;//Defines aEnd representing one end of the wall
         let bEnd;//Defines bEnd representing the other end of the wall
@@ -72,44 +76,32 @@ class character extends entity{
           let dist = p5.Vector.dist(createVector(this.pos.x,this.pos.z),point);//Calculate distance from entity
           if(dist<distRecord){//If wall is closer than previous closest wall       
             distRecord = dist;//Update smallest distance
-            closestPoint = point.copy();//Will remove
             closestWall = wall;//Update the closest wall the ray hits       
           }
         }
       }
       if(newObjects.includes(closestWall)==false && closestWall!=null){//If a closest wall has been found and not already been hit by a ray
-        push();//Will remove
-        translate(-width/2,-height/2)//Will remove
-        //closestWall.show2D();
-        stroke(0,255,0);
-        strokeWeight(1)
-        //line(hscale*this.pos.x,vscale*this.pos.z,hscale*closestPoint.x,vscale*closestPoint.y);
-        pop();
         closestWall.setDist(distRecord);//Record the distance the wall current being added using its setDist property
         newObjects.push(closestWall);//Add currently found wall to be in view to list of newObjects which will be returned
       }
     }
-    let mw = 0.24
-    let monsterDist = Math.min(p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(2*mw,0,mw)),this.pos),
-      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(2*mw,0,-mw)),this.pos),
-      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(0,0,-mw)),this.pos),
-      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(0,0,mw)),this.pos))
+    
+    let monsterSize = 0.24//Set monsterSize to 0.24
+    let monsterDist = Math.min(p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(2*monsterSize,0,monsterSize)),this.pos),
+      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(2*monsterSize,0,-monsterSize)),this.pos),
+      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(0,0,-monsterSize)),this.pos),
+      p5.Vector.dist(p5.Vector.add(monster.getPos(),createVector(0,0,monsterSize)),this.pos))//Set monsterDist to the close side face centre
 
     monster.setDist(monsterDist);//Give the monster the distance from itself to the player using its setDist property
-    newObjects.push(monster);//<----------- Ray cast the monster before adding it
+    newObjects.push(monster);//Add the monster to newObjects
     newObjects = mergeSort(newObjects,"desc");//Sort the objects in descending order of distances so that the further away objects are drawn first
     return newObjects;//Return all objects that need rendering
   }
 
-  displayRays(){//Will remove
-    for(let ray of this.rays){
-      ray.show(createVector(this.pos.x*hscale,this.pos.z*vscale));
-    }
-  }
 
   //This checks that if the player added on the direction vector called dir whether it would be inside a wall
   //This is done by simply checked using X,Y, width, height of the hitbox of the player and the wall.
-  collide = (wall,dir) =>{
+  collide = (wall,dir) =>{//
     return this.hitBox.getX() + this.hitBox.getWidth() + dir.x > wall.getX() && //If after player movement x plus width is above wall x
     this.hitBox.getX() + dir.x < wall.getX() + wall.getWidth() && //If after player movement x is below wall x plus wall width
     this.hitBox.getY() + this.hitBox.getHeight() + dir.y > wall.getY() && //If after player movement y plus height is above wall y
@@ -144,6 +136,7 @@ class character extends entity{
     if(keyIsDown(37)){//If left arrow is being pressed
       this.addRX(-2.5*sensitivity)//Add a negative angle to the player's rotation x component
     }
+    
     dirVector.y = 0;//Remove any change in the y component so the player has gravity
     dirVector.setMag(speed);//Sets the magnitude of the direction vector being added to the magnitude of the speed
     let walls = retrievedWalls;//Define walls as retrieveWalls
@@ -163,8 +156,10 @@ class character extends entity{
     return this.pos.x<0 || this.pos.x>size || this.pos.z<0 || this.pos.z>size;//Return the boolean result of whether the player is outside the maze or not
   }
 }
-
-class ray{
+//The ray class is responsible for saving properties of each ray which is casted from the player.
+//It is also responsible for calculating whether it's ray, which is a half line from the player with an
+//angle along the xz plane, intersects a given wall segment which is used to find walls the player can see.
+class ray{//done
   constructor(angle){
     this.angle = angle;//Defines the ray's initial angle
   }

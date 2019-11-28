@@ -9,7 +9,7 @@ let vscale;//Will remove
 //each cell stored which walls it has, a list of walls which have been generated from the grid of
 //cells which contain its position, rotation and length as well as a quad tree which contains all
 //the generated walls where the walls are as far down the tree as they can possibily fit within.
-class Maze{
+class Maze{//Done
   constructor(width,height,complexity){
     this.playerStart = createVector();//Define playerStart position as a vector
     this.monsterStart = createVector();//Define monsterStart position as a vector
@@ -24,12 +24,14 @@ class Maze{
     this.walls = this.generateWalls(width,height,this.grid);//Generates a list of all the walls of the maze
     this.wallTree = this.wallToTree(this.walls,width,height);//Insert all the walls into the quadtree of walls
   }
+  
   getTicks(){//Get property for start tick
     return this.startTick;//Returns the start tick of when the maze was made
   }
   getWalls(){//Get property for walls of the maze
     return this.walls;//Returns a list of the maze's walls
   }
+  
   getQuadTree(hitbox){//Get property for the quadtree of walls
     return this.wallTree.retrieve(hitbox);//Returns walls in quadtree relative to the hitbox
   }
@@ -174,7 +176,7 @@ class Maze{
   }
   //walltoTree function is responsible for inserting a given list of walls into a quad tree of walls and
   //returning this new quad tree.
-  wallToTree(walls,width,height){
+  wallToTree(walls,width,height){//
     let wallTree = new QuadTree(new Rectangle(0,0,width,height));//Define a new quadtree for the walls to go in
     for(let i=0;i<walls.length;i++){//For every wall from given walls
       wallTree.insert(walls[i]);//Insert current wall into quad tree
@@ -187,7 +189,7 @@ class Maze{
 //with four walls which are then broken through using a recursive algorithm
 //The cell is used to store whether is has been visited by this algorithm or not and 
 //stores which walls are there and which are not.
-class cell{
+class cell{//Done
   constructor(x,y){
     this.visited = false;//Defaults boolean visited to false
     this.pos = createVector(x,y);//Defines an xy position 
@@ -216,8 +218,8 @@ class cell{
 //starting with a single quadtree and subdividing into four quad trees within this quad tree until the object being
 //inserted can no longer fit within the smaller bounds. This same technique is used to retrieve walls saved within the
 //quad tree that fit within the same quad tree of a given hitbox which is used for collision detection.
-class QuadTree{
-  constructor(bound){
+class QuadTree{//Done
+  constructor(bound){//
     this.bound = bound;//Define bound as a given bound which is a new generated rectangle
     this.objects = [];//Define an empty list of objects within this quadtree
     this.quads = [];//Stores 4 quads tree in quad tree
@@ -225,7 +227,7 @@ class QuadTree{
   }
   //insert function is responsible for inserting a given wall as far down the quad tree as it possibly can
   //until the wall no longer fully fits within a quad tree and insert it into that quad tree.
-  insert(wall){
+  insert(wall){//
     if(!this.divided){//If current quad tree is not divided
       this.subdivide();//Sub divide current quad tree
     }
@@ -241,7 +243,7 @@ class QuadTree{
   //Subdivide creates four new quadtrees which represent the four corners of this quadtree's region
   //and store these quad trees in this.quads as well as making sure it is only subdivided once by setting
   //divided to true.
-  subdivide(){
+  subdivide(){//
     let x = this.bound.getX();//Define x as the x position of the boundary
     let y = this.bound.getY();//Define y as the y position of the boundary
     let w = this.bound.getWidth();//Define w as the width of the boundary
@@ -254,14 +256,14 @@ class QuadTree{
   }
   //withinBounds is a function that checks whether all four corners of a rectangle, given the dimensions and position, are
   //within the bounds of this quad tree's boundary.
-  withinBounds = (x,y,w,h) => {return this.pBounds(x,y) && this.pBounds(x+w,y) && this.pBounds(x+w,y+h) && this.pBounds(x,y+h)}
+  withinBounds = (x,y,w,h) => {return this.pBounds(x,y) && this.pBounds(x+w,y) && this.pBounds(x+w,y+h) && this.pBounds(x,y+h)}//
   //pBounds is a function that checks whether a given x and y position is within the bounds of this quadtree's boundary.
-  pBounds = (x,y) => {return x >= this.bound.getX() && x < this.bound.getX() + this.bound.getWidth() &&
-    y >= this.bound.getY() && y < this.bound.getY() + this.bound.getHeight()}
+  pBounds = (x,y) => {return x >= this.bound.getX() && x < this.bound.getX() + this.bound.getWidth() &&//
+    y >= this.bound.getY() && y < this.bound.getY() + this.bound.getHeight()}//
   //Retrieve is a function that runs through a similar procedure as the insert function using the given hitbox but instead of
   //inserting the hitbox it copies all the objects that it has come across and therefore returns a list of the only
   //objects that could possibily collide with the given hitbox.
-  retrieve(hitbox){
+  retrieve(hitbox){//
     let walls = this.objects.slice(0);//Define walls as a copy of objects in this quad tree
     for(let i=0;i<this.quads.length;i++){//For every quad in quads
       let current = this.quads[i];//Define current to the current quad

@@ -86,7 +86,7 @@ function merge(firstList,secondList,type){
 //The score class is used to stored scores achieved when a user finishes the game.
 //This also stores the score achieved and the name of the user who scored it.
 //This data is then retrieved to display the leaderboard.
-class score{
+class score{//Done
   constructor(value,name){
     this.value = value;//Stored the value of the score when initialised
     this.name = name;//Defines the name for the score

@@ -7,8 +7,8 @@
 //as handling the actual projection onto 2D using matrix and vector mathematics
 //Points can also be created in the projection process to represent edges connecting to points
 //that are behind the camera/player
-class face{
-  constructor(points){
+class face{//Done
+  constructor(points){//
     this.points = points;//Defines the lists of points representing this face
     this.normal = this.calculateNormal(points);//Defines the normal by calculating a normal vector using the given points
     this.screenScale = 35;//Scales up projection (zooms in)
@@ -111,7 +111,7 @@ class face{
   r = Matrix.rotateZ(Matrix.rotateY(r,-player.getRX()),-player.getRY());//Inverse the rotation done to the plane's normal vector
   r.mult(this.screenScale);
   if(lambda<=0){//If behind camera
-    r.z = null;
+    r.z = null;//Sets z to null to identify it is behind the camera therefore needs estimating
   }
   return r;//Return on screen position
   }
@@ -133,7 +133,7 @@ class face{
 }
 //perspective class is responsible for storing information about the screen plane which is a set distance
 //from the player and is normal to the direction the player is looking.
-class perspective{
+class perspective{//Done
   constructor(){
     this.distance = 20;//Distance of the plane of the screen is to the camera of the player
     this.normal;//Normal of plane

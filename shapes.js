@@ -1,7 +1,7 @@
 'use strict';
 //Shape is the base class for all 3D objects which can have a position, 3D rotation and a colour
 //for the faces that it contains that can be projected onto the 2D plane of the screen.
-class shape{
+class shape{//Done
   constructor(pos,rotation,colour){
     this.pos3D = pos;//Defines the 3D position of the shape
     this.rotation = rotation;//Defines the rotation vector of the shape
@@ -17,7 +17,7 @@ class shape{
 //Cuboid is a class which inherits the shape class so that it can be a 3D objects but is also defined
 //with a length, width and height which are used to defined the six faces of the cuboid which is saved
 //within the cuboid. The cuboid is shown by calling show on all the stored faces.
-class cuboid extends shape{
+class cuboid extends shape{//Done
   constructor(pos,length,height,width,rotation,colour){
     super(pos,rotation,colour)//Calls it's base class constructor (shape's constructor)
     this.faces = [];//Defines an empty list for the faces of the cuboid
@@ -40,9 +40,8 @@ class cuboid extends shape{
   generateFace = (points,rotation) => new face(points.map(a => Matrix.rotateY(a,radians(-rotation))))
   //show3D is responsible for calling show on all the faces this cuboid contains.
   show3D(player,perspective){
-    //stroke(0)
-    stroke(this.colour);
-    fill(this.colour);
+    stroke(this.colour);//Sets the outline of shapes to colour of face
+    fill(this.colour);//Sets the fill colour of shapes to colour of face
     for(let i=0;i<this.faces.length;i++){//For every face in faces
       this.faces[i].show(this.pos3D,player,perspective);//Show the current face
     }
@@ -52,7 +51,7 @@ class cuboid extends shape{
 //then converted into 3D and given to the inherit base class's definition. Walls are also responsible
 //for having extra properties than the cuboid so that it can be sorted in distance away from the player
 //as well many get properties used when being inserted into a quad tree.
-class wall extends cuboid{
+class wall extends cuboid{//Done
   constructor(x,y,length,rotation,colour = [0,0,153]){
     const thicknessOfWall = 0.1//Defines the thickness of a wall
     let newLength = length;//Sets new length to given length

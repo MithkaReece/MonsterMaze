@@ -3,8 +3,7 @@ const wallHeight = 1;
 let img
 
 function preload(){
-  img = loadImage('https://pbs.twimg.com/media/EKP2OihW4AEOTcI?format=jpg&name=small');
-  
+  img = loadImage('\maze.jpg');
 }
 let gameMan;//Defines the manager object for this instance of the program
 //setup is a function which is called once at the very start of the program
