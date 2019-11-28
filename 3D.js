@@ -8,7 +8,7 @@
 //Points can also be created in the projection process to represent edges connecting to points
 //that are behind the camera/player
 class face{//Done
-  constructor(points){//
+  constructor(points){
     this.points = points;//Defines the lists of points representing this face
     this.normal = this.calculateNormal(points);//Defines the normal by calculating a normal vector using the given points
     this.screenScale = 35;//Scales up projection (zooms in)
@@ -115,7 +115,7 @@ class face{//Done
   }
   return r;//Return on screen position
   }
-  //show is responsible for showing the face by using all the proejcted points and estimated points
+  //show is responsible for showing the face by using all the projected points and estimated points
   //to draw a polygon on the screen by defining all its vertices from the list of points.
   show(pos,player,perspective){
     let points = this.project(pos,player,perspective);//Retrieve all the points in 2D 
@@ -142,7 +142,7 @@ class perspective{//Done
   getNormal(){//Get property for the normal of the plane of the screen
     return this.normal.copy();//Returns a copy of the vector
   }
-  getD(){//Get propery for the d from the plane equation r.n = d
+  getD(){//Get property for the d from the plane equation r.n = d
     return this.d;//Returns the stored value of d
   }
   //Update is responsible for updating the plane equation based on the player's orientation.

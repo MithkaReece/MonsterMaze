@@ -27,7 +27,7 @@ class manager{//
     })) 
     this.buttonsAndLabels.push(new button(createVector(width/2,height/4),0.38*(width+height),0.05*(width+height),"LEADERBOARD",[110,0,255],() => {//Add a new leaderboard button
       this.setupLeaderboard();//Setup the leaderboard menu
-      this.layer = 2;//Changes to learderboard layer
+      this.layer = 2;//Changes to leaderboard layer
     }))
     this.buttonsAndLabels.push(new button(createVector(width/2,3*height/4),0.12*(width+height),0.05*(width+height),"EXIT",[110,0,255],() =>{//Add a new exit button
       window.close();//Closes the window
@@ -59,13 +59,15 @@ class manager{//
       this.setupMainMenu();//Launches the main menu
       this.layer=0;//Changes to main menu layer
     }))
-    let scores = this.retrieveStoredData();//To do
-    if(scores != null){
+    let scores = this.retrieveStoredData();//Retrieves any stored score data from local storage
+    if(scores != null){//If scores found
       this.leaderboard = new leaderboard(createVector(width/2,3*height/16),scores);//Creates a new leaderboard and gives it a list of scores it will display
     }
   }
-
-  retrieveStoredData(){//To do
+  //RetrieveStoredData is responsible from going through the list of names of past players and then looping through and retrieving all the
+  //name and score pairs from previous games. These are then converted into score objects and pushed on a list which is then sorted in
+  //descending order and return. If no scores are found then null is return and a label is created saying no data found.
+  retrieveStoredData(){//
     let scores = [];//Creates empty list of scores
     let names = localStorage.getItem("names");//Retrieves list of stored names saved under "names"
     if(names != null){//If more than one name is stored in local storage
@@ -80,9 +82,9 @@ class manager{//
       }
       return mergeSort(scores,"desc");//Sorts the scores into descending numerical order  
     }//If no data is stored
-      console.log("no leaderboard data")//TO DO
-      return null
-  }
+    this.buttonsAndLabels.push(new label(createVector(width/2,height*0.4),0.35*(width+height),0.05*(width+height),"No Data Found",[110,0,255]))//Add a new label saying leaderboard is empty
+    return null//Return null as no data found
+  }//
   //setupPauseMenu replaces the current buttons with all the buttons used for the pause menu.
   setupPauseMenu(){//
     this.buttonsAndLabels = [];
@@ -133,7 +135,7 @@ class manager{//
     }))
     this.buttonsAndLabels.push(new button(createVector(width/2,16*height/20),0.25*(width+height),0.032*(width+height),"LEADERBOARD",[110,0,255],() => {
       this.setupLeaderboard();//Setupts the leaderboard menu
-      this.layer = 2;//Changes to learderboard layer
+      this.layer = 2;//Changes to leaderboard layer
     }))
   }
 
@@ -169,11 +171,12 @@ class manager{//
           this.player.addRX(event.movementX*radians(0.1));//Allow looking horizontally
           this.player.setRY(constrain(this.player.getRY()-(event.movementY*radians(0.1)),radians(-85),radians(80)))//Allow looking vertically with limitations
       }
-  }
+  }//
   //mouseWheel is called everytime the mouse wheel is used.
   //The function moves the leaderboard up and down when in the leaderboard screen.
   mouseWheel(event){//If mouse wheel used//
-    if(this.layer == 2){//If in the leaderboard screen
+    let storageNames = localStorage.getItem("names");//Retrieve all recorded names from local storage
+    if(this.layer == 2 && storageNames != null){//If in the leaderboard screen and leaderboard is not empty
       this.leaderboard.moveLabels(createVector(0,-event.delta));//Move the list of scores in the direction of scrolling
     }
   }//
@@ -204,7 +207,7 @@ class manager{//
         this.inputBox = createInput('');//Reset inputbox
         this.inputBox.hide();//Hide inputbox
         this.layer = 2;//Change to leaderboard layer
-        this.setupLeaderboard();//Setups up leaderbaord
+        this.setupLeaderboard();//Setups up leaderboard
       }
     }
   }//
@@ -260,7 +263,7 @@ class manager{//
   //checkLoss checks whether the player is close enough to the monster that they have been caught.
   //If the player has been caught then it moves the program to the lose screen.
   checkLoss(){//
-    let distance = p5.Vector.dist(this.player.getPos(),this.monster.getPos());//Find the disstance from the player and monster
+    let distance = p5.Vector.dist(this.player.getPos(),this.monster.getPos());//Find the distance from the player and monster
     if(distance<0.35){//If the distance is within 0.7 units
       this.setupLoseScreen();//Setup the lose screen menu
       this.layer = 5;//Changes the layer to the lose screen
@@ -279,7 +282,7 @@ class manager{//
   }//
   //drawLeaderboard is responsible for telling the leaderboard to show itself.
   //It does this only when there is any recorded data to show.
-  drawLeaderboard(){
+  drawLeaderboard(){//
     let storageNames = localStorage.getItem("names");//Retrieve all recorded names from local storage
     if(storageNames != null){//If more than 1 name recorded
       this.leaderboard.show();//Shows the leaderboard

@@ -12,7 +12,7 @@ class entity{//Done
 //This is also responsible for ray casting on objects in the world to identify which objects can be seen by the player and therefore need to be shown.
 //In addition this is responsible for validating the movement of the player by testing against collisions as well as checking if the player has
 //escaped the maze and won.
-class character extends entity{
+class character extends entity{//Done
   constructor(pos){
     super(pos);//Call inherited constructor function with pos parameter
     this.rotation = createVector(radians(0),radians(0));//Orientation of entity
@@ -41,21 +41,19 @@ class character extends entity{
       ray.setAngle(ray.getAngle()-value)//Minus the given value to the angle of the current ray
     }
   }
-
   getRY(){//Get property for the y component of the player's rotation
     return this.rotation.y;//Returns the y component of the player's rotation
   }
   setRY(value){//Set property for the y component of the player's rotational orientation
     this.rotation.y = value;//Sets the y component of the player's rotation to a given value
   }
-
   getHitBox(){//Get property for hitbox
     return this.hitBox;//Return the player's hitbox rectangle
   }
   //rayCast is responsible for casting all the rays from the player onto all the objects to calculate which walls are 
   //within the player's field of view and is not being completely obstructed by other objects. This list of objects is
   //then return in order of distance away from the player.
-  rayCast(walls,monster){
+  rayCast(walls,monster){//
     let newObjects = [];//Defines an empty list of objects
     for(let ray of this.rays){//For every ray in the stored rays
       let distRecord = Infinity;//Set smallest distance to always greater than any wall
@@ -107,8 +105,10 @@ class character extends entity{
     this.hitBox.getY() + this.hitBox.getHeight() + dir.y > wall.getY() && //If after player movement y plus height is above wall y
     this.hitBox.getY() + dir.y < wall.getY() + wall.getHeight(); //If after player movement y is below wall y plus height
   }
-
-  controls(normalVector,retrievedWalls){
+  //Controls is responsible for keyboard controls which allow the player to move using wasd which is validated using collision
+  //detection which limits the player's movement when neccessary. This is also responsible for using the arrows keys to look around
+  //by changing the player's orientation with a set sentivity.
+  controls(normalVector,retrievedWalls){//
     const speed = 0.035;//Defines the speed at which the player walks
     let dirVector = createVector(0,0,0);//Create zero vector as default direction vector
     if(keyIsDown(87)){//If "w" is being pressed
@@ -123,20 +123,6 @@ class character extends entity{
     if(keyIsDown(68)){//If "d" is being pressed
       dirVector.add(Matrix.rotateY(normalVector,radians(90)));//Add plane's normal vector rotation 90 degress from y axis to direction vector reprenting right direction
     }
-    let sensitivity = radians(1);//Defines the magnitude of the angle moved each run through
-    if(keyIsDown(38)){//If up arrow is being pressed
-      this.setRY(constrain(this.getRY() + 1.8*sensitivity,radians(-85),radians(80)))//Add a positive angle to the player's rotation y component and constrain between bounds
-    }
-    if(keyIsDown(39)){//If right arrow is being pressed
-      this.addRX(2.5*sensitivity)//Add a positive angle to the player's rotation x component
-    }
-    if(keyIsDown(40)){//If down arrow is being pressed
-      this.setRY(constrain(this.getRY() - 1.8*sensitivity,radians(-85),radians(80)));//Add a negative angle to the player's rotation y component and constrain between bounds
-    }
-    if(keyIsDown(37)){//If left arrow is being pressed
-      this.addRX(-2.5*sensitivity)//Add a negative angle to the player's rotation x component
-    }
-    
     dirVector.y = 0;//Remove any change in the y component so the player has gravity
     dirVector.setMag(speed);//Sets the magnitude of the direction vector being added to the magnitude of the speed
     let walls = retrievedWalls;//Define walls as retrieveWalls
@@ -150,11 +136,25 @@ class character extends entity{
     }
     this.pos.add(dirVector);//Add the final direction vector to the position of the player to move the player
     this.hitBox = new Rectangle(this.pos.x-this.size/2,this.pos.z-this.size/2,this.size,this.size);//Redefined the hitbox based on the new position
+
+    let sensitivity = radians(1);//Defines the magnitude of the angle moved each run through
+    if(keyIsDown(38)){//If up arrow is being pressed
+      this.setRY(constrain(this.getRY() + 1.8*sensitivity,radians(-85),radians(80)))//Add a positive angle to the player's rotation y component and constrain between bounds
+    }
+    if(keyIsDown(39)){//If right arrow is being pressed
+      this.addRX(2.5*sensitivity)//Add a positive angle to the player's rotation x component
+    }
+    if(keyIsDown(40)){//If down arrow is being pressed
+      this.setRY(constrain(this.getRY() - 1.8*sensitivity,radians(-85),radians(80)));//Add a negative angle to the player's rotation y component and constrain between bounds
+    }
+    if(keyIsDown(37)){//If left arrow is being pressed
+      this.addRX(-2.5*sensitivity)//Add a negative angle to the player's rotation x component
+    }
   }
 
   won = (size) =>{//Checks if the player has won given the size of the maze
     return this.pos.x<0 || this.pos.x>size || this.pos.z<0 || this.pos.z>size;//Return the boolean result of whether the player is outside the maze or not
-  }
+  }//
 }
 //The ray class is responsible for saving properties of each ray which is casted from the player.
 //It is also responsible for calculating whether it's ray, which is a half line from the player with an

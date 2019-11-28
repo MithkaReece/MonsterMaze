@@ -263,7 +263,7 @@ class QuadTree{//Done
   //Retrieve is a function that runs through a similar procedure as the insert function using the given hitbox but instead of
   //inserting the hitbox it copies all the objects that it has come across and therefore returns a list of the only
   //objects that could possibily collide with the given hitbox.
-  retrieve(hitbox){//
+  retrieve(hitbox){
     let walls = this.objects.slice(0);//Define walls as a copy of objects in this quad tree
     for(let i=0;i<this.quads.length;i++){//For every quad in quads
       let current = this.quads[i];//Define current to the current quad
