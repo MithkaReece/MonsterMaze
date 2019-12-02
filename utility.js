@@ -98,7 +98,6 @@ class score{//Done
     return this.value;//Returns the stored score value
   }
 }
-
 //The Rectangle class is a very simple representation of a rectangle which is mainly used 
 //for collision boxes by saving the properties of hitboxes using this rectangle class.
 class Rectangle{//Done

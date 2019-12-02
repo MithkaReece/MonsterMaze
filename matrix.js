@@ -3,8 +3,8 @@
 
 //Matrix class is responsible for storing matrices as well as any matrix operation that this program uses
 //This basically contains a mini library of matrix operations used in the program for 3D graphics and neural networks.
-class Matrix{
-  constructor(rowsOrData,cols){
+class Matrix{//Done
+  constructor(rowsOrData,cols){//
     if(cols === undefined){//If parameter is purely data to be inserted into matrix
       this.data = clone(rowsOrData);//Define data as a clone of the given data
       this.rows = this.data.length;//Define rows as the length of the data
@@ -25,11 +25,11 @@ class Matrix{
 
   getData(){//Get property for the matrix data
     return clone(this.data);//Return a clone of the 2D array of data representing this matrix
-  }
+  }//
   
   insert(array){//Inserts a 2D array into the matrix by replacing its data
     this.data = array;//Set data to a given array
-  }
+  }//
   
   static elementWiseMult(matrixA,matrixB){//Returns a new matrix after multiplying every corresponding elements of two given matrices
     if(!(matrixA instanceof Matrix && matrixB instanceof Matrix)){//If not both parameters are matrics
@@ -52,7 +52,7 @@ class Matrix{
       return new Matrix(arrA);//Return a new matrix using new array data after multiplication
     }//If given matrices don't have equal dimensions
     console.log("can't do element wise mult")
-    return null//Return null as elementWiseMultiplication is not possible between these two matrices
+    return null//R//eturn null as elementWiseMultiplication is not possible between these two matrices
   }
 
   map(fn){//apply a function to every element of this matrix
@@ -63,7 +63,7 @@ class Matrix{
         }
       }
     return this;//Return this matrix
-  }  
+  }//  
   static map(matrix,fn){//Maps a function to every element of a given matrix and returns the new matrix
     let newData = clone(matrix.getData());//Grabs a copy of the data in the matrix
     for(let i=0;i<matrix.rows;i++){//For every rows
@@ -72,14 +72,14 @@ class Matrix{
       }
     }
     return new Matrix(newData);//Return a new matrix with the changed data
-  }
+  }//
   multiply(m){//Multiplies this matrix to a given matrix or vector and returns the new result
     if(m instanceof Matrix){//If given m is a matrix
       this.data() = Matrix.multiply(this,m).getData();//Returns the result of the matrix matrix multiplication
     }else if(m instanceof p5.Vector){//If given m is a vector
       return matrixToVector(Matrix.multiply(this,new Matrix(vectorToArray(m))))//Return the vector result from the multipication
       }
-    }
+    }//
   static multiply(matrixA,matrixB){//Multiplies two given matrices together and returns the new matrix made from the result of the multiplication
     if(matrixA.cols !== matrixB.rows){//If matrixA columns is not equal to matrixB rows
       console.log("Bad matrices");//Not commutable matrices therefore cannot multiply
@@ -92,19 +92,20 @@ class Matrix{
       }   
       return element;//Return the final element from the sum of the multiplications done
     });//Returns a new matrix produced from the multiplication of the given two matrices
-  }
+  }//
   add(n){//Add a given matrix element wise to the this matrix or add a given constant to every element of this matrix
     if(n instanceof Matrix){
       return this.map((e, i, k) => e + n.getData()[i][k]);//Adding a matrix to current matrix by adding each elements
     }else{
       return this.map(e => e + n);//Adding a given value to every element of this matrix
     }
-  } 
+  }// 
   //Returns a new matrix that has been transposed, meaning the columns become the rows and vise versa
   static transpose = (m) => {return new Matrix(m.cols, m.rows).map((_, i, k) => m.data[k][i])}
+  //
   //Returns a new matrix after multiplying each element of a given matrix by a given scalar
   static scale = (matrix,scalar) => {return new Matrix(matrix.getData().map(x=>x*scalar))}
-  
+  //
   static rotateX(vector,angle){//Returns a new vector after applying a rotation round the x axis using a given angle and vector
     let rotation = [
       [cos(angle), -sin(angle),0],
@@ -113,7 +114,7 @@ class Matrix{
       ]//Defined rotation matrix round the x axis as an array
     let matrix = new Matrix(rotation);//Convert rotation matrix array into an matrix
     return matrix.multiply(vector);//Returns the given vector after multiplied by rotation matrix
-  }
+  }//
   
   static rotateY(vector,angle){//Returns a new vector after applying a rotation round the y axis using a given angle and vector
     let rotation = [
@@ -123,7 +124,7 @@ class Matrix{
       ]//Defined rotation matrix round the y axis as an array
     let matrix = new Matrix(rotation);//Convert rotation matrix array into an matrix
     return matrix.multiply(vector);//Returns the given vector after multiplied by rotation matrix
-  }
+  }//
   
   static rotateZ(vector,angle){//Returns a new vector after applying a rotation round the z axis using a given angle and vector
     let rotation = [
@@ -133,5 +134,5 @@ class Matrix{
       ]//Defined rotation matrix round the z axis as an array
     let matrix = new Matrix(rotation);//Convert rotation matrix array into an matrix
     return matrix.multiply(vector);//Returns the given vector after multiplied by rotation matrix
-  }
+  }//
 }

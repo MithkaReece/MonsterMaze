@@ -3,9 +3,9 @@
 //The manager class is the first to be created and manages the sequence in which the program will run.
 //This class contains any objects made throughout the program running.
 //The manager is responsible for defining all the buttons and labels that are used in each screen.
-class manager{//
+class manager{//Done
   constructor(){
-    this.mazeSize = 5;//Defines the size of the maze
+    this.mazeSize = 15;//Defines the size of the maze
     this.buttonsAndLabels = []//Array of all the currently in use buttons and labels
     this.layer = 0;//Sets the default layer to the main menu
     this.perspect = new perspective();//Setups the a new 3D viewing plane of what the user can see
@@ -13,10 +13,10 @@ class manager{//
   }
   getMazeSize(){//Get property for mazeSize
     return this.mazeSize;//Returns the current size of the maze
-  }
+  }//
   getPlayer(){//Get property for player
     return this.player;//Returns the current player object of the current game
-  }
+  }//
   //setupMainMenu replaces the current buttons and labels with all the labels and buttons used for the main menu screen.
   setupMainMenu(){//
     this.buttonsAndLabels = [];//Clear all current buttons and labels
@@ -38,7 +38,7 @@ class manager{//
   //This function also calls setupGame to setup up the onscreen labels for the gameplay.
   //This function is called to launch a fresh new game session.
   newGame(){//
-    this.maze = new Maze(this.mazeSize,this.mazeSize,1);//Generates a new maze
+    this.maze = new Maze(this.mazeSize,this.mazeSize,5);//Generates a new maze
     this.player = new character(this.maze.getPlayerPos());//Creates a new player with given position
     this.monster = new monster(this.maze.getMonsterPos());//Create a new monster with given position
     this.setupGame();//Sets up on screen labels
@@ -52,7 +52,7 @@ class manager{//
   }
   //setupLeaderboard replaces the current buttons and labels with all the labels and buttons used for the leaderboard screen.
   //This function is also responsible for retrieves all the pairs of names and scores and sorting them into a list.
-  setupLeaderboard(){//2
+  setupLeaderboard(){//
     this.buttonsAndLabels = [];//Clear all current buttons and labels
     this.buttonsAndLabels.push(new label(createVector(width/2,height/15),0.25*(width+height),0.03*(width+height),"LEADERBOARD",[110,0,255]))//Add a new label showing the title "LEADERBOARD"
     this.buttonsAndLabels.push(new button(createVector(width/2,13*height/16),0.25*(width+height),0.045*(width+height),"Main menu",[110,0,255],() =>{//Add a new main menu button
@@ -63,7 +63,7 @@ class manager{//
     if(scores != null){//If scores found
       this.leaderboard = new leaderboard(createVector(width/2,3*height/16),scores);//Creates a new leaderboard and gives it a list of scores it will display
     }
-  }
+  }//
   //RetrieveStoredData is responsible from going through the list of names of past players and then looping through and retrieving all the
   //name and score pairs from previous games. These are then converted into score objects and pushed on a list which is then sorted in
   //descending order and return. If no scores are found then null is return and a label is created saying no data found.
@@ -138,7 +138,6 @@ class manager{//
       this.layer = 2;//Changes to leaderboard layer
     }))
   }
-
   //mouseClick is called everytime the mouse is clicked.
   //This allows the user to hand and unhide the mouse while in gameplay.
   //This also allows you click a button by checking the regions of all the current
@@ -233,18 +232,18 @@ class manager{//
     localStorage.setItem(name,scores.join(","));//Convert new scores list to a single string and store it
   }//
   //runAi is runs the monster's ai independent of the user input.
-  runAi(){
+  runMonster(){//
     if(this.layer == 1){//If in gameplay layer
       this.monster.run(this.maze.getGrid(),this.player.getPos());//Runs the ai of the monster
     }
-  }
+  }//
   //updateGameplay is responsible for updating all the game mechanics every tick.
   //It is also responsible for checking win and loss conditions.
   updateGameplay(){//
     this.perspect.update(this.player);//Updates player's perspective based on player's orientation
     this.player.controls(this.perspect.getNormal(),this.maze.getQuadTree(this.player.getHitBox()));//Handles player controls
     this.checkWin();//Check if the player has won
-    //this.checkLoss();//Checks if the player has been caught
+    this.checkLoss();//Checks if the player has been caught
   }
   //Checks whether the player has won by escaping the maze.
   //If the player has won this function then calculates the score based on the time it took.
@@ -302,7 +301,7 @@ class manager{//
           this.drawLeaderboard();//Draw leaderboard
           break;
         case 3://If in pause menu
-          this.drawGameplay();//Show gameplay visuals in the backgroudn
+          this.drawGameplay();//Show gameplay visuals in the background
           break;
       }
       //Show all buttons and labels
@@ -314,7 +313,7 @@ class manager{//
 //The leaderboard class is used to store all the currently stored scores of the previous games.
 //This class also allows you to scroll through the list of scores in its menu as well as
 //showing all the scores as labels with their names and scores achieved.
-class leaderboard{//
+class leaderboard{//Done
   constructor(pos,scores){
     this.pos = pos;//Defines the position of the leaderboard
     this.labelWidth = 0.15;//Defines the width of each label
@@ -365,7 +364,7 @@ class leaderboard{//
 //textObject is a base class used by button and label which defines an object
 //with given text and a rectangle for the text to be on which is defined by 
 //position, dimensions and colour.
-class textObject{//
+class textObject{//Done
   constructor(pos,width,height,text,colour){
     this.pos = pos;//Stores the position of the text object
     this.width = width;//Stores the width of the text object
@@ -374,7 +373,7 @@ class textObject{//
     this.colour = colour;//Stores the colour of the text object
   }
   //show is responsible for showing the rectangle of the textobject as well as the text over it.
-  show(){
+  show(){//
     rectMode(CENTER);//Drawing the rectangle of the button with the position being the center of the rectangle
     fill(this.colour);//Setting the colour of the rectangle to the colour stored
     rect(this.pos.x,this.pos.y,this.width,this.height);//Drawing a rectangle using the properties of the button stored
@@ -385,16 +384,16 @@ class textObject{//
   }
 }
 //The button class is used to simulate a button on a screen by displaying a box with text on it.
-class button extends textObject{//
+class button extends textObject{//Done
   constructor(pos,width,height,text,colour,click){
     super(pos,width,height,text,colour);
     this.click = click;//Stores the function that will be executed when the button is clicked
   }
-  getClick(){
+  getClick(){//
     return this.click;
   }
   //Region is responsible for returning the boolean result of whether the mouse coordinates are within the region of the button.
-  region(){
+  region(){//
     return mouseX >= this.pos.x-this.width/2 &&
       mouseX <= this.pos.x+this.width/2 &&
       mouseY >= this.pos.y-this.height/2 &&
@@ -402,15 +401,15 @@ class button extends textObject{//
   }
 }
 //The label class is used to display a box with text on it to provide the user with information.
-class label extends textObject{//
+class label extends textObject{//Done
   constructor(pos,width,height,text,colour){
     super(pos,width,height,text,colour);
   }
   getPos(){//Get property for the label's position
     return this.pos;//Returns the position of the label
-  }
+  }//
   //addPos is responsible for adding a given vector to the label's position.
-  addPos(vector){
+  addPos(vector){//
     this.pos.add(vector);//Does an element wise addition of the given vector to the label's position
   }
 }
