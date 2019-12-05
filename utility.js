@@ -131,7 +131,7 @@ class Queue{//Done
   //making sure that if the queue is full it will dequeue the element at the front.
   enqueue(value){
     this.data.push(value);//Pushing the given value onto the data of the queue
-    if(this.data.length>length){//If the data's size is greater than the set size of the queue
+    if(this.data.length>this.length){//If the data's size is greater than the set size of the queue
       this.dequeue();//Call dequeue to dequeue the front of the queue
     }
   }

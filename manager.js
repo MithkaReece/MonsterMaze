@@ -5,7 +5,7 @@
 //The manager is responsible for defining all the buttons and labels that are used in each screen.
 class manager{//Done
   constructor(){
-    this.mazeSize = 15;//Defines the size of the maze
+    this.mazeSize = 5;//Defines the size of the maze
     this.buttonsAndLabels = []//Array of all the currently in use buttons and labels
     this.layer = 0;//Sets the default layer to the main menu
     this.perspect = new perspective();//Setups the a new 3D viewing plane of what the user can see
@@ -30,6 +30,7 @@ class manager{//Done
       this.layer = 2;//Changes to leaderboard layer
     }))
     this.buttonsAndLabels.push(new button(createVector(width/2,3*height/4),0.12*(width+height),0.05*(width+height),"EXIT",[110,0,255],() =>{//Add a new exit button
+      //window.open("https://mithkareece.github.io/MonsterMaze/")
       window.close();//Closes the window
     }))
   }
@@ -38,7 +39,7 @@ class manager{//Done
   //This function also calls setupGame to setup up the onscreen labels for the gameplay.
   //This function is called to launch a fresh new game session.
   newGame(){//
-    this.maze = new Maze(this.mazeSize,this.mazeSize,5);//Generates a new maze
+    this.maze = new Maze(this.mazeSize,this.mazeSize,1);//Generates a new maze
     this.player = new character(this.maze.getPlayerPos());//Creates a new player with given position
     this.monster = new monster(this.maze.getMonsterPos());//Create a new monster with given position
     this.setupGame();//Sets up on screen labels
@@ -144,10 +145,11 @@ class manager{//Done
   //buttons against the position of the mouse when it was clicked and then
   //activate a button that has been clicked.
   mouseClick(){//When mouse is clicked//
-      if(this.layer == 1){//If in first person gameplay
+      if(this.layer == 1){//If in first person gameplay 
         //Hides and unhides mouse when clicking
         canvas.requestPointerLock();
         if(document.pointerLockElement === canvas){
+          this.monster.print();
           document.exitPointerLock();
         }
       }else{//If in any other layer

@@ -8,6 +8,7 @@ let gameMan;//Defines the manager object for this instance of the program
 //setup is a function which is called once at the very start of the program
 //This function defines a new manager which manages the whole procedure of the program.
 function setup(){//
+
   createCanvas(windowWidth, windowHeight);
   background(100)
   gameMan = new manager();

@@ -16,7 +16,6 @@ class monster extends entity{//Done
         this.targetNetwork = new neuralNetwork([6,10,8,4]);//Create the target network the same size as target network
         this.updateTargetNetwork();//Updates target network to reflect the policy network
         this.TNInterval = 50;//How many iterations it takes to update the target network
-
         this.exploreThreshold = 0.7;//Define exploreThreshold as the starting probability of the ai choosing to explore randomly
         this.minExploration = 0.1;//Define minExploration as the minimum probability of the ai choosing to explore randomly
         this.explorationDecay = 0.005;//Define explorationDecay as the amount the exploreThreshold decreasing each run through
@@ -26,7 +25,9 @@ class monster extends entity{//Done
         this.targetNIterations = 0;//Define the number of iterations since copying the policy network to the target network
         this.speed = 10;//Calculated based on how far it will move compared to how long it makes decisions (distance/time)
     }
-
+    print(){
+        console.table(this.relayMemory.getData());
+    }
     getValue(){//Get property for the distance of the monster to the player used for sorting
         return this.distAway;//Returns the distance from the monster to the player
     }//
@@ -36,7 +37,6 @@ class monster extends entity{//Done
     //run is responsible for running the monster by moving the monster as well as the monster making a decision
     //of where it wants to move every certain interval which the monster will then move towards.
     run(mazeGrid,playerPos){//
-        //console.log(p5.Vector.dist(playerPos,this.pos))
         if(this.moveIterations == 0){//If ai has finished moving make next decision (if moveIterations is 0)
             let actionIndex = this.selectAction(playerPos,mazeGrid);//Picks an action either from exploring or exploiting from information it has learnt 
             let reward = this.calcReward(mazeGrid,playerPos,actionIndex);//Calculates the reward for picked action
@@ -44,6 +44,7 @@ class monster extends entity{//Done
             let currentState = this.getState(playerPos,this.pos,mazeGrid);//Collect current state
             let nextState =this.getState(playerPos,this.nextPos,mazeGrid);//Collect next state
             this.relayMemory.enqueue([currentState,actionIndex,reward,nextState])//Store old state, action, reward, new state in replay memory
+            
             let sample = this.getSample();//Gets a sample from relay memory
             for(let i=0;i<sample.length;i++){//Loops through the sample
                 let data = sample[i];//Set data to current data in sample
@@ -88,7 +89,7 @@ class monster extends entity{//Done
     //When picked by the neural network the output is q-values for each possible move and the monster attempts the action with the biggest q-value
     selectAction(playerPos,mazeGrid){//
         let actionIndex;//Defines actionIndex
-        let directions = ["N","E","S","W"]//Purely for testing
+        let directions = ["North","East","South","West"]//Purely for testing
         if(random(1)>this.exploreThreshold){//If exploitation is needed
             let outputs = matrixToArray(this.policyNetwork.feedForward(this.getState(playerPos, this.pos, mazeGrid))[0]);//Find q-values through neural network
             let max = outputs[0];//Defaults first q value as max
@@ -99,11 +100,17 @@ class monster extends entity{//Done
                     indexOfMax = i;//Set index of max to current index
                 }
             }
+            //console.log(outputs[0],outputs[1],outputs[2],outputs[3]);
             actionIndex = indexOfMax;//Pick action with highest q-value
-            //console.log("C " + directions[actionIndex])
+            //console.log("Calculated move = " + directions[actionIndex])
         }else{//Exploring has been picked   
-            actionIndex = Math.floor(random(4));//Pick a random action 
-            //console.log("R " + directions[actionIndex])    
+            let actions = shuffle([0,1,2,3])//Shuffle a list of directions
+            let cell = mazeGrid[Math.floor(this.pos.x)][Math.floor(this.pos.z)]//Set cell to the cell the monster currently is
+            while (cell.getWalls()[actions[0]] == 1){//While random action walks into a wall
+                actions.shift();//Remove that direction
+            }
+            actionIndex = Math.floor(actions[0]);//Use action at the start of actions 
+            //console.log("Random move =  " + directions[actionIndex])    
         }
         //console.log(this.exploreThreshold)
         //console.log(this.pos.x,this.pos.z)
@@ -118,12 +125,12 @@ class monster extends entity{//Done
         let reward = 0;//Set reward to 0 by default
         let currentCell = mazeGrid[Math.floor(this.pos.x)][Math.floor(this.pos.z)];//find current cell monster is in
         if(currentCell.getWalls()[actionIndex]==1){//If you walk into a wall
-            let p = -0//Reward for walking into a wall
+            let p = -1//Reward for walking into a wall
             reward += p;//Negative reward for walking into a wall
         }else{
             this.nextPos.add(actions[actionIndex]);//Add to desired position    
             let distance = p5.Vector.dist(this.pos,playerPos);//Calculate distance from player
-            let k = 20;//reward multiplayer to getting closer to the player 
+            let k = 50;//reward multiplayer to getting closer to the player 
             reward += k/(distance*distance);//Add reward based on how close to the player the monster is
         }
         return reward;
@@ -176,11 +183,16 @@ class neuralNetwork{//Done
         this.initialiseWeights();//Initialise all the weights with random values
         this.learningRate = 0.1;//Define the learning rate as 0.1
         this.discountFactor = 0.7;//Define the discountFactor of future rewards as 0.7
-        this.activationFunction = this.sigmoid;//Define the activationFunction as the sigmoid function
-        this.derivActivationFunction = ((x) =>{return this.sigmoid(x)*(1-this.sigmoid(x))});//Define the derivative of the activation function as the derivative of the sigmoid function
+        this.activationFunction = this.tanh;//Define the activationFunction as the sigmoid function
+        this.derivActivationFunction = this.tanhD;//Define the derivative of the activation function as the derivative of the sigmoid function
     }
-    //sigmoid function is a mathematical function being used as an activation function as it has a useful range of values.
-    sigmoid = (x) => {1/(1 + Math.pow(Math.E,-x))}
+    tanh(x){//Hyperbolic tan by definition of sinh divided by cosh
+        return (Math.pow(Math.E,2*x) -1)/
+        (Math.pow(Math.E, 2*x) +1);
+    }
+    tanhD(x){//Derivate of tanh is 1-tanh^2
+        return 1 - Math.pow(this.tanh(x),2);
+    }
     //
     //setupWeights is responsible for create an array of matrices which are the correct size for the weights between layers.
     setupWeights(layers){//
@@ -198,7 +210,7 @@ class neuralNetwork{//Done
             let current = this.weights[i];//Set current to current weights connecting between the two current layers
             for(let cols=0;cols<current.cols;cols++){//For every column of current weights
                 for(let rows=0;rows<current.rows;rows++){//For every row of current weights
-                    current.data[rows][cols] = Math.random(-1,1);//Set element to a random number between -1 and 1
+                    current.data[rows][cols] = 2*Math.random()-1;//Set element to a random number between -1 and 1
                 }
             }
         }
@@ -275,11 +287,10 @@ class neuralNetwork{//Done
 
 
     printNetwork(){//Will remove for testing
-        let list = [];     
+
         for(let i=0;i<this.weights.length;i++){
-            list = list.concat(this.weights[i].getData())
+            console.table(this.weights[i].getData());
         }
-        console.log(list)
     }
 
     
