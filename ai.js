@@ -26,7 +26,7 @@ class monster extends entity{//Done
         this.speed = 10;//Calculated based on how far it will move compared to how long it makes decisions (distance/time)
     }
     print(){
-        console.table(this.relayMemory.getData());
+        //console.table(this.relayMemory.getData());
     }
     getValue(){//Get property for the distance of the monster to the player used for sorting
         return this.distAway;//Returns the distance from the monster to the player
@@ -112,7 +112,7 @@ class monster extends entity{//Done
             actionIndex = Math.floor(actions[0]);//Use action at the start of actions 
             //console.log("Random move =  " + directions[actionIndex])    
         }
-        //console.log(this.exploreThreshold)
+        console.log(this.exploreThreshold)
         //console.log(this.pos.x,this.pos.z)
         return actionIndex;
     }
@@ -187,13 +187,11 @@ class neuralNetwork{//Done
         this.derivActivationFunction = this.tanhD;//Define the derivative of the activation function as the derivative of the sigmoid function
     }
     tanh(x){//Hyperbolic tan by definition of sinh divided by cosh
-        return (Math.pow(Math.E,2*x) -1)/
-        (Math.pow(Math.E, 2*x) +1);
+        return (Math.pow(Math.E,2*x) -1)/(Math.pow(Math.E, 2*x) +1);
     }
-    tanhD(x){//Derivate of tanh is 1-tanh^2
+    tanhD = (x) => {//Derivate of tanh is 1-tanh^2
         return 1 - Math.pow(this.tanh(x),2);
     }
-    //
     //setupWeights is responsible for create an array of matrices which are the correct size for the weights between layers.
     setupWeights(layers){//
         let weights = [];//Set weights to empty array for weights to go in
