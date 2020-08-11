@@ -65,13 +65,14 @@ class Matrix{//Done
     return this;//Return this matrix
   }//  
   static map(matrix,fn){//Maps a function to every element of a given matrix and returns the new matrix
-    let newData = clone(matrix.getData());//Grabs a copy of the data in the matrix
-    for(let i=0;i<matrix.rows;i++){//For every rows
-      for(let j=0;j<matrix.cols;j++){//For every cols
-        newData[i][j] = fn(matrix.getData()[i][j]);//newData is copied list at row,col with the function applied to element
+    let data = matrix.getData();//Grabs a copy of the data in the matrix
+    for(let i=0;i<matrix.rows;i++){
+      for(let j=0;j<matrix.cols;j++){
+        let val = data[i][j];
+        data[i][j] = fn(val,i,j);
       }
     }
-    return new Matrix(newData);//Return a new matrix with the changed data
+    return new Matrix(data);//Return a new matrix with the changed data
   }//
   multiply(m){//Multiplies this matrix to a given matrix or vector and returns the new result
     if(m instanceof Matrix){//If given m is a matrix
